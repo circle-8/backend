@@ -1,4 +1,4 @@
-package org.example;
+package org.circle8;
 
 
 import org.junit.jupiter.api.Assertions;
