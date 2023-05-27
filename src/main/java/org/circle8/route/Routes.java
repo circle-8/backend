@@ -10,6 +10,7 @@ import io.javalin.http.ContentType;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import org.circle8.controller.PuntoReciclajeController;
+import org.circle8.controller.RecorridoController;
 import org.circle8.controller.ResiduoController;
 import org.circle8.controller.TransaccionController;
 import org.circle8.controller.ZonaController;
@@ -24,6 +25,7 @@ public class Routes {
 	private final PuntoReciclajeController puntoReciclajeController;
 	private final TransaccionController transaccionController;
 	private final ZonaController zonaController;
+	private final RecorridoController recorridoController;
 
 	private static final Gson gson = new GsonBuilder() // TODO: esto se puede llevar a DependencyInjection
 		.registerTypeAdapter(
@@ -41,12 +43,14 @@ public class Routes {
 		ResiduoController residuoController,
 		PuntoReciclajeController puntoReciclajeController,
 		TransaccionController transaccionController,
-		ZonaController zonaController
+		ZonaController zonaController,
+		RecorridoController recorridoController
 	) {
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
 		this.transaccionController = transaccionController;
 		this.zonaController = zonaController;
+		this.recorridoController = recorridoController;
 	}
 
 	public Javalin initRoutes() {
@@ -88,6 +92,14 @@ public class Routes {
 			.post("/organizacion/{id_organizacion}/zona", result(zonaController::post))
 			.post("/punto_residuo/{id_punto_residuo}/zona/{id}", result(zonaController::includePuntoResiduo))
 			.delete("/punto_residuo/{id_punto_residuo}/zona/{id}", result(zonaController::excludePuntoResiduo))
+			// RECORRIDO
+			.get("/recorridos", result(recorridoController::list))
+			.get("/recorrido/{id}", result(recorridoController::get))
+			.post("/organizacion/{id_organizacion}/zona/{id_zona}/recorrido", result(recorridoController::post))
+			.put("/organizacion/{id_organizacion}/zona/{id_zona}/recorrido/{id}", result(recorridoController::put))
+			.delete("/organizacion/{id_organizacion}/zona/{id_zona}/recorrido/{id}", result(recorridoController::delete))
+			.post("/recorrido/{id}/inicio", result(recorridoController::inicio))
+			.post("/recorrido/{id}/fin", result(recorridoController::fin))
 			;
 	}
 
