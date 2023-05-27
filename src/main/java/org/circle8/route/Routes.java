@@ -11,6 +11,7 @@ import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import org.circle8.controller.PuntoReciclajeController;
 import org.circle8.controller.ResiduoController;
+import org.circle8.controller.TransaccionController;
 import org.circle8.response.ApiResponse;
 
 import java.time.LocalDate;
@@ -20,6 +21,7 @@ import java.util.function.Function;
 public class Routes {
 	private final ResiduoController residuoController;
 	private final PuntoReciclajeController puntoReciclajeController;
+	private final TransaccionController transaccionController;
 
 	private static final Gson gson = new GsonBuilder() // TODO: esto se puede llevar a DependencyInjection
 		.registerTypeAdapter(
@@ -35,10 +37,12 @@ public class Routes {
 	@Inject
 	public Routes(
 		ResiduoController residuoController,
-		PuntoReciclajeController puntoReciclajeController
+		PuntoReciclajeController puntoReciclajeController,
+		TransaccionController transaccionController
 	) {
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
+		this.transaccionController = transaccionController;
 	}
 
 	public Javalin initRoutes() {
@@ -61,6 +65,17 @@ public class Routes {
 			.delete("/reciclador/{id_reciclador}/punto_reciclaje/{id}", result(puntoReciclajeController::delete))
 			.post("/reciclador/{id_reciclador}/punto_reciclaje", result(puntoReciclajeController::post))
 			.post("/reciclador/{id_reciclador}/punto_reciclaje/{id}/notificacion/{id_residuo}", result(puntoReciclajeController::notificacion))
+			// TRANSACCION
+			.get("/transacciones", result(transaccionController::list))
+			.get("/transaccion/{id}", result(transaccionController::get))
+			.put("/transaccion/{id}", result(transaccionController::put))
+			.delete("/transaccion/{id}", result(transaccionController::delete))
+			.post("/transaccion", result(transaccionController::post))
+			.put("/transaccion/{id}/residuo/{id_residuo}", result(transaccionController::addResiduo))
+			.delete("/transaccion/{id}/residuo/{id_residuo}", result(transaccionController::removeResiduo))
+			.post("/transaccion/{id}/transporte/{id_transporte}", result(transaccionController::setTransporte))
+			.delete("/transaccion/{id}/transporte/{id_transporte}", result(transaccionController::unsetTransporte))
+			.post("/transaccion/{id}/solicitud_transporte", result(transaccionController::solicitudTransporte))
 			;
 	}
 

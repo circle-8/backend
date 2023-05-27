@@ -1,13 +1,13 @@
 package org.circle8.controller;
 
 import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import org.circle8.response.ApiResponse;
 import org.circle8.response.DiaResponse;
 import org.circle8.response.ListResponse;
 import org.circle8.response.PuntoReciclajeResponse;
 import org.circle8.response.TipoResiduoResponse;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class PuntoReciclajeController {
@@ -41,10 +41,12 @@ public class PuntoReciclajeController {
 	 * DELETE /reciclador/{id_reciclador}/punto_reciclaje/{id}
 	 */
 	public ApiResponse delete(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Integer.parseInt(ctx.pathParam("id_reciclador")))
-			.build();
+		return new ApiResponse() {
+			@Override
+			public HttpStatus status() {
+				return HttpStatus.ACCEPTED;
+			}
+		};
 	}
 
 	/**
