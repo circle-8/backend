@@ -7,6 +7,6 @@ import org.junit.jupiter.api.Test;
 class MainTest {
     @Test
     void failTest() {
-        Assertions.assertTrue(true);
+        Assertions.assertTrue(false);
     }
 }
