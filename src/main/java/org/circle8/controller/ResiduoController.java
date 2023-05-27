@@ -10,6 +10,7 @@ import org.circle8.response.TipoResiduoResponse;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 
 public class ResiduoController {
 	private final ResiduoResponse mock = ResiduoResponse.builder()
@@ -57,7 +58,7 @@ public class ResiduoController {
 	 * Requiere de Tipo de Residuo y Punto de Residuo
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = Arrays.asList(
+		final var l = List.of(
 			mock,
 			mock.toBuilder().id(2).build()
 		);
