@@ -32,7 +32,8 @@ jobs:
     - name: JaCoCo Coverage
       id: jacoco
       uses: madrapps/jacoco-report@v1.3
-      paths: $${{ github.workspace }}/target/site/jacoco/jacoco.xml
-      token: $${{ secrets.GITHUB_TOKEN }}
-      min-coverage-overall: 60
-      min-coverage-changed-files: 80
+      with:
+        paths: $${{ github.workspace }}/target/site/jacoco/jacoco.xml
+        token: $${{ secrets.GITHUB_TOKEN }}
+        min-coverage-overall: 60
+        min-coverage-changed-files: 80
