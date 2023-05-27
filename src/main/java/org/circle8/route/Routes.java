@@ -52,7 +52,7 @@ public class Routes {
 
 	private Handler result(Function<Context, ApiResponse> h) {
 		return ctx -> {
-			ApiResponse r = h.apply(ctx);
+			final ApiResponse r = h.apply(ctx);
 			ctx.contentType(ContentType.APPLICATION_JSON);
 			ctx.result(gson.toJson(r));
 			ctx.status(r.status());

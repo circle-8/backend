@@ -10,28 +10,21 @@ import org.circle8.response.TipoResiduoResponse;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
 
 public class ResiduoController {
+	private final ResiduoResponse mock = ResiduoResponse.builder()
+		.id(1)
+		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30))
+		.puntoResiduo(new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f))
+		.tipoResiduo(new TipoResiduoResponse(1, "ORGANICO"))
+		.recorridoUri("/recorrido/1").recorridoId(1)
+		.build();
+
 	/**
 	 * GET /residuo/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return new ResiduoResponse(
-			Integer.parseInt(ctx.pathParam("id")),
-			null,
-			LocalDateTime.of(2023, 1, 1, 16, 30),
-			null,
-			null,
-			new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-			new TipoResiduoResponse(1, "ORGANICO"),
-			"/recorrido/1",
-			1,
-			null,
-			"/transaccion/1",
-			1,
-			null
-		);
+		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
 	}
 
 	/**
@@ -39,21 +32,7 @@ public class ResiduoController {
 	 * Puede cambiar el tipo de residuo
 	 */
 	public ApiResponse put(Context ctx) {
-		return new ResiduoResponse(
-			Integer.parseInt(ctx.pathParam("id")),
-			null,
-			LocalDateTime.of(2023, 1, 1, 16, 30),
-			null,
-			null,
-			new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-			new TipoResiduoResponse(1, "ORGANICO"),
-			"/recorrido/1",
-			1,
-			null,
-			"/transaccion/1",
-			1,
-			null
-		);
+		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
 	}
 
 	/**
@@ -61,21 +40,7 @@ public class ResiduoController {
 	 * Requiere de Tipo de Residuo y Punto de Residuo
 	 */
 	public ApiResponse post(Context ctx) {
-		return new ResiduoResponse(
-			1,
-			null,
-			LocalDateTime.of(2023, 1, 1, 16, 30),
-			null,
-			null,
-			new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-			new TipoResiduoResponse(1, "ORGANICO"),
-			"/recorrido/1",
-			1,
-			null,
-			"/transaccion/1",
-			1,
-			null
-		);
+		return mock;
 	}
 
 	public ApiResponse delete(Context ctx) {
@@ -92,129 +57,55 @@ public class ResiduoController {
 	 * Requiere de Tipo de Residuo y Punto de Residuo
 	 */
 	public ApiResponse list(Context ctx) {
-		List<ResiduoResponse> l = Arrays.asList(
-			new ResiduoResponse(
-				1,
-				null,
-				LocalDateTime.of(2023, 1, 1, 16, 30),
-				null,
-				null,
-				new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-				new TipoResiduoResponse(1, "ORGANICO"),
-				"/recorrido/1",
-				1,
-				null,
-				"/transaccion/1",
-				1,
-				null
-			),
-			new ResiduoResponse(
-				2,
-				null,
-				LocalDateTime.of(2023, 1, 1, 16, 30),
-				null,
-				null,
-				new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-				new TipoResiduoResponse(2, "PLASTICO"),
-				"/recorrido/1",
-				1,
-				null,
-				null,
-				null,
-				null
-			)
+		final var l = Arrays.asList(
+			mock,
+			mock.toBuilder().id(2).build()
 		);
 
 		return new ListResponse<>(0, 1, 2, null, null, l);
 	}
 
-	public ApiResponse reciclaje(Context context) {
-		return new ResiduoResponse(
-			1,
-			null,
-			LocalDateTime.of(2023, 1, 1, 16, 30),
-			null,
-			null,
-			new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-			new TipoResiduoResponse(1, "ORGANICO"),
-			"/recorrido/1",
-			1,
-			null,
-			null,
-			null,
-			null
-		);
+	/**
+	 * POST /residuo/{id}/reciclaje
+	 */
+	public ApiResponse reciclaje(Context ctx) {
+		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
 	}
 
-	public ApiResponse deleteReciclaje(Context context) {
-		return new ResiduoResponse(
-			1,
-			null,
-			LocalDateTime.of(2023, 1, 1, 16, 30),
-			null,
-			null,
-			new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-			new TipoResiduoResponse(1, "ORGANICO"),
-			null,
-			null,
-			null,
-			null,
-			null,
-			null
-		);
+	/**
+	 * DELETE /residuo/{id}/reciclaje
+	 */
+	public ApiResponse deleteReciclaje(Context ctx) {
+		return mock.toBuilder()
+			.id(Integer.parseInt(ctx.pathParam("id")))
+			.recorridoUri("").recorridoId(null)
+			.build();
 	}
 
-	public ApiResponse notificacion(Context context) {
-		return new ResiduoResponse(
-			1,
-			null,
-			LocalDateTime.of(2023, 1, 1, 16, 30),
-			null,
-			null,
-			new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-			new TipoResiduoResponse(1, "ORGANICO"),
-			null,
-			null,
-			null,
-			null,
-			null,
-			null
-		);
+	/**
+	 * POST /residuo/{id}/notificacion/{id_punto_reciclaje}
+	 */
+	public ApiResponse notificacion(Context ctx) {
+		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
 	}
 
-	public ApiResponse fulfill(Context context) {
-		return new ResiduoResponse(
-			1,
-			LocalDateTime.of(2023, 1, 1, 16, 30),
-			LocalDateTime.of(2023, 1, 1, 16, 30),
-			null,
-			null,
-			new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-			new TipoResiduoResponse(1, "ORGANICO"),
-			null,
-			null,
-			null,
-			null,
-			null,
-			null
-		);
+	/**
+	 * POST /residuo/{id}/fulfill
+	 */
+	public ApiResponse fulfill(Context ctx) {
+		return mock.toBuilder()
+			.id(Integer.parseInt(ctx.pathParam("id")))
+			.fechaRetiro(LocalDateTime.now())
+			.build();
 	}
 
-	public ApiResponse unfulfilled(Context context) {
-		return new ResiduoResponse(
-			1,
-			null,
-			LocalDateTime.of(2023, 1, 1, 16, 30),
-			null,
-			null,
-			new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f),
-			new TipoResiduoResponse(1, "ORGANICO"),
-			null,
-			null,
-			null,
-			null,
-			null,
-			null
-		);
+	/**
+	 * POST /residuo/{id}/unfulfilled
+	 */
+	public ApiResponse unfulfilled(Context ctx) {
+		return mock.toBuilder()
+			.id(Integer.parseInt(ctx.pathParam("id")))
+			.fechaRetiro(null)
+			.build();
 	}
 }
