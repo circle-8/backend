@@ -12,6 +12,7 @@ import io.javalin.http.Handler;
 import org.circle8.controller.PuntoReciclajeController;
 import org.circle8.controller.ResiduoController;
 import org.circle8.controller.TransaccionController;
+import org.circle8.controller.ZonaController;
 import org.circle8.response.ApiResponse;
 
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ public class Routes {
 	private final ResiduoController residuoController;
 	private final PuntoReciclajeController puntoReciclajeController;
 	private final TransaccionController transaccionController;
+	private final ZonaController zonaController;
 
 	private static final Gson gson = new GsonBuilder() // TODO: esto se puede llevar a DependencyInjection
 		.registerTypeAdapter(
@@ -38,11 +40,13 @@ public class Routes {
 	public Routes(
 		ResiduoController residuoController,
 		PuntoReciclajeController puntoReciclajeController,
-		TransaccionController transaccionController
+		TransaccionController transaccionController,
+		ZonaController zonaController
 	) {
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
 		this.transaccionController = transaccionController;
+		this.zonaController = zonaController;
 	}
 
 	public Javalin initRoutes() {
@@ -76,6 +80,14 @@ public class Routes {
 			.post("/transaccion/{id}/transporte/{id_transporte}", result(transaccionController::setTransporte))
 			.delete("/transaccion/{id}/transporte/{id_transporte}", result(transaccionController::unsetTransporte))
 			.post("/transaccion/{id}/solicitud_transporte", result(transaccionController::solicitudTransporte))
+			// ZONA
+			.get("/zonas", result(zonaController::list))
+			.get("/organizacion/{id_organizacion}/zona/{id}", result(zonaController::get))
+			.put("/organizacion/{id_organizacion}/zona/{id}", result(zonaController::put))
+			.delete("/organizacion/{id_organizacion}/zona/{id}", result(zonaController::delete))
+			.post("/organizacion/{id_organizacion}/zona", result(zonaController::post))
+			.post("/punto_residuo/{id_punto_residuo}/zona/{id}", result(zonaController::includePuntoResiduo))
+			.delete("/punto_residuo/{id_punto_residuo}/zona/{id}", result(zonaController::excludePuntoResiduo))
 			;
 	}
 

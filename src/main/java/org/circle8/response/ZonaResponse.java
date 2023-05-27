@@ -1,7 +1,14 @@
 package org.circle8.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class ZonaResponse implements ApiResponse {
 	public int id;
 	public String nombre;
@@ -9,5 +16,5 @@ public class ZonaResponse implements ApiResponse {
 	public String organizacionUri;
 	public Integer organizacionId;
 	public OrganizacionResponse organizacion;
-	public TipoResiduoResponse tipoResiduo;
+	public List<TipoResiduoResponse> tipoResiduo;
 }
