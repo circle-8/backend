@@ -10,6 +10,7 @@ import io.javalin.http.ContentType;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import org.circle8.controller.PuntoReciclajeController;
+import org.circle8.controller.PuntoResiduoController;
 import org.circle8.controller.RecorridoController;
 import org.circle8.controller.ResiduoController;
 import org.circle8.controller.TransaccionController;
@@ -30,6 +31,7 @@ public class Routes {
 	private final RecorridoController recorridoController;
 	private final TransporteController transporteController;
 	private final UserController userController;
+	private final PuntoResiduoController puntoResiduoController;
 
 	private static final Gson gson = new GsonBuilder() // TODO: esto se puede llevar a DependencyInjection
 		.registerTypeAdapter(
@@ -50,7 +52,8 @@ public class Routes {
 		ZonaController zonaController,
 		RecorridoController recorridoController,
 		TransporteController transporteController,
-		UserController userController
+		UserController userController,
+		PuntoResiduoController puntoResiduoController
 	) {
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
@@ -59,6 +62,7 @@ public class Routes {
 		this.recorridoController = recorridoController;
 		this.transporteController = transporteController;
 		this.userController = userController;
+		this.puntoResiduoController = puntoResiduoController;
 	}
 
 	public Javalin initRoutes() {
@@ -122,6 +126,8 @@ public class Routes {
 			.post("/token", result(userController::token))
 			.post("/user", result(userController::post))
 			.put("/user/password", result(userController::restorePassword))
+			// PUNTOS RESIDUO
+			.get("/puntos_residuo", result(puntoResiduoController::list))
 			;
 	}
 
