@@ -10,7 +10,6 @@ import org.circle8.response.ResiduoResponse;
 import org.circle8.response.RetiroResponse;
 
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 
 public class RecorridoController {

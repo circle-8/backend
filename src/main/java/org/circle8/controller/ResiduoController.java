@@ -9,7 +9,6 @@ import org.circle8.response.ResiduoResponse;
 import org.circle8.response.TipoResiduoResponse;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 public class ResiduoController {

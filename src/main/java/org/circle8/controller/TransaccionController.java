@@ -6,7 +6,6 @@ import org.circle8.response.ApiResponse;
 import org.circle8.response.ListResponse;
 import org.circle8.response.ResiduoResponse;
 import org.circle8.response.TransaccionResponse;
-import org.circle8.response.TransporteResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;

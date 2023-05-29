@@ -14,6 +14,7 @@ import org.circle8.controller.RecorridoController;
 import org.circle8.controller.ResiduoController;
 import org.circle8.controller.TransaccionController;
 import org.circle8.controller.TransporteController;
+import org.circle8.controller.UserController;
 import org.circle8.controller.ZonaController;
 import org.circle8.response.ApiResponse;
 
@@ -28,6 +29,7 @@ public class Routes {
 	private final ZonaController zonaController;
 	private final RecorridoController recorridoController;
 	private final TransporteController transporteController;
+	private final UserController userController;
 
 	private static final Gson gson = new GsonBuilder() // TODO: esto se puede llevar a DependencyInjection
 		.registerTypeAdapter(
@@ -47,7 +49,8 @@ public class Routes {
 		TransaccionController transaccionController,
 		ZonaController zonaController,
 		RecorridoController recorridoController,
-		TransporteController transporteController
+		TransporteController transporteController,
+		UserController userController
 	) {
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
@@ -55,6 +58,7 @@ public class Routes {
 		this.zonaController = zonaController;
 		this.recorridoController = recorridoController;
 		this.transporteController = transporteController;
+		this.userController = userController;
 	}
 
 	public Javalin initRoutes() {
@@ -112,6 +116,12 @@ public class Routes {
 			.post("/transporte/{id}/fin", result(transporteController::fin))
 			.post("/transporte/{id}/pago", result(transporteController::confirmarPago))
 			.post("/transporte/{id}/confirmacion_entrega", result(transporteController::confirmarEntrega))
+			// USER
+			.get("/users", result(userController::list))
+			.get("/user/{id}", result(userController::get))
+			.post("/token", result(userController::token))
+			.post("/user", result(userController::post))
+			.put("/user/password", result(userController::restorePassword))
 			;
 	}
 
