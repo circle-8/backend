@@ -53,8 +53,7 @@ public class ResiduoController {
 	}
 
 	/**
-	 * POST /residuo
-	 * Requiere de Tipo de Residuo y Punto de Residuo
+	 * GET /residuos
 	 */
 	public ApiResponse list(Context ctx) {
 		final var l = List.of(
