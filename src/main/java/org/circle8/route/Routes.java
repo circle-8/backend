@@ -13,6 +13,7 @@ import org.circle8.controller.PuntoReciclajeController;
 import org.circle8.controller.RecorridoController;
 import org.circle8.controller.ResiduoController;
 import org.circle8.controller.TransaccionController;
+import org.circle8.controller.TransporteController;
 import org.circle8.controller.ZonaController;
 import org.circle8.response.ApiResponse;
 
@@ -26,6 +27,7 @@ public class Routes {
 	private final TransaccionController transaccionController;
 	private final ZonaController zonaController;
 	private final RecorridoController recorridoController;
+	private final TransporteController transporteController;
 
 	private static final Gson gson = new GsonBuilder() // TODO: esto se puede llevar a DependencyInjection
 		.registerTypeAdapter(
@@ -44,13 +46,15 @@ public class Routes {
 		PuntoReciclajeController puntoReciclajeController,
 		TransaccionController transaccionController,
 		ZonaController zonaController,
-		RecorridoController recorridoController
+		RecorridoController recorridoController,
+		TransporteController transporteController
 	) {
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
 		this.transaccionController = transaccionController;
 		this.zonaController = zonaController;
 		this.recorridoController = recorridoController;
+		this.transporteController = transporteController;
 	}
 
 	public Javalin initRoutes() {
@@ -100,6 +104,14 @@ public class Routes {
 			.delete("/organizacion/{id_organizacion}/zona/{id_zona}/recorrido/{id}", result(recorridoController::delete))
 			.post("/recorrido/{id}/inicio", result(recorridoController::inicio))
 			.post("/recorrido/{id}/fin", result(recorridoController::fin))
+			// Transporte
+			.get("/transportes", result(transporteController::list))
+			.get("/transporte/{id}", result(transporteController::get))
+			.post("/transporte/{id}/precio", result(transporteController::setPrecio))
+			.post("/transporte/{id}/inicio", result(transporteController::inicio))
+			.post("/transporte/{id}/fin", result(transporteController::fin))
+			.post("/transporte/{id}/pago", result(transporteController::confirmarPago))
+			.post("/transporte/{id}/confirmacion_entrega", result(transporteController::confirmarEntrega))
 			;
 	}
 
