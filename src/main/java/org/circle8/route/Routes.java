@@ -12,8 +12,11 @@ import io.javalin.http.Handler;
 import org.circle8.controller.PlanController;
 import org.circle8.controller.PuntoReciclajeController;
 import org.circle8.controller.PuntoResiduoController;
+import org.circle8.controller.PuntoVerdeController;
 import org.circle8.controller.RecorridoController;
 import org.circle8.controller.ResiduoController;
+import org.circle8.controller.SuscripcionController;
+import org.circle8.controller.TipoResiduoController;
 import org.circle8.controller.TransaccionController;
 import org.circle8.controller.TransporteController;
 import org.circle8.controller.UserController;
@@ -34,6 +37,9 @@ public class Routes {
 	private final UserController userController;
 	private final PuntoResiduoController puntoResiduoController;
 	private final PlanController planController;
+	private final SuscripcionController suscripcionController;
+	private final TipoResiduoController tipoResiduoController;
+	private final PuntoVerdeController puntoVerdeController;
 
 	private static final Gson gson = new GsonBuilder() // TODO: esto se puede llevar a DependencyInjection
 		.registerTypeAdapter(
@@ -56,7 +62,10 @@ public class Routes {
 		TransporteController transporteController,
 		UserController userController,
 		PuntoResiduoController puntoResiduoController,
-		PlanController planController
+		PlanController planController,
+		SuscripcionController suscripcionController,
+		TipoResiduoController tipoResiduoController,
+		PuntoVerdeController puntoVerdeController
 	) {
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
@@ -67,6 +76,9 @@ public class Routes {
 		this.userController = userController;
 		this.puntoResiduoController = puntoResiduoController;
 		this.planController = planController;
+		this.suscripcionController = suscripcionController;
+		this.tipoResiduoController = tipoResiduoController;
+		this.puntoVerdeController = puntoVerdeController;
 	}
 
 	public Javalin initRoutes() {
@@ -138,6 +150,23 @@ public class Routes {
 			.put("/plan/{id}", result(planController::put))
 			.delete("/plan/{id}", result(planController::delete))
 			.post("/plan", result(planController::post))
+			// SUSCRIPCION
+			.get("/suscripciones", result(suscripcionController::list))
+			.get("/user/{id_user}/suscripcion", result(suscripcionController::get))
+			.post("/user/{id_user}/suscripcion", result(suscripcionController::post))
+			.delete("/user/{id_user}/suscripcion", result(suscripcionController::delete))
+			// TIPOS RESIDUO
+			.get("/tipos_residuo", result(tipoResiduoController::list))
+			.get("/tipo_residuo/{id}", result(tipoResiduoController::get))
+			.put("/tipo_residuo/{id}", result(tipoResiduoController::put))
+			.delete("/tipo_residuo/{id}", result(tipoResiduoController::delete))
+			.post("/tipo_residuo", result(tipoResiduoController::post))
+			// PUNTO VERDE
+			.get("/puntos_verdes", result(puntoVerdeController::list))
+			.get("/punto_verde/{id}", result(puntoVerdeController::get))
+			.put("/punto_verde/{id}", result(puntoVerdeController::put))
+			.delete("/punto_verde/{id}", result(puntoVerdeController::delete))
+			.post("/punto_verde", result(puntoVerdeController::post))
 			;
 	}
 
