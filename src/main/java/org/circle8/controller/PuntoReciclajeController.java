@@ -11,6 +11,8 @@ import org.circle8.response.TipoResiduoResponse;
 import java.util.List;
 
 public class PuntoReciclajeController {
+	private static final String ID_RECICLADOR_PARAM = "id_reciclador";
+
 	private final PuntoReciclajeResponse mock = PuntoReciclajeResponse.builder()
 		.id(1)
 		.latitud(-34.6701907f).longitud(-58.5656422f)
@@ -24,7 +26,7 @@ public class PuntoReciclajeController {
 	public ApiResponse get(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Integer.parseInt(ctx.pathParam("id_reciclador")))
+			.recicladorId(Integer.parseInt(ctx.pathParam(ID_RECICLADOR_PARAM)))
 			.build();
 	}
 	/**
@@ -33,7 +35,7 @@ public class PuntoReciclajeController {
 	public ApiResponse put(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Integer.parseInt(ctx.pathParam("id_reciclador")))
+			.recicladorId(Integer.parseInt(ctx.pathParam(ID_RECICLADOR_PARAM)))
 			.build();
 	}
 
@@ -53,7 +55,7 @@ public class PuntoReciclajeController {
 	 * POST /reciclador/{id_reciclador}/punto_reciclaje
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock.toBuilder().recicladorId(Integer.parseInt(ctx.pathParam("id_reciclador"))).build();
+		return mock.toBuilder().recicladorId(Integer.parseInt(ctx.pathParam(ID_RECICLADOR_PARAM))).build();
 	}
 
 	/**
@@ -62,7 +64,7 @@ public class PuntoReciclajeController {
 	public ApiResponse notificacion(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Integer.parseInt(ctx.pathParam("id_reciclador")))
+			.recicladorId(Integer.parseInt(ctx.pathParam(ID_RECICLADOR_PARAM)))
 			.build();
 	}
 

@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class RecorridoController {
+	private static final String ID_ZONA_PARAM = "id_zona";
+	private static final String ID_ORGANIZACION_PARAM = "id_organizacion";
+
 	private final RecorridoResponse mock = RecorridoResponse.builder()
 		.fechaRetiro(LocalDateTime.of(2023, 1, 1, 16, 30))
 		.recicladorId(1).recicladorUri("/reciclador/1")
@@ -38,8 +41,8 @@ public class RecorridoController {
 	 */
 	public ApiResponse post(Context ctx) {
 		return mock.toBuilder()
-			.zonaId(Integer.parseInt(ctx.pathParam("id_zona")))
-			.zonaUri("/organizacion/"+ctx.pathParam("id_organizacion")+"/zona/"+ctx.pathParam("id_zona"))
+			.zonaId(Integer.parseInt(ctx.pathParam(ID_ZONA_PARAM)))
+			.zonaUri("/organizacion/"+ctx.pathParam(ID_ORGANIZACION_PARAM)+"/zona/"+ctx.pathParam(ID_ZONA_PARAM))
 			.build();
 	}
 
@@ -49,8 +52,8 @@ public class RecorridoController {
 	public ApiResponse put(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.zonaId(Integer.parseInt(ctx.pathParam("id_zona")))
-			.zonaUri("/organizacion/"+ctx.pathParam("id_organizacion")+"/zona/"+ctx.pathParam("id_zona"))
+			.zonaId(Integer.parseInt(ctx.pathParam(ID_ZONA_PARAM)))
+			.zonaUri("/organizacion/"+ctx.pathParam(ID_ORGANIZACION_PARAM)+"/zona/"+ctx.pathParam(ID_ZONA_PARAM))
 			.build();
 	}
 

@@ -11,6 +11,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class TransaccionController {
+	private static final String ID_TRANSPORTE_PARAM = "id_transporte";
+	private static final String ID_RESIDUO_PARAM = "id_residuo";
+
 	private final TransaccionResponse mock = TransaccionResponse.builder()
 		.id(1)
 		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30))
@@ -58,7 +61,7 @@ public class TransaccionController {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
 			.residuos(List.of(
-				ResiduoResponse.builder().id(Integer.parseInt(ctx.pathParam("id_residuo"))).build())
+				ResiduoResponse.builder().id(Integer.parseInt(ctx.pathParam(ID_RESIDUO_PARAM))).build())
 			)
 			.build();
 	}
@@ -79,8 +82,8 @@ public class TransaccionController {
 	public ApiResponse setTransporte(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.transporteId(Integer.parseInt(ctx.pathParam("id_transporte")))
-			.transporteUri("/transporte/"+ctx.pathParam("id_transporte"))
+			.transporteId(Integer.parseInt(ctx.pathParam(ID_TRANSPORTE_PARAM)))
+			.transporteUri("/transporte/"+ctx.pathParam(ID_TRANSPORTE_PARAM))
 			.build();
 	}
 

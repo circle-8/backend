@@ -1,21 +1,13 @@
 package org.circle8;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import org.circle8.route.Routes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 
 public class Main {
-	private static final Logger logger = LoggerFactory.getLogger(Main.class);
-	@Inject
-	private static Routes routes;
 
-	public static void main(String[] args) throws SQLException {
+	public static void main(String[] args) {
 		/* Database Connection TEST */
 		// String url = "jdbc:postgresql://pg.germanmerkel.com.ar/test";
 
@@ -44,14 +36,9 @@ public class Main {
 		final Injector inj = Guice.createInjector(new DependencyInjection());
 
 		/* Create SERVER */
-		inj.getInstance(Routes.class).initRoutes().start(8080);
-	}
-
-	// TODO llevar a clase separada
-	static class DependencyInjection extends AbstractModule {
-		@Override
-		protected void configure() {
-			super.configure();
+		try (var server = inj.getInstance(Routes.class).initRoutes() ) {
+			server.start(8080);
 		}
 	}
+
 }

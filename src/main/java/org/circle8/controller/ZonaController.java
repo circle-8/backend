@@ -11,6 +11,9 @@ import org.circle8.response.ZonaResponse;
 import java.util.List;
 
 public class ZonaController {
+	private  static final String ID_ORGANIZACION_PARAM = "id_organizacion";
+	public static final String ORGANIZACION_URI_BASE = "/organizacion/";
+
 	private final ZonaResponse mock = ZonaResponse.builder()
 		.id(1)
 		.polyline(List.of(
@@ -38,8 +41,8 @@ public class ZonaController {
 	public ApiResponse get(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Integer.parseInt(ctx.pathParam("id_organizacion")))
-			.organizacionUri("/organizacion/"+ctx.pathParam("id_organizacion"))
+			.organizacionId(Integer.parseInt(ctx.pathParam(ID_ORGANIZACION_PARAM)))
+			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
 			.build();
 	}
 
@@ -49,8 +52,8 @@ public class ZonaController {
 	public ApiResponse put(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Integer.parseInt(ctx.pathParam("id_organizacion")))
-			.organizacionUri("/organizacion/"+ctx.pathParam("id_organizacion"))
+			.organizacionId(Integer.parseInt(ctx.pathParam(ID_ORGANIZACION_PARAM)))
+			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
 			.build();
 	}
 
@@ -71,8 +74,8 @@ public class ZonaController {
 	 */
 	public ApiResponse post(Context ctx) {
 		return mock.toBuilder()
-			.organizacionId(Integer.parseInt(ctx.pathParam("id_organizacion")))
-			.organizacionUri("/organizacion/"+ctx.pathParam("id_organizacion"))
+			.organizacionId(Integer.parseInt(ctx.pathParam(ID_ORGANIZACION_PARAM)))
+			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
 			.build();
 	}
 
@@ -82,8 +85,8 @@ public class ZonaController {
 	public ApiResponse includePuntoResiduo(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Integer.parseInt(ctx.pathParam("id_organizacion")))
-			.organizacionUri("/organizacion/"+ctx.pathParam("id_organizacion"))
+			.organizacionId(Integer.parseInt(ctx.pathParam(ID_ORGANIZACION_PARAM)))
+			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
 			.build();
 	}
 
@@ -93,8 +96,8 @@ public class ZonaController {
 	public ApiResponse excludePuntoResiduo(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Integer.parseInt(ctx.pathParam("id_organizacion")))
-			.organizacionUri("/organizacion/"+ctx.pathParam("id_organizacion"))
+			.organizacionId(Integer.parseInt(ctx.pathParam(ID_ORGANIZACION_PARAM)))
+			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
 			.build();
 	}
 

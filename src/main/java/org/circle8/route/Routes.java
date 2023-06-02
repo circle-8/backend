@@ -1,9 +1,6 @@
 package org.circle8.route;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
 import com.google.inject.Inject;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
@@ -23,8 +20,6 @@ import org.circle8.controller.UserController;
 import org.circle8.controller.ZonaController;
 import org.circle8.response.ApiResponse;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.function.Function;
 
 public class Routes {
@@ -41,19 +36,11 @@ public class Routes {
 	private final TipoResiduoController tipoResiduoController;
 	private final PuntoVerdeController puntoVerdeController;
 
-	private static final Gson gson = new GsonBuilder() // TODO: esto se puede llevar a DependencyInjection
-		.registerTypeAdapter(
-			LocalDateTime.class,
-			(JsonSerializer<LocalDateTime>) (o, type, jsonSerializationContext) -> new JsonPrimitive(o.toString())
-		)
-		.registerTypeAdapter(
-			LocalDate.class,
-			(JsonSerializer<LocalDate>) (o, type, jsonSerializationContext) -> new JsonPrimitive(o.toString())
-		)
-		.create();
+	private final Gson gson;
 
 	@Inject
 	public Routes(
+		Gson gson,
 		ResiduoController residuoController,
 		PuntoReciclajeController puntoReciclajeController,
 		TransaccionController transaccionController,
@@ -67,6 +54,7 @@ public class Routes {
 		TipoResiduoController tipoResiduoController,
 		PuntoVerdeController puntoVerdeController
 	) {
+		this.gson = gson;
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
 		this.transaccionController = transaccionController;
