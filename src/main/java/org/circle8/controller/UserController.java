@@ -1,11 +1,16 @@
 package org.circle8.controller;
 
+import com.google.inject.Inject;
 import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import io.javalin.http.Cookie;
+import io.javalin.http.SameSite;
+import org.circle8.request.user.TokenRequest;
 import org.circle8.response.ApiResponse;
 import org.circle8.response.ListResponse;
 import org.circle8.response.TipoUsuarioResponse;
+import org.circle8.response.TokenResponse;
 import org.circle8.response.UserResponse;
+import org.circle8.security.JwtService;
 
 import java.util.List;
 
@@ -15,6 +20,13 @@ public class UserController {
 		.username("username")
 		.tipoUsuario(TipoUsuarioResponse.CIUDADANO)
 		.build();
+
+	private final JwtService jwtService;
+
+	@Inject
+	public UserController(JwtService jwtService) {
+		this.jwtService = jwtService;
+	}
 
 	/**
 	 * GET /users
@@ -37,15 +49,21 @@ public class UserController {
 
 	/**
 	 * POST /token
+	 * El token es devuelto luego de hacer el login in.
+	 * Con este token el usuario puede acceder la resto de la API.
+	 * Se devuelve dentro de una Cookie como en el body de la response
 	 */
 	public ApiResponse token(Context ctx) {
-		ctx.cookie("token", "token-str");
-		return new ApiResponse() {
-			@Override
-			public HttpStatus status() {
-				return HttpStatus.ACCEPTED;
-			}
-		};
+		final TokenRequest req = ctx.bodyAsClass(TokenRequest.class);
+		var jwt = jwtService.token(String.valueOf(mock.id), req.username);
+
+		var cookie = new Cookie("access_token", jwt);
+		cookie.setHttpOnly(true);
+		cookie.setSameSite(SameSite.STRICT);
+		cookie.setSecure(true);
+		ctx.cookie(cookie);
+
+		return new TokenResponse(jwt, mock);
 	}
 
 	/**

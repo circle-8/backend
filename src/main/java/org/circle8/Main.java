@@ -36,9 +36,7 @@ public class Main {
 		final Injector inj = Guice.createInjector(new DependencyInjection());
 
 		/* Create SERVER */
-		try (var server = inj.getInstance(Routes.class).initRoutes() ) {
-			server.start(8080);
-		}
+		var server = inj.getInstance(Routes.class).initRoutes().start(8080);
 	}
 
 }

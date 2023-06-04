@@ -6,6 +6,7 @@ import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import io.javalin.json.JsonMapper;
 import org.circle8.controller.PlanController;
 import org.circle8.controller.PuntoReciclajeController;
 import org.circle8.controller.PuntoResiduoController;
@@ -19,7 +20,9 @@ import org.circle8.controller.TransporteController;
 import org.circle8.controller.UserController;
 import org.circle8.controller.ZonaController;
 import org.circle8.response.ApiResponse;
+import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Type;
 import java.util.function.Function;
 
 public class Routes {
@@ -70,7 +73,7 @@ public class Routes {
 	}
 
 	public Javalin initRoutes() {
-		return Javalin.create()
+		return Javalin.create(c -> c.jsonMapper(getJsonMapper()))
 			// RESIDUOS
 			.get("/residuos", result(residuoController::list))
 			.post("/residuo", result(residuoController::post))
@@ -156,6 +159,23 @@ public class Routes {
 			.delete("/punto_verde/{id}", result(puntoVerdeController::delete))
 			.post("/punto_verde", result(puntoVerdeController::post))
 			;
+	}
+
+	@NotNull
+	private JsonMapper getJsonMapper() {
+		return new JsonMapper() {
+			@NotNull
+			@Override
+			public <T> T fromJsonString(@NotNull String json, @NotNull Type targetType) {
+				return gson.fromJson(json, targetType);
+			}
+
+			@NotNull
+			@Override
+			public String toJsonString(@NotNull Object obj, @NotNull Type type) {
+				return gson.toJson(obj, type);
+			}
+		};
 	}
 
 	private Handler result(Function<Context, ApiResponse> h) {
