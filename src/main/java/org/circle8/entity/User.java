@@ -9,7 +9,7 @@ import org.circle8.dto.TipoUsuario;
 @NoArgsConstructor
 @Builder
 public class User {
-	public int id;
+	public long id;
 	public String username;
 	public String hashedPassword;
 	public String nombre;

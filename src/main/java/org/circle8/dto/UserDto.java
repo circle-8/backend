@@ -6,7 +6,7 @@ import org.circle8.controller.response.UserResponse;
 import org.circle8.entity.User;
 
 public class UserDto {
-	public int id;
+	public long id;
 	public String username;
 	public String nombre;
 	public TipoUsuario tipo;

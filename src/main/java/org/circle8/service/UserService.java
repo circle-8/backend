@@ -23,9 +23,13 @@ public class UserService {
 	 * @return el mismo user que se recibió como parámetro, pero modificado
 	 */
 	public UserDto save(UserDto dto, String password) {
+		// TODO: crear suscripcion a plan para el nuevo usuario
+		// TODO: handling de suscripcion por tipos de usuario
+
 		var user = dto.toEntity();
 		user.hashedPassword = crypt.hash(password);
-		dao.save(user);
+
+		user = dao.save(user);
 
 		dto.id = user.id;
 		return dto;

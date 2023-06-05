@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder(toBuilder = true)
 public class UserResponse implements ApiResponse {
-	public int id;
+	public long id;
 	public String username;
 	public String nombre;
 	public TipoUsuarioResponse tipoUsuario;

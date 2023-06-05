@@ -38,7 +38,7 @@ class DependencyInjection extends AbstractModule {
 	@NotNull
 	private DataSource getDatasource() {
 		HikariConfig config = new HikariConfig();
-		config.setJdbcUrl("jdbc:postgresql://pg.germanmerkel.com.ar/test");
+		config.setJdbcUrl("jdbc:postgresql://pg.germanmerkel.com.ar/circle8");
 
 		config.setUsername(System.getenv("DB_USERNAME"));
 		config.setPassword(System.getenv("DB_PASSWORD"));
