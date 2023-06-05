@@ -19,7 +19,7 @@ import org.circle8.controller.TransaccionController;
 import org.circle8.controller.TransporteController;
 import org.circle8.controller.UserController;
 import org.circle8.controller.ZonaController;
-import org.circle8.response.ApiResponse;
+import org.circle8.controller.response.ApiResponse;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;

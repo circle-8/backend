@@ -88,6 +88,13 @@
             <version>42.6.0</version>
         </dependency>
 
+        <!-- HikariCP: connection pool for JDBC -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.0.1</version>
+        </dependency>
+
         <!-- Lombok is used for creating code using annotations -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -127,6 +134,13 @@
             <artifactId>jjwt-jackson</artifactId>
             <version>${jjwt.version}</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- BCrypt for hashing passwords -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
         </dependency>
 
     </dependencies>

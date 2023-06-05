@@ -1,4 +1,4 @@
-package org.circle8.request.user;
+package org.circle8.controller.request.user;
 
 public class TokenRequest {
 	public String username;

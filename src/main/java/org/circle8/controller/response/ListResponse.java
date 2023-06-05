@@ -1,4 +1,4 @@
-package org.circle8.response;
+package org.circle8.controller.response;
 
 import java.util.List;
 

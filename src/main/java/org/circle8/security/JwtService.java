@@ -1,5 +1,6 @@
 package org.circle8.security;
 
+import com.google.inject.Singleton;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -7,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import java.security.Key;
 import java.util.Map;
 
+@Singleton
 public class JwtService {
 	private static class JWT {
 		String id;

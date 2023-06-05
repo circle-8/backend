@@ -1,4 +1,4 @@
-package org.circle8.response;
+package org.circle8.controller.response;
 
 public class CiudadanoResponse implements ApiResponse {
 	public int id;

@@ -3,20 +3,21 @@ package org.circle8;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.circle8.route.Routes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.Statement;
 
 
 public class Main {
+	private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-	public static void main(String[] args) {
-		/* Database Connection TEST */
-		// String url = "jdbc:postgresql://pg.germanmerkel.com.ar/test";
+	public static void main(String[] args) throws Exception {
+		final Injector inj = Guice.createInjector(new DependencyInjection());
 
-		// Properties props = new Properties();
-		// props.setProperty("user", System.getenv("DB_USERNAME"));
-		// props.setProperty("password", System.getenv("DB_PASSWORD"));
-		// props.setProperty("ssl", "false");
-
-		// Connection conn = DriverManager.getConnection(url, props);
+		// var conn = inj.getInstance(DataSource.class).getConnection();
 		// Statement st = conn.createStatement();
 		// ResultSet rs = st.executeQuery("SELECT id, domain FROM click");
 		// while ( rs.next() ) {
@@ -26,14 +27,6 @@ public class Main {
 		// rs.close();
 		// st.close();
 		// conn.close();
-
-		// var err = new ErrorResponse();
-		// err.code = ErrorCode.BAD_REQUEST;
-		// err.devMessage = "hola";
-		// err.message = "chau";
-		// System.out.println(new Gson().toJson(err));
-
-		final Injector inj = Guice.createInjector(new DependencyInjection());
 
 		/* Create SERVER */
 		var server = inj.getInstance(Routes.class).initRoutes().start(8080);

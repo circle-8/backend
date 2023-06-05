@@ -1,19 +1,24 @@
 package org.circle8.controller;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.SameSite;
-import org.circle8.request.user.TokenRequest;
-import org.circle8.response.ApiResponse;
-import org.circle8.response.ListResponse;
-import org.circle8.response.TipoUsuarioResponse;
-import org.circle8.response.TokenResponse;
-import org.circle8.response.UserResponse;
+import org.circle8.controller.request.user.TokenRequest;
+import org.circle8.controller.request.user.UserRequest;
+import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ListResponse;
+import org.circle8.controller.response.TipoUsuarioResponse;
+import org.circle8.controller.response.TokenResponse;
+import org.circle8.controller.response.UserResponse;
+import org.circle8.dto.UserDto;
 import org.circle8.security.JwtService;
+import org.circle8.service.UserService;
 
 import java.util.List;
 
+@Singleton
 public class UserController {
 	private static final UserResponse mock = UserResponse.builder()
 		.id(1)
@@ -22,10 +27,12 @@ public class UserController {
 		.build();
 
 	private final JwtService jwtService;
+	private final UserService service;
 
 	@Inject
-	public UserController(JwtService jwtService) {
+	public UserController(JwtService jwtService, UserService userService) {
 		this.jwtService = jwtService;
+		this.service = userService;
 	}
 
 	/**
@@ -70,7 +77,14 @@ public class UserController {
 	 * POST /user
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock;
+		var req = ctx.bodyAsClass(UserRequest.class);
+
+		// TODO check req.valid
+
+		var dto = UserDto.from(req);
+		dto = service.save(dto, req.password);
+
+		return dto.toResponse();
 	}
 
 	/**

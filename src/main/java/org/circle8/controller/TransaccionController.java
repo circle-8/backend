@@ -1,15 +1,17 @@
 package org.circle8.controller;
 
+import com.google.inject.Singleton;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-import org.circle8.response.ApiResponse;
-import org.circle8.response.ListResponse;
-import org.circle8.response.ResiduoResponse;
-import org.circle8.response.TransaccionResponse;
+import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ListResponse;
+import org.circle8.controller.response.ResiduoResponse;
+import org.circle8.controller.response.TransaccionResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Singleton
 public class TransaccionController {
 	private static final String ID_TRANSPORTE_PARAM = "id_transporte";
 	private static final String ID_RESIDUO_PARAM = "id_residuo";

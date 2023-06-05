@@ -1,15 +1,17 @@
 package org.circle8.controller;
 
+import com.google.inject.Singleton;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-import org.circle8.response.ApiResponse;
-import org.circle8.response.DiaResponse;
-import org.circle8.response.ListResponse;
-import org.circle8.response.PuntoVerdeResponse;
-import org.circle8.response.TipoResiduoResponse;
+import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.DiaResponse;
+import org.circle8.controller.response.ListResponse;
+import org.circle8.controller.response.PuntoVerdeResponse;
+import org.circle8.controller.response.TipoResiduoResponse;
 
 import java.util.List;
 
+@Singleton
 public class PuntoVerdeController {
 	private final PuntoVerdeResponse mock = PuntoVerdeResponse.builder()
 		.id(1)
