@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class SuscripcionResponse implements ApiResponse {
-	public int id;
+	public long id;
 	public LocalDateTime ultimaRenovacion;
 	public LocalDateTime proximaRenovacion;
 	public PlanResponse plan;

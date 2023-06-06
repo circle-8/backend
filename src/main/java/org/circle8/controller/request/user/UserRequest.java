@@ -1,8 +1,12 @@
 package org.circle8.controller.request.user;
 
 import com.google.common.base.Strings;
+import lombok.ToString;
 import org.circle8.controller.response.TipoUsuarioResponse;
 
+import java.util.Arrays;
+
+@ToString
 public class UserRequest implements IRequest {
 	/* Obligatorios */
 	public String username;
@@ -25,7 +29,7 @@ public class UserRequest implements IRequest {
 		if ( Strings.isNullOrEmpty(nombre) )
 			validation.add("falta 'nombre'");
 		if ( tipoUsuario == null )
-			validation.add("falta 'tipoUsuario'");
+			validation.add(String.format("'tipoUsuario' debe ser uno de %s", Arrays.toString(TipoUsuarioResponse.values())));
 
 		return validation;
 	}

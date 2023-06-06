@@ -8,18 +8,26 @@ import io.javalin.http.SameSite;
 import org.circle8.controller.request.user.TokenRequest;
 import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.TipoUsuarioResponse;
 import org.circle8.controller.response.TokenResponse;
 import org.circle8.controller.response.UserResponse;
 import org.circle8.dto.UserDto;
+import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
 import org.circle8.security.JwtService;
 import org.circle8.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 @Singleton
 public class UserController {
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
 	private static final UserResponse mock = UserResponse.builder()
 		.id(1)
 		.username("username")
@@ -79,10 +87,19 @@ public class UserController {
 	public ApiResponse post(Context ctx) {
 		var req = ctx.bodyAsClass(UserRequest.class);
 
-		// TODO check req.valid
+		var valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
 		var dto = UserDto.from(req);
-		dto = service.save(dto, req.password);
+		try {
+			dto = service.save(dto, req.password);
+		} catch ( ServiceError e ) {
+			logger.error("[Request:{}] error saving new user", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
 
 		return dto.toResponse();
 	}

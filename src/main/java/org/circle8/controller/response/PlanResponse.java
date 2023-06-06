@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class PlanResponse implements ApiResponse {
-	public int id;
+	public long id;
 	public String nombre;
 	public BigDecimal precio;
 	public int mesesRenovacion;

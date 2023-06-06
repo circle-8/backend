@@ -1,11 +1,13 @@
 package org.circle8.route;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import io.javalin.http.HttpStatus;
 import io.javalin.json.JsonMapper;
 import org.circle8.controller.PlanController;
 import org.circle8.controller.PuntoReciclajeController;
@@ -180,10 +182,20 @@ public class Routes {
 
 	private Handler result(Function<Context, ApiResponse> h) {
 		return ctx -> {
-			final ApiResponse r = h.apply(ctx);
-			ctx.contentType(ContentType.APPLICATION_JSON);
-			ctx.result(gson.toJson(r));
-			ctx.status(r.status());
+			try {
+				ctx.contentType(ContentType.APPLICATION_JSON);
+
+				final ApiResponse r = h.apply(ctx);
+
+				ctx.result(gson.toJson(r));
+				ctx.status(r.status());
+			} catch ( JsonSyntaxException e ) {
+				ctx.result("Se debe enviar un JSON valido");
+				ctx.status(HttpStatus.BAD_REQUEST);
+			} catch ( Exception e ) {
+				ctx.result("Ha ocurrido un error inesperado");
+				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		};
 	}
 

@@ -10,6 +10,7 @@ public class UserDto {
 	public String username;
 	public String nombre;
 	public TipoUsuario tipo;
+	public SuscripcionDto suscripcion;
 
 	public static UserDto from(UserRequest request) {
 		// TODO: probar ModelMapper
@@ -30,7 +31,7 @@ public class UserDto {
 	}
 
 	public UserResponse toResponse() {
-		return new UserResponse(id, username, nombre, TipoUsuarioResponse.from(tipo), null);
+		return new UserResponse(id, username, nombre, TipoUsuarioResponse.from(tipo), suscripcion.toResponse());
 	}
 
 	public User toEntity() {
