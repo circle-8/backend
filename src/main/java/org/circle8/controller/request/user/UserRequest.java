@@ -12,6 +12,7 @@ public class UserRequest implements IRequest {
 	public String username;
 	public String password;
 	public String nombre;
+	public String email;
 	public TipoUsuarioResponse tipoUsuario;
 
 	/* Opcionales */
@@ -28,8 +29,14 @@ public class UserRequest implements IRequest {
 			validation.add("falta 'password'");
 		if ( Strings.isNullOrEmpty(nombre) )
 			validation.add("falta 'nombre'");
+		if ( Strings.isNullOrEmpty(email) )
+			validation.add("falta 'email'");
 		if ( tipoUsuario == null )
 			validation.add(String.format("'tipoUsuario' debe ser uno de %s", Arrays.toString(TipoUsuarioResponse.values())));
+
+		// TODO: si tiene razonSocial, tipo de usuario debe ser organizacion, y viceversa
+		// TODO: si tiene zona, tipo de usuario debe ser reciclador urbano, y viceversa
+		// TODO: si tiene organizacionId, tipo de usuario debe ser reciclador urbano, y viceversa
 
 		return validation;
 	}

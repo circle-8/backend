@@ -13,5 +13,6 @@ public class User {
 	public String username;
 	public String hashedPassword;
 	public String nombre;
+	public String email;
 	public TipoUsuario tipo;
 }

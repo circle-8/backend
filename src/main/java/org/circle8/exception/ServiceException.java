@@ -6,6 +6,11 @@ public class ServiceException extends Exception {
 	@Getter
 	private final String devMessage;
 
+	public ServiceException(String message) {
+		super(message);
+		this.devMessage = "";
+	}
+
 	public ServiceException(String message, String devMessage) {
 		super(message);
 		this.devMessage = devMessage;

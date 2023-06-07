@@ -15,6 +15,7 @@ import org.circle8.controller.response.TipoUsuarioResponse;
 import org.circle8.controller.response.TokenResponse;
 import org.circle8.controller.response.UserResponse;
 import org.circle8.dto.UserDto;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.security.JwtService;
@@ -69,16 +70,32 @@ public class UserController {
 	 * Se devuelve dentro de una Cookie como en el body de la response
 	 */
 	public ApiResponse token(Context ctx) {
-		final TokenRequest req = ctx.bodyAsClass(TokenRequest.class);
-		var jwt = jwtService.token(String.valueOf(mock.id), req.username);
+		final var req = ctx.bodyAsClass(TokenRequest.class);
 
-		var cookie = new Cookie("access_token", jwt);
-		cookie.setHttpOnly(true);
-		cookie.setSameSite(SameSite.STRICT);
-		cookie.setSecure(true);
-		ctx.cookie(cookie);
+		var valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
-		return new TokenResponse(jwt, mock);
+		try {
+			var u = service.login(req.username, req.password);
+			var jwt = jwtService.token(String.valueOf(u.id), u.username);
+
+			var cookie = new Cookie("access_token", jwt);
+			cookie.setHttpOnly(true);
+			cookie.setSameSite(SameSite.STRICT);
+			// cookie.setSecure(true);
+			ctx.cookie(cookie);
+
+			return new TokenResponse(jwt, u.toResponse());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceError e ) {
+			logger.error("[Request:{}] error login in", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
+
 	}
 
 	/**

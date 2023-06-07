@@ -11,6 +11,7 @@ public class UserResponse implements ApiResponse {
 	public long id;
 	public String username;
 	public String nombre;
+	public String email;
 	public TipoUsuarioResponse tipoUsuario;
 	public SuscripcionResponse suscripcion;
 }

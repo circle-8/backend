@@ -6,6 +6,7 @@ import org.circle8.dao.UserDao;
 import org.circle8.dto.SuscripcionDto;
 import org.circle8.dto.UserDto;
 import org.circle8.exception.DuplicatedEntry;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
@@ -23,6 +24,18 @@ public class UserService {
 		this.suscripcion = suscripcion;
 	}
 
+	public UserDto login(String username, String password) throws ServiceException {
+		try {
+			var u = this.dao.get(username).orElseThrow(() -> new NotFoundException("No se ha encontrado el usuario"));
+			if ( !crypt.check(password, u.hashedPassword) )
+				throw new ServiceException("La contraseña es incorrecta");
+
+			return UserDto.from(u);
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al obtener el usuario", e);
+		}
+	}
+
 	/**
 	 * Guarda el nuevo usuario.
 	 * @param dto user dto que luego sirve como return
@@ -37,12 +50,14 @@ public class UserService {
 			user = dao.save(t, user);
 			dto.id = user.id;
 
+			// TODO: crear los distintos tipos de usuarios
+
 			var s = suscripcion.subscribe(t, user);
 			dto.suscripcion = SuscripcionDto.from(s);
 
 			t.commit();
 		} catch ( DuplicatedEntry e ) {
-			throw new ServiceException(String.format("El usuario \"%s\" ya existe", dto.username), e);
+			throw new ServiceException("El usuario y/o email ya se encuentran registrados", e);
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar el usuario", e);
 		}

@@ -2,6 +2,7 @@ package org.circle8.dao;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.circle8.dto.TipoUsuario;
 import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
@@ -9,6 +10,7 @@ import org.circle8.exception.PersistenceException;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
 
 @Singleton
 public class UserDao extends Dao {
@@ -43,10 +45,39 @@ public class UserDao extends Dao {
 		} catch ( SQLException e ) {
 			if ( e.getMessage().contains("Usuario_Username_key") )
 				throw new DuplicatedEntry("username already exists", e);
+			else if ( e.getMessage().contains("Usuario_Email_key") )
+				throw new DuplicatedEntry("email already exists", e);
 			else
 				throw new PersistenceException("error inserting user", e);
 		}
 
 		return user;
+	}
+
+	public Optional<User> get(String username) throws PersistenceException {
+		var selectSQL = """
+   SELECT "ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email"
+     FROM "Usuario"
+    WHERE "Username" = ?""";
+
+		try ( var t = open(true); var select = t.prepareStatement(selectSQL) ) {
+			select.setString(1, username);
+
+			try ( var rs = select.executeQuery() ) {
+				if ( !rs.next() )
+					return Optional.empty();
+
+				return Optional.of(User.builder()
+					.id(rs.getLong("Id"))
+					.username(rs.getString("Username"))
+					.hashedPassword(rs.getString("Password"))
+					.nombre(rs.getString("NombreApellido"))
+					.email(rs.getString("Email"))
+					.tipo(TipoUsuario.valueOf(rs.getString("TipoUsuario")))
+					.build());
+			}
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error getting user", e);
+		}
 	}
 }
