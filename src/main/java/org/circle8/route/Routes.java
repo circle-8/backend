@@ -1,5 +1,6 @@
 package org.circle8.route;
 
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
@@ -132,9 +133,9 @@ public class Routes {
 			// USER
 			.get("/users", result(userController::list))
 			.get("/user/{id}", result(userController::get))
-			.post("/token", result(userController::token))
-			.post("/user", result(userController::post))
-			.put("/user/password", result(userController::restorePassword))
+			.post("/token", noAuthRequired(userController::token))
+			.post("/user", noAuthRequired(userController::post))
+			.put("/user/password", noAuthRequired(userController::restorePassword))
 			// PUNTOS RESIDUO
 			.get("/puntos_residuo", result(puntoResiduoController::list))
 			// PLAN
@@ -180,9 +181,35 @@ public class Routes {
 		};
 	}
 
+	private Handler noAuthRequired(Function<Context, ApiResponse> h) {
+		return ctx -> {
+			try {
+				ctx.contentType(ContentType.APPLICATION_JSON);
+
+				final ApiResponse r = h.apply(ctx);
+
+				ctx.result(gson.toJson(r));
+				ctx.status(r.status());
+			} catch ( JsonSyntaxException e ) {
+				ctx.result("Se debe enviar un JSON valido");
+				ctx.status(HttpStatus.BAD_REQUEST);
+			} catch ( Exception e ) {
+				ctx.result("Ha ocurrido un error inesperado");
+				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		};
+	}
+
 	private Handler result(Function<Context, ApiResponse> h) {
 		return ctx -> {
 			try {
+				// TODO: resta validar el token
+				var token = ctx.cookie("access_token");
+				if ( Strings.isNullOrEmpty(token) ) {
+					ctx.status(HttpStatus.UNAUTHORIZED);
+					return;
+				}
+
 				ctx.contentType(ContentType.APPLICATION_JSON);
 
 				final ApiResponse r = h.apply(ctx);
