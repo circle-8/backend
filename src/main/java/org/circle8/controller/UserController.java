@@ -78,7 +78,7 @@ public class UserController {
 
 		try {
 			var u = service.login(req.username, req.password);
-			var jwt = jwtService.token(String.valueOf(u.id), u.username);
+			var jwt = jwtService.token(u);
 
 			var cookie = new Cookie("access_token", jwt);
 			cookie.setHttpOnly(true);

@@ -23,6 +23,7 @@ import org.circle8.controller.TransporteController;
 import org.circle8.controller.UserController;
 import org.circle8.controller.ZonaController;
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.security.JwtService;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
@@ -42,11 +43,14 @@ public class Routes {
 	private final TipoResiduoController tipoResiduoController;
 	private final PuntoVerdeController puntoVerdeController;
 
+	private final JwtService jwtService;
+
 	private final Gson gson;
 
 	@Inject
 	public Routes(
 		Gson gson,
+		JwtService jwtService,
 		ResiduoController residuoController,
 		PuntoReciclajeController puntoReciclajeController,
 		TransaccionController transaccionController,
@@ -61,6 +65,7 @@ public class Routes {
 		PuntoVerdeController puntoVerdeController
 	) {
 		this.gson = gson;
+		this.jwtService = jwtService;
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
 		this.transaccionController = transaccionController;
@@ -203,10 +208,14 @@ public class Routes {
 	private Handler result(Function<Context, ApiResponse> h) {
 		return ctx -> {
 			try {
-				// TODO: resta validar el token
 				var token = ctx.cookie("access_token");
 				if ( Strings.isNullOrEmpty(token) ) {
 					ctx.status(HttpStatus.UNAUTHORIZED);
+					return;
+				}
+				if ( !jwtService.isValid(token) ) {
+					ctx.status(HttpStatus.UNAUTHORIZED);
+					ctx.result("Token expirado");
 					return;
 				}
 
@@ -216,6 +225,9 @@ public class Routes {
 
 				ctx.result(gson.toJson(r));
 				ctx.status(r.status());
+			} catch ( SecurityException e ) {
+				ctx.result(e.getMessage());
+				ctx.status(HttpStatus.UNAUTHORIZED);
 			} catch ( JsonSyntaxException e ) {
 				ctx.result("Se debe enviar un JSON valido");
 				ctx.status(HttpStatus.BAD_REQUEST);
