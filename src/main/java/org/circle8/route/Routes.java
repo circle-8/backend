@@ -139,6 +139,7 @@ public class Routes {
 			.get("/users", result(userController::list))
 			.get("/user/{id}", result(userController::get))
 			.post("/token", noAuthRequired(userController::token))
+			.post("/refresh_token", noAuthRequired(userController::refreshToken))
 			.post("/user", noAuthRequired(userController::post))
 			.put("/user/password", noAuthRequired(userController::restorePassword))
 			// PUNTOS RESIDUO

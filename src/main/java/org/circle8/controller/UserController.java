@@ -1,10 +1,13 @@
 package org.circle8.controller;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.SameSite;
+import lombok.val;
+import org.circle8.controller.request.user.RefreshTokenRequest;
 import org.circle8.controller.request.user.TokenRequest;
 import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.ApiResponse;
@@ -48,7 +51,7 @@ public class UserController {
 	 * GET /users
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
+		val l = List.of(
 			mock,
 			mock.toBuilder().id(2).build()
 		);
@@ -70,23 +73,20 @@ public class UserController {
 	 * Se devuelve dentro de una Cookie como en el body de la response
 	 */
 	public ApiResponse token(Context ctx) {
-		final var req = ctx.bodyAsClass(TokenRequest.class);
+		val req = ctx.bodyAsClass(TokenRequest.class);
 
-		var valid = req.valid();
+		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
 		try {
-			var u = service.login(req.username, req.password);
-			var jwt = jwtService.token(u);
+			val u = service.login(req.username, req.password);
 
-			var cookie = new Cookie("access_token", jwt);
-			cookie.setHttpOnly(true);
-			cookie.setSameSite(SameSite.STRICT);
-			// cookie.setSecure(true);
-			ctx.cookie(cookie);
+			val jwt = jwtService.token(u);
+			val refreshJwt = jwtService.refreshToken(jwt);
+			setTokenCookies(ctx, jwt.token(), refreshJwt.token());
 
-			return new TokenResponse(jwt, u.toResponse());
+			return new TokenResponse(jwt.token(), refreshJwt.token(), u.toResponse());
 		} catch ( NotFoundException e ) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceError e ) {
@@ -95,6 +95,48 @@ public class UserController {
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}
+	}
+
+	private void setTokenCookies(Context ctx, String jwt, String refresh) {
+		val cookie = new Cookie("access_token", jwt);
+		cookie.setHttpOnly(true);
+		cookie.setSameSite(SameSite.STRICT);
+		// cookie.setSecure(true);
+		ctx.cookie(cookie);
+
+		val refreshCookie = new Cookie("refresh_token", refresh);
+		cookie.setHttpOnly(true);
+		cookie.setSameSite(SameSite.STRICT);
+		// cookie.setSecure(true);
+		ctx.cookie(refreshCookie);
+	}
+
+	/**
+	 * POST /refresh_token
+	 * Utilizando el token viejo y el token de refresh, obtiene un nuevo token
+	 */
+	public ApiResponse refreshToken(Context ctx) {
+		val req = ctx.bodyAsClass(RefreshTokenRequest.class);
+
+		if ( Strings.isNullOrEmpty(req.refreshToken) )
+			req.refreshToken = ctx.cookie("refresh_token");
+		if ( Strings.isNullOrEmpty(req.accessToken) )
+			req.accessToken = ctx.cookie("access_token");
+
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+
+		try {
+			val jwt = jwtService.token(req.refreshToken, req.accessToken);
+			val refresh = jwtService.refreshToken(jwt);
+
+			setTokenCookies(ctx, jwt.token(), refresh.token());
+
+			return new TokenResponse(jwt.token(), refresh.token(), null);
+		} catch ( SecurityException e ) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), "");
+		}
 
 	}
 
@@ -102,9 +144,9 @@ public class UserController {
 	 * POST /user
 	 */
 	public ApiResponse post(Context ctx) {
-		var req = ctx.bodyAsClass(UserRequest.class);
+		val req = ctx.bodyAsClass(UserRequest.class);
 
-		var valid = req.valid();
+		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
