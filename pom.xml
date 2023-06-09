@@ -88,7 +88,6 @@
             <version>42.6.0</version>
         </dependency>
 
-<<<<<<< HEAD
         <!-- HikariCP: connection pool for JDBC -->
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -96,8 +95,6 @@
             <version>5.0.1</version>
         </dependency>
 
-=======
->>>>>>> develop
         <!-- Lombok is used for creating code using annotations -->
         <dependency>
             <groupId>org.projectlombok</groupId>
