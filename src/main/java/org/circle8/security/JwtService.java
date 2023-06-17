@@ -1,5 +1,6 @@
 package org.circle8.security;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -7,6 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.val;
+import org.apache.commons.configuration2.Configuration;
 import org.circle8.dto.UserDto;
 
 import java.security.Key;
@@ -18,9 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Singleton
 public class JwtService {
-	// TODO: pasar a configuracion
-	private static final long EXPIRATION_MINUTES = 15L;
-	private static final long REFRESH_EXPIRATION_MINUTES = 1440L; // Un dia
+	private final long expirationMinutes;
+	private final long refreshExpirationMinutes;
 	private static final Key KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
 	/**
@@ -30,13 +31,19 @@ public class JwtService {
 	 */
 	private final Map<String, String> refreshes = new ConcurrentHashMap<>();
 
-	public record Jwt(String token, String userId, String username) {}
+	public record Jwt(String token, String userId, String username){}
+
+	@Inject
+	public JwtService(Configuration c) {
+		expirationMinutes = c.getLong("jwt.expiration.minutes");
+		refreshExpirationMinutes = c.getLong("jwt.refresh.expiration.minutes");
+	}
 
 	/**
 	 * Obtiene un nuevo JWT a partir de un usuario.
 	 */
 	public Jwt token(UserDto user) {
-		return createJwt(String.valueOf(user.id), user.username, EXPIRATION_MINUTES);
+		return createJwt(String.valueOf(user.id), user.username, expirationMinutes);
 	}
 
 	/**
@@ -61,7 +68,7 @@ public class JwtService {
 
 			val userId = claims.getId();
 			val username = claims.getSubject();
-			return createJwt(userId, username, EXPIRATION_MINUTES);
+			return createJwt(userId, username, expirationMinutes);
 		} catch ( ExpiredJwtException e ) {
 			throw new SecurityException("Refresh Token expirado");
 		} catch ( JwtException e ) {
@@ -73,7 +80,7 @@ public class JwtService {
 	 * Crea un token de refresh a partir de un token JWT
 	 */
 	public Jwt refreshToken(Jwt jwt) {
-		val refresh = createJwt(jwt.userId, jwt.username, REFRESH_EXPIRATION_MINUTES);
+		val refresh = createJwt(jwt.userId, jwt.username, refreshExpirationMinutes);
 		this.refreshes.put(refresh.token, jwt.token);
 
 		return refresh;

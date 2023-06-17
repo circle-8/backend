@@ -9,6 +9,7 @@ import com.google.inject.Singleton;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.val;
+import org.apache.commons.configuration2.Configuration;
 import org.circle8.route.Routes;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -27,6 +28,7 @@ public class ApiTestExtension implements BeforeAllCallback {
 		protected void configure() {
 			super.configure();
 			bind(DataSource.class).toInstance(getDatasource());
+			bind(Configuration.class).toInstance(DependencyInjection.getConfigurations());
 			bind(Gson.class).toInstance(DependencyInjection.getGson());
 		}
 

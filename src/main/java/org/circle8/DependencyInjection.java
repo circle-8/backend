@@ -7,6 +7,13 @@ import com.google.gson.JsonSerializer;
 import com.google.inject.AbstractModule;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.FileBasedConfiguration;
+import org.apache.commons.configuration2.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Configurations;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
@@ -19,6 +26,7 @@ class DependencyInjection extends AbstractModule {
 		super.configure();
 		bind(Gson.class).toInstance(getGson());
 		bind(DataSource.class).toInstance(getDatasource());
+		bind(Configuration.class).toInstance(getConfigurations());
 	}
 
 	@NotNull
@@ -33,6 +41,20 @@ class DependencyInjection extends AbstractModule {
 				(JsonSerializer<LocalDate>) (o, type, jsonSerializationContext) -> new JsonPrimitive(o.toString())
 			)
 			.create();
+	}
+
+	@NotNull
+	public static Configuration getConfigurations() {
+		try {
+			return new FileBasedConfigurationBuilder<FileBasedConfiguration>(
+				PropertiesConfiguration.class
+			).configure(new Parameters()
+				.properties()
+				.setFileName("application.properties")
+			).getConfiguration();
+		} catch ( ConfigurationException e ) {
+			throw new RuntimeException("Cannot load configurations", e);
+		}
 	}
 
 	@NotNull

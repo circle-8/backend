@@ -7,6 +7,7 @@ import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.SameSite;
 import lombok.val;
+import org.apache.commons.configuration2.Configuration;
 import org.circle8.controller.request.user.RefreshTokenRequest;
 import org.circle8.controller.request.user.TokenRequest;
 import org.circle8.controller.request.user.UserRequest;
@@ -41,10 +42,13 @@ public class UserController {
 	private final JwtService jwtService;
 	private final UserService service;
 
+	private final boolean secureTokenCookie;
+
 	@Inject
-	public UserController(JwtService jwtService, UserService userService) {
+	public UserController(JwtService jwtService, UserService userService, Configuration cfg) {
 		this.jwtService = jwtService;
 		this.service = userService;
+		this.secureTokenCookie = cfg.getBoolean("jwt.secure.cookie");
 	}
 
 	/**
@@ -101,13 +105,13 @@ public class UserController {
 		val cookie = new Cookie("access_token", jwt);
 		cookie.setHttpOnly(true);
 		cookie.setSameSite(SameSite.STRICT);
-		// cookie.setSecure(true); TODO:config
+		cookie.setSecure(secureTokenCookie);
 		ctx.cookie(cookie);
 
 		val refreshCookie = new Cookie("refresh_token", refresh);
 		cookie.setHttpOnly(true);
 		cookie.setSameSite(SameSite.STRICT);
-		// cookie.setSecure(true);
+		cookie.setSecure(secureTokenCookie);
 		ctx.cookie(refreshCookie);
 	}
 
