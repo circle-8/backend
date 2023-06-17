@@ -23,14 +23,15 @@ public class UserDao extends Dao {
 	public User save(Transaction t, User user) throws PersistenceException {
 		var insertSQL = """
 			INSERT INTO "Usuario"(
-			  "NombreApellido", "Username", "Password", "TipoUsuario")
-			  VALUES (?, ?, ?, ?)""";
+			  "NombreApellido", "Username", "Password", "TipoUsuario", "Email")
+			  VALUES (?, ?, ?, ?, ?)""";
 
 		try ( var insert = t.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setString(1, user.nombre);
 			insert.setString(2, user.username);
 			insert.setString(3, user.hashedPassword);
 			insert.setString(4, user.tipo.name());
+			insert.setString(5, user.email);
 
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )

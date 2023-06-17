@@ -26,9 +26,9 @@ public class UserService {
 
 	public UserDto login(String username, String password) throws ServiceException {
 		try {
-			var u = this.dao.get(username).orElseThrow(() -> new NotFoundException("No se ha encontrado el usuario"));
+			var u = this.dao.get(username).orElseThrow(() -> new NotFoundException("El usuario y/o contraseña son incorrectos"));
 			if ( !crypt.check(password, u.hashedPassword) )
-				throw new ServiceException("La contraseña es incorrecta");
+				throw new NotFoundException("El usuario y/o contraseña son incorrectos");
 
 			return UserDto.from(u);
 		} catch ( PersistenceException e ) {

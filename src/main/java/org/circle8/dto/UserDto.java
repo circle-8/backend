@@ -1,5 +1,6 @@
 package org.circle8.dto;
 
+import lombok.val;
 import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.TipoUsuarioResponse;
 import org.circle8.controller.response.UserResponse;
@@ -14,8 +15,7 @@ public class UserDto {
 	public SuscripcionDto suscripcion;
 
 	public static UserDto from(UserRequest request) {
-		// TODO: probar ModelMapper
-		var u = new UserDto();
+		val u = new UserDto();
 		u.username = request.username;
 		u.nombre = request.nombre;
 		u.email = request.email;

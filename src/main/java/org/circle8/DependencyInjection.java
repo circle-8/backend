@@ -22,7 +22,7 @@ class DependencyInjection extends AbstractModule {
 	}
 
 	@NotNull
-	private static Gson getGson() {
+	public static Gson getGson() {
 		return new GsonBuilder()
 			.registerTypeAdapter(
 				LocalDateTime.class,

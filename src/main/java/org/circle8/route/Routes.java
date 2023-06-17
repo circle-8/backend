@@ -10,6 +10,7 @@ import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import io.javalin.http.HttpStatus;
 import io.javalin.json.JsonMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.circle8.controller.PlanController;
 import org.circle8.controller.PuntoReciclajeController;
 import org.circle8.controller.PuntoResiduoController;
@@ -23,13 +24,18 @@ import org.circle8.controller.TransporteController;
 import org.circle8.controller.UserController;
 import org.circle8.controller.ZonaController;
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.security.JwtService;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
 import java.util.function.Function;
 
+@Slf4j
 public class Routes {
+	public static final String ERROR_INESPERADO = "Ha ocurrido un error inesperado";
+
 	private final ResiduoController residuoController;
 	private final PuntoReciclajeController puntoReciclajeController;
 	private final TransaccionController transaccionController;
@@ -167,6 +173,17 @@ public class Routes {
 			.put("/punto_verde/{id}", result(puntoVerdeController::put))
 			.delete("/punto_verde/{id}", result(puntoVerdeController::delete))
 			.post("/punto_verde", result(puntoVerdeController::post))
+			// Exceptions
+			.error(HttpStatus.NOT_FOUND, ctx -> {
+				if ( Strings.isNullOrEmpty(ctx.result()) )
+					ctx.result("Recurso no existente");
+			})
+			.exception(Exception.class, (e, ctx) -> {
+				log.error("[path:{}] Unexpected exception. Exception handler", ctx.path(), e);
+				var err = new ErrorResponse(ErrorCode.INTERNAL_ERROR, ERROR_INESPERADO, e.getMessage());
+				ctx.result(gson.toJson(err));
+				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			})
 			;
 	}
 
@@ -196,11 +213,14 @@ public class Routes {
 
 				ctx.result(gson.toJson(r));
 				ctx.status(r.status());
-			} catch ( JsonSyntaxException e ) {
-				ctx.result("Se debe enviar un JSON valido");
+			} catch (JsonSyntaxException e) {
+				var err = new ErrorResponse(ErrorCode.BAD_REQUEST, "Se debe enviar un JSON valido", e.getMessage());
+				ctx.result(gson.toJson(err));
 				ctx.status(HttpStatus.BAD_REQUEST);
-			} catch ( Exception e ) {
-				ctx.result("Ha ocurrido un error inesperado");
+			} catch (Exception e) {
+				log.error("[path:{}] Unexpected exception. No Auth exception handler", ctx.path(), e);
+				var err = new ErrorResponse(ErrorCode.INTERNAL_ERROR, ERROR_INESPERADO, e.getMessage());
+				ctx.result(gson.toJson(err));
 				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		};
@@ -210,11 +230,11 @@ public class Routes {
 		return ctx -> {
 			try {
 				var token = ctx.cookie("access_token");
-				if ( Strings.isNullOrEmpty(token) ) {
+				if (Strings.isNullOrEmpty(token)) {
 					ctx.status(HttpStatus.UNAUTHORIZED);
 					return;
 				}
-				if ( !jwtService.isValid(token) ) {
+				if (!jwtService.isValid(token)) {
 					ctx.status(HttpStatus.UNAUTHORIZED);
 					ctx.result("Token expirado");
 					return;
@@ -226,14 +246,18 @@ public class Routes {
 
 				ctx.result(gson.toJson(r));
 				ctx.status(r.status());
-			} catch ( SecurityException e ) {
-				ctx.result(e.getMessage());
+			} catch (SecurityException e) {
+				var err = new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getMessage());
+				ctx.result(gson.toJson(err));
 				ctx.status(HttpStatus.UNAUTHORIZED);
-			} catch ( JsonSyntaxException e ) {
-				ctx.result("Se debe enviar un JSON valido");
+			} catch (JsonSyntaxException e) {
+				var err = new ErrorResponse(ErrorCode.BAD_REQUEST, "Se debe enviar un JSON valido", e.getMessage());
+				ctx.result(gson.toJson(err));
 				ctx.status(HttpStatus.BAD_REQUEST);
-			} catch ( Exception e ) {
-				ctx.result("Ha ocurrido un error inesperado");
+			} catch (Exception e) {
+				log.error("[path:{}] Unexpected exception. Result exception handler", ctx.path(), e);
+				var err = new ErrorResponse(ErrorCode.INTERNAL_ERROR, ERROR_INESPERADO, e.getMessage());
+				ctx.result(gson.toJson(err));
 				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		};

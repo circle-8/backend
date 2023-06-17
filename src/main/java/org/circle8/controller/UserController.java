@@ -101,7 +101,7 @@ public class UserController {
 		val cookie = new Cookie("access_token", jwt);
 		cookie.setHttpOnly(true);
 		cookie.setSameSite(SameSite.STRICT);
-		// cookie.setSecure(true);
+		// cookie.setSecure(true); TODO:config
 		ctx.cookie(cookie);
 
 		val refreshCookie = new Cookie("refresh_token", refresh);

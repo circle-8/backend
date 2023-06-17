@@ -1,6 +1,7 @@
 package org.circle8.controller.request.user;
 
 import com.google.common.base.Strings;
+import lombok.Builder;
 import lombok.ToString;
 import org.circle8.controller.response.TipoUsuarioResponse;
 
