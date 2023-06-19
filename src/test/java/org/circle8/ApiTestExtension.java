@@ -23,7 +23,7 @@ public class ApiTestExtension implements BeforeAllCallback {
 	private static final AtomicBoolean FIRST_TIME = new AtomicBoolean(true);
 
 	@Singleton
-	static class Dep extends AbstractModule  {
+	public static class Dep extends AbstractModule  {
 		@Override
 		protected void configure() {
 			super.configure();
@@ -32,7 +32,7 @@ public class ApiTestExtension implements BeforeAllCallback {
 			bind(Gson.class).toInstance(DependencyInjection.getGson());
 		}
 
-		DataSource getDatasource() {
+		public static DataSource getDatasource() {
 			val cfg = new HikariConfig();
 			cfg.setDataSourceClassName("org.h2.jdbcx.JdbcDataSource");
 			cfg.setConnectionTestQuery("VALUES 1");

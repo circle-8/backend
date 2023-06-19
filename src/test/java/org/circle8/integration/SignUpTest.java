@@ -5,13 +5,17 @@ import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.sql.DataSource;
+
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(ApiTestExtension.class)
 class SignUpTest {
+	private final DataSource ds = ApiTestExtension.Dep.getDatasource();
 
 	@Test
-	void testNewUser() {
+	void testNewUser() throws Exception {
 		var request = """
    {
      "username": "nuevo-usuario",
@@ -35,7 +39,12 @@ class SignUpTest {
 			.body("suscripcion", is(not(empty())))
 			;
 
-		// TODO: ver si efectivamente el usuario esta en DB
+		var checkUserSQL = "SELECT \"Username\" FROM public.\"Usuario\" WHERE \"Username\" = ? AND \"Email\" = ?";
+		try ( var conn = ds.getConnection(); var ps = conn.prepareStatement(checkUserSQL) ) {
+			ps.setString(1, "nuevo-usuario");
+			ps.setString(2, "nuevo@email.com");
+			assertTrue(ps.executeQuery().next());
+		}
 	}
 
 	@Test
