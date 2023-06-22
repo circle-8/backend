@@ -1,15 +1,17 @@
 package org.circle8.controller;
 
+import com.google.inject.Singleton;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-import org.circle8.response.ApiResponse;
-import org.circle8.response.ListResponse;
-import org.circle8.response.PuntoResponse;
-import org.circle8.response.TipoResiduoResponse;
-import org.circle8.response.ZonaResponse;
+import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ListResponse;
+import org.circle8.controller.response.PuntoResponse;
+import org.circle8.controller.response.TipoResiduoResponse;
+import org.circle8.controller.response.ZonaResponse;
 
 import java.util.List;
 
+@Singleton
 public class ZonaController {
 	private  static final String ID_ORGANIZACION_PARAM = "id_organizacion";
 	public static final String ORGANIZACION_URI_BASE = "/organizacion/";

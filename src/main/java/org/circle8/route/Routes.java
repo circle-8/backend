@@ -1,11 +1,16 @@
 package org.circle8.route;
 
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.inject.Inject;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import io.javalin.http.HttpStatus;
+import io.javalin.json.JsonMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.circle8.controller.PlanController;
 import org.circle8.controller.PuntoReciclajeController;
 import org.circle8.controller.PuntoResiduoController;
@@ -18,11 +23,19 @@ import org.circle8.controller.TransaccionController;
 import org.circle8.controller.TransporteController;
 import org.circle8.controller.UserController;
 import org.circle8.controller.ZonaController;
-import org.circle8.response.ApiResponse;
+import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
+import org.circle8.security.JwtService;
+import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Type;
 import java.util.function.Function;
 
+@Slf4j
 public class Routes {
+	public static final String ERROR_INESPERADO = "Ha ocurrido un error inesperado";
+
 	private final ResiduoController residuoController;
 	private final PuntoReciclajeController puntoReciclajeController;
 	private final TransaccionController transaccionController;
@@ -36,11 +49,14 @@ public class Routes {
 	private final TipoResiduoController tipoResiduoController;
 	private final PuntoVerdeController puntoVerdeController;
 
+	private final JwtService jwtService;
+
 	private final Gson gson;
 
 	@Inject
 	public Routes(
 		Gson gson,
+		JwtService jwtService,
 		ResiduoController residuoController,
 		PuntoReciclajeController puntoReciclajeController,
 		TransaccionController transaccionController,
@@ -55,6 +71,7 @@ public class Routes {
 		PuntoVerdeController puntoVerdeController
 	) {
 		this.gson = gson;
+		this.jwtService = jwtService;
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
 		this.transaccionController = transaccionController;
@@ -70,7 +87,7 @@ public class Routes {
 	}
 
 	public Javalin initRoutes() {
-		return Javalin.create()
+		return Javalin.create(c -> c.jsonMapper(getJsonMapper()))
 			// RESIDUOS
 			.get("/residuos", result(residuoController::list))
 			.post("/residuo", result(residuoController::post))
@@ -127,9 +144,10 @@ public class Routes {
 			// USER
 			.get("/users", result(userController::list))
 			.get("/user/{id}", result(userController::get))
-			.post("/token", result(userController::token))
-			.post("/user", result(userController::post))
-			.put("/user/password", result(userController::restorePassword))
+			.post("/token", noAuthRequired(userController::token))
+			.post("/refresh_token", noAuthRequired(userController::refreshToken))
+			.post("/user", noAuthRequired(userController::post))
+			.put("/user/password", noAuthRequired(userController::restorePassword))
 			// PUNTOS RESIDUO
 			.get("/puntos_residuo", result(puntoResiduoController::list))
 			// PLAN
@@ -155,15 +173,93 @@ public class Routes {
 			.put("/punto_verde/{id}", result(puntoVerdeController::put))
 			.delete("/punto_verde/{id}", result(puntoVerdeController::delete))
 			.post("/punto_verde", result(puntoVerdeController::post))
+			// Exceptions
+			.error(HttpStatus.NOT_FOUND, ctx -> {
+				if ( Strings.isNullOrEmpty(ctx.result()) )
+					ctx.result("Recurso no existente");
+			})
+			.exception(Exception.class, (e, ctx) -> {
+				log.error("[path:{}] Unexpected exception. Exception handler", ctx.path(), e);
+				var err = new ErrorResponse(ErrorCode.INTERNAL_ERROR, ERROR_INESPERADO, e.getMessage());
+				ctx.result(gson.toJson(err));
+				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			})
 			;
+	}
+
+	@NotNull
+	private JsonMapper getJsonMapper() {
+		return new JsonMapper() {
+			@NotNull
+			@Override
+			public <T> T fromJsonString(@NotNull String json, @NotNull Type targetType) {
+				return gson.fromJson(json, targetType);
+			}
+
+			@NotNull
+			@Override
+			public String toJsonString(@NotNull Object obj, @NotNull Type type) {
+				return gson.toJson(obj, type);
+			}
+		};
+	}
+
+	private Handler noAuthRequired(Function<Context, ApiResponse> h) {
+		return ctx -> {
+			try {
+				ctx.contentType(ContentType.APPLICATION_JSON);
+
+				final ApiResponse r = h.apply(ctx);
+
+				ctx.result(gson.toJson(r));
+				ctx.status(r.status());
+			} catch (JsonSyntaxException e) {
+				var err = new ErrorResponse(ErrorCode.BAD_REQUEST, "Se debe enviar un JSON valido", e.getMessage());
+				ctx.result(gson.toJson(err));
+				ctx.status(HttpStatus.BAD_REQUEST);
+			} catch (Exception e) {
+				log.error("[path:{}] Unexpected exception. No Auth exception handler", ctx.path(), e);
+				var err = new ErrorResponse(ErrorCode.INTERNAL_ERROR, ERROR_INESPERADO, e.getMessage());
+				ctx.result(gson.toJson(err));
+				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		};
 	}
 
 	private Handler result(Function<Context, ApiResponse> h) {
 		return ctx -> {
-			final ApiResponse r = h.apply(ctx);
-			ctx.contentType(ContentType.APPLICATION_JSON);
-			ctx.result(gson.toJson(r));
-			ctx.status(r.status());
+			try {
+				var token = ctx.cookie("access_token");
+				if (Strings.isNullOrEmpty(token)) {
+					ctx.status(HttpStatus.UNAUTHORIZED);
+					return;
+				}
+				if (!jwtService.isValid(token)) {
+					ctx.status(HttpStatus.UNAUTHORIZED);
+					ctx.result("Token expirado");
+					return;
+				}
+
+				ctx.contentType(ContentType.APPLICATION_JSON);
+
+				final ApiResponse r = h.apply(ctx);
+
+				ctx.result(gson.toJson(r));
+				ctx.status(r.status());
+			} catch (SecurityException e) {
+				var err = new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getMessage());
+				ctx.result(gson.toJson(err));
+				ctx.status(HttpStatus.UNAUTHORIZED);
+			} catch (JsonSyntaxException e) {
+				var err = new ErrorResponse(ErrorCode.BAD_REQUEST, "Se debe enviar un JSON valido", e.getMessage());
+				ctx.result(gson.toJson(err));
+				ctx.status(HttpStatus.BAD_REQUEST);
+			} catch (Exception e) {
+				log.error("[path:{}] Unexpected exception. Result exception handler", ctx.path(), e);
+				var err = new ErrorResponse(ErrorCode.INTERNAL_ERROR, ERROR_INESPERADO, e.getMessage());
+				ctx.result(gson.toJson(err));
+				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
 		};
 	}
 

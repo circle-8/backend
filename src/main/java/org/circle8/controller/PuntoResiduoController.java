@@ -1,12 +1,14 @@
 package org.circle8.controller;
 
+import com.google.inject.Singleton;
 import io.javalin.http.Context;
-import org.circle8.response.ApiResponse;
-import org.circle8.response.ListResponse;
-import org.circle8.response.PuntoResiduoResponse;
+import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ListResponse;
+import org.circle8.controller.response.PuntoResiduoResponse;
 
 import java.util.List;
 
+@Singleton
 public class PuntoResiduoController {
 	public ApiResponse list(Context ctx) {
 		final var l = List.of(
