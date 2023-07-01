@@ -175,14 +175,15 @@ public class Routes {
 			.post("/punto_verde", result(puntoVerdeController::post))
 			// Exceptions
 			.error(HttpStatus.NOT_FOUND, ctx -> {
-				if ( Strings.isNullOrEmpty(ctx.result()) )
-					ctx.result("Recurso no existente");
+				if ( Strings.isNullOrEmpty(ctx.result()) || "Not Found".equalsIgnoreCase(ctx.result()) ) {
+					var err = new ErrorResponse(ErrorCode.NOT_FOUND, "Recurso no existente", "");
+					setContext(ctx, err);
+				}
 			})
 			.exception(Exception.class, (e, ctx) -> {
 				log.error("[path:{}] Unexpected exception. Exception handler", ctx.path(), e);
 				var err = new ErrorResponse(ErrorCode.INTERNAL_ERROR, ERROR_INESPERADO, e.getMessage());
-				ctx.result(gson.toJson(err));
-				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+				setContext(ctx, err);
 			})
 			;
 	}
@@ -211,17 +212,14 @@ public class Routes {
 
 				final ApiResponse r = h.apply(ctx);
 
-				ctx.result(gson.toJson(r));
-				ctx.status(r.status());
+				setContext(ctx, r);
 			} catch (JsonSyntaxException e) {
 				var err = new ErrorResponse(ErrorCode.BAD_REQUEST, "Se debe enviar un JSON valido", e.getMessage());
-				ctx.result(gson.toJson(err));
-				ctx.status(HttpStatus.BAD_REQUEST);
+				setContext(ctx, err);
 			} catch (Exception e) {
 				log.error("[path:{}] Unexpected exception. No Auth exception handler", ctx.path(), e);
 				var err = new ErrorResponse(ErrorCode.INTERNAL_ERROR, ERROR_INESPERADO, e.getMessage());
-				ctx.result(gson.toJson(err));
-				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+				setContext(ctx, err);
 			}
 		};
 	}
@@ -231,12 +229,13 @@ public class Routes {
 			try {
 				var token = ctx.cookie("access_token");
 				if (Strings.isNullOrEmpty(token)) {
-					ctx.status(HttpStatus.UNAUTHORIZED);
+					var err = new ErrorResponse(ErrorCode.TOKEN_NOT_FOUND, "Debe enviar un token", "");
+					setContext(ctx, err);
 					return;
 				}
 				if (!jwtService.isValid(token)) {
-					ctx.status(HttpStatus.UNAUTHORIZED);
-					ctx.result("Token expirado");
+					var err = new ErrorResponse(ErrorCode.TOKEN_EXPIRED, "Token expirado", "");
+					setContext(ctx, err);
 					return;
 				}
 
@@ -244,23 +243,24 @@ public class Routes {
 
 				final ApiResponse r = h.apply(ctx);
 
-				ctx.result(gson.toJson(r));
-				ctx.status(r.status());
+				setContext(ctx, r);
 			} catch (SecurityException e) {
-				var err = new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getMessage());
-				ctx.result(gson.toJson(err));
-				ctx.status(HttpStatus.UNAUTHORIZED);
+				var err = new ErrorResponse(ErrorCode.TOKEN_ERROR, e.getMessage(), e.getMessage());
+				setContext(ctx, err);
 			} catch (JsonSyntaxException e) {
 				var err = new ErrorResponse(ErrorCode.BAD_REQUEST, "Se debe enviar un JSON valido", e.getMessage());
-				ctx.result(gson.toJson(err));
-				ctx.status(HttpStatus.BAD_REQUEST);
+				setContext(ctx, err);
 			} catch (Exception e) {
 				log.error("[path:{}] Unexpected exception. Result exception handler", ctx.path(), e);
 				var err = new ErrorResponse(ErrorCode.INTERNAL_ERROR, ERROR_INESPERADO, e.getMessage());
-				ctx.result(gson.toJson(err));
-				ctx.status(HttpStatus.INTERNAL_SERVER_ERROR);
+				setContext(ctx, err);
 			}
 		};
+	}
+
+	private void setContext(Context ctx, ApiResponse res) {
+		ctx.result(gson.toJson(res));
+		ctx.status(res.status());
 	}
 
 }
