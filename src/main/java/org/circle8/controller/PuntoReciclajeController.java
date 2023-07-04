@@ -1,19 +1,33 @@
 package org.circle8.controller;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.DiaResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoReciclajeResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
+import org.circle8.dto.PuntoReciclajeDto;
+import org.circle8.exception.ServiceError;
+import org.circle8.service.PuntoReciclajeService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
 public class PuntoReciclajeController {
 	private static final String ID_RECICLADOR_PARAM = "id_reciclador";
+	
+	private PuntoReciclajeService service;
+	
+	@Inject
+	public PuntoReciclajeController(PuntoReciclajeService puntoReciclajeService) {
+		this.service = puntoReciclajeService;
+	}
 
 	private final PuntoReciclajeResponse mock = PuntoReciclajeResponse.builder()
 		.id(1)
@@ -74,11 +88,24 @@ public class PuntoReciclajeController {
 	 * GET /puntos_reciclaje
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2).build()
-		);
-
-		return new ListResponse<>(0, 1, 2, null, null, l);
+		try {
+			var l = this.service.getPuntos();
+			List<PuntoReciclajeResponse> listado = new ArrayList<PuntoReciclajeResponse>();
+			for(PuntoReciclajeDto tr : l) {
+				listado.add(tr.toResponce());
+			}
+			return new ListResponse<>(0, 1, 2, null, null, l);
+		} catch (ServiceError e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
+		
+//		
+//		
+//		final var l = List.of(
+//			mock,
+//			mock.toBuilder().id(2).build()
+//		);
+//
+//		return new ListResponse<>(0, 1, 2, null, null, l);
 	}
 }
