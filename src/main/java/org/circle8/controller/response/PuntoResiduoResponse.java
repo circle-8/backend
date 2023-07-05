@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PuntoResiduoResponse implements ApiResponse {
-	public int id;
-	public float latitud;
-	public float longitud;
+	public long id;
+	public double latitud;
+	public double longitud;
 }
