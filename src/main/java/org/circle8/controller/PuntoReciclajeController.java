@@ -1,9 +1,8 @@
 package org.circle8.controller;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import java.util.List;
+
+import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.DiaResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -13,10 +12,14 @@ import org.circle8.controller.response.PuntoReciclajeResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.exception.ServiceError;
+import org.circle8.filter.PuntoReciclajeFilter;
 import org.circle8.service.PuntoReciclajeService;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 
 @Singleton
 public class PuntoReciclajeController {
@@ -89,23 +92,27 @@ public class PuntoReciclajeController {
 	 */
 	public ApiResponse list(Context ctx) {
 		try {
-			var l = this.service.getPuntos();
-			List<PuntoReciclajeResponse> listado = new ArrayList<PuntoReciclajeResponse>();
-			for(PuntoReciclajeDto tr : l) {
-				listado.add(tr.toResponce());
-			}
-			return new ListResponse<>(0, 1, 2, null, null, l);
+			var req = new PuntoReciclajeRequest(ctx.queryParamMap());
+			var valid = req.valid();
+			if ( !valid.valid() )
+				return new ErrorResponse(valid);
+			
+			var filter = PuntoReciclajeFilter.builder()
+					.dias(req.dias)
+					.tipoResiduo(req.tipoResiduo)
+					.reciclador_id(req.reciclador_id)
+					.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
+					.build();
+			
+			
+//			final var l = List.of(
+//					mock,
+//					mock.toBuilder().id(2).build()
+//				);
+			var l = this.service.list(filter);
+			return new ListResponse<>(0, 1, 2, null, null, l.stream().map(PuntoReciclajeDto::toResponce).toList());
 		} catch (ServiceError e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}
-		
-//		
-//		
-//		final var l = List.of(
-//			mock,
-//			mock.toBuilder().id(2).build()
-//		);
-//
-//		return new ListResponse<>(0, 1, 2, null, null, l);
 	}
 }

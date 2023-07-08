@@ -2,6 +2,7 @@ package org.circle8.dto;
 
 import java.util.List;
 
+import org.circle8.controller.response.DiaResponse;
 import org.circle8.controller.response.PuntoReciclajeResponse;
 import org.circle8.entity.PuntoReciclaje;
 
@@ -27,7 +28,7 @@ public class PuntoReciclajeDto {
 		pr.latitud = entity.latitud;
 		pr.longitud = entity.longitud;
 		pr.dias = entity.dias;
-		pr.tipoResiduo = TipoResiduoDto.from(entity.tipoResiduo);
+		pr.tipoResiduo = entity.tipoResiduo.stream().map(TipoResiduoDto::from).toList();
 		pr.recicladorUri = entity.recicladorUri;
 		pr.recicladorId = entity.recicladorId;
 		pr.reciclador = entity.reciclador != null ? CiudadanoDto.from(entity.reciclador) : null;
@@ -35,8 +36,9 @@ public class PuntoReciclajeDto {
 	}
 	
 	public PuntoReciclajeResponse toResponce() {
-		return new PuntoReciclajeResponse(id, latitud, longitud, null,
-				TipoResiduoDto.toResponse(tipoResiduo), recicladorUri, 
+		return new PuntoReciclajeResponse(id, latitud, longitud, 
+				dias.stream().map(DiaResponse::from).toList(),
+				tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList(), recicladorUri, 
 				recicladorId, reciclador != null ?  reciclador.toResponse() : null);
 	}
 	
