@@ -12,12 +12,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class PuntoReciclaje {
-	public int id;
-	public float latitud;
-	public float longitud;
+	public long id;
+	public double latitud;
+	public double longitud;
 	public List<Dia> dias;
 	public List<TipoResiduo> tipoResiduo;
 	public String recicladorUri;
-	public Integer recicladorId;
+	public long recicladorId;
 	public Ciudadano reciclador;
 }

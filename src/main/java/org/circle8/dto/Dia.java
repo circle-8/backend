@@ -17,4 +17,17 @@ public enum Dia {
 	SABADO,
 	@SerializedName("6")
 	DOMINGO;
+	
+	public static Dia get(int ordinal) {
+		return switch (ordinal) {
+		case 0 -> LUNES;
+		case 1 -> MARTES;
+		case 2 -> MIERCOLES;
+		case 3 -> JUEVES;
+		case 4 -> VIERNES;
+		case 5 -> SABADO;
+		case 6 -> DOMINGO;
+		default -> null;
+		};
+	}
 }

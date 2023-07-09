@@ -109,6 +109,8 @@ public class PuntoReciclajeController {
 //					mock,
 //					mock.toBuilder().id(2).build()
 //				);
+			
+			//TODO llevar al list response de datos unicamente
 			var l = this.service.list(filter);
 			return new ListResponse<>(0, 1, 2, null, null, l.stream().map(PuntoReciclajeDto::toResponce).toList());
 		} catch (ServiceError e) {

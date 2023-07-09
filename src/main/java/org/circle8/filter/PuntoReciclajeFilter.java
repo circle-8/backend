@@ -28,9 +28,5 @@ public class PuntoReciclajeFilter {
 	
 	public boolean hasArea() {
 		return latitud != null && longitud != null && radio != null;
-	}	
-	
-	public boolean hasFiltro() {
-		return hasDias() || hasReciclador() || hasTipo() || hasArea();
-	}
+	}		
 }

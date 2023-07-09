@@ -28,7 +28,7 @@ public class PuntoReciclajeService {
 	 */
 	public List<PuntoReciclajeDto> list(PuntoReciclajeFilter filter) throws ServiceError{
 		try {
-			return this.dao.getPuntos(filter).stream().map(PuntoReciclajeDto::from).toList();
+			return this.dao.list(filter).stream().map(PuntoReciclajeDto::from).toList();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el listado de puntos de reciclaje", e);
 		}

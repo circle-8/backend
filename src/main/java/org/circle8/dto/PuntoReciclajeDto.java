@@ -7,13 +7,13 @@ import org.circle8.controller.response.PuntoReciclajeResponse;
 import org.circle8.entity.PuntoReciclaje;
 
 public class PuntoReciclajeDto {
-	public int id;
-	public float latitud;
-	public float longitud;
+	public long id;
+	public double latitud;
+	public double longitud;
 	public List<Dia> dias;
 	public List<TipoResiduoDto> tipoResiduo;
 	public String recicladorUri;
-	public Integer recicladorId;
+	public long recicladorId;
 	public CiudadanoDto reciclador;
 	
 	
