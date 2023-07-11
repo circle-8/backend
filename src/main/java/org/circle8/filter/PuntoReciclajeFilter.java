@@ -13,7 +13,7 @@ public class PuntoReciclajeFilter {
 	public Double radio;
 	
 	public boolean hasDias() {
-		return dias != null;
+		return dias != null && !dias.isEmpty();
 	}
 	
 	public boolean hasReciclador() {
@@ -21,7 +21,7 @@ public class PuntoReciclajeFilter {
 	}
 	
 	public boolean hasTipo() {
-		return tipoResiduo != null;
+		return tipoResiduo != null && !tipoResiduo.isEmpty();
 	}
 	
 	public boolean hasArea() {
