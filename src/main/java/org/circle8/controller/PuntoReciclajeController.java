@@ -103,13 +103,7 @@ public class PuntoReciclajeController {
 					.reciclador_id(req.reciclador_id)
 					.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
 					.build();
-			
-			
-//			final var l = List.of(
-//					mock,
-//					mock.toBuilder().id(2).build()
-//				);
-			
+
 			//TODO llevar al list response de datos unicamente
 			var l = this.service.list(filter);
 			return new ListResponse<>(0, 1, 2, null, null, l.stream().map(PuntoReciclajeDto::toResponce).toList());

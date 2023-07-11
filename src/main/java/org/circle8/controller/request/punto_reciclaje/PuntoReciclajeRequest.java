@@ -10,20 +10,31 @@ import jakarta.annotation.Nullable;
 public class PuntoReciclajeRequest implements IRequest{
 	private final Validation validation = new Validation();
 	
-	public List<String> dias;
-	public List<String> tipoResiduo;
+	public String dias;
+	public String tipoResiduo;
 	public Long reciclador_id;
 	public Double latitud;
 	public Double longitud;
 	public Double radio;	
 	
 	public PuntoReciclajeRequest(Map<String, List<String>> queryParams) {
-		this.dias = queryParams.getOrDefault("dias", List.of());
-		this.tipoResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
+		this.dias = parseString(queryParams, "dias");
+		this.tipoResiduo = parseString(queryParams, "tipo_residuo");
 		this.reciclador_id = parseInt(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
 		this.radio = parseDouble(queryParams, "radio");	
+	}
+	
+	@Nullable
+	private String parseString(Map<String, List<String>> queryParams, String paramName) {
+		try {
+			var param = queryParams.getOrDefault(paramName, List.of());
+			return !param.isEmpty() ? param.get(0) : null;
+		} catch ( NumberFormatException e ) {
+			validation.add(String.format("%s debe ser un numero", paramName));
+			return null;
+		}
 	}
 	
 	@Nullable
