@@ -35,7 +35,7 @@ public class PuntoReciclajeDto {
 		return pr;
 	}
 	
-	public PuntoReciclajeResponse toResponce() {
+	public PuntoReciclajeResponse toResponse() {
 		return new PuntoReciclajeResponse(id, latitud, longitud, 
 				dias.stream().map(DiaResponse::from).toList(),
 				tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList(), recicladorUri, 

@@ -106,7 +106,7 @@ public class PuntoReciclajeController {
 
 			//TODO llevar al list response de datos unicamente
 			var l = this.service.list(filter);
-			return new ListResponse<>(0, 1, 2, null, null, l.stream().map(PuntoReciclajeDto::toResponce).toList());
+			return new ListResponse<>(0, 1, 2, null, null, l.stream().map(PuntoReciclajeDto::toResponse).toList());
 		} catch (ServiceError e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}
