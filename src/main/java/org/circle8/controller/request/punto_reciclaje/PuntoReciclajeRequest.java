@@ -10,16 +10,16 @@ import jakarta.annotation.Nullable;
 public class PuntoReciclajeRequest implements IRequest{
 	private final Validation validation = new Validation();
 	
-	public String dias;
-	public String tipoResiduo;
+	public List<String> dias;
+	public List<String> tiposResiduo;
 	public Long reciclador_id;
 	public Double latitud;
 	public Double longitud;
 	public Double radio;	
 	
 	public PuntoReciclajeRequest(Map<String, List<String>> queryParams) {
-		this.dias = parseString(queryParams, "dias");
-		this.tipoResiduo = parseString(queryParams, "tipo_residuo");
+		this.dias = queryParams.getOrDefault("dias", List.of());
+		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
 		this.reciclador_id = parseInt(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");

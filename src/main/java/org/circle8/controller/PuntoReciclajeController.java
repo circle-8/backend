@@ -99,7 +99,7 @@ public class PuntoReciclajeController {
 			
 			var filter = PuntoReciclajeFilter.builder()
 					.dias(req.dias)
-					.tipoResiduo(req.tipoResiduo)
+					.tiposResiduos(req.tiposResiduo)
 					.reciclador_id(req.reciclador_id)
 					.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
 					.build();
