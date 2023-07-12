@@ -16,12 +16,22 @@ public class UserService {
 	private final UserDao dao;
 	private final CryptService crypt;
 	private final SuscripcionService suscripcion;
+	private final CiudadanoService ciudadano;
+	private final TransportistaService transportista;
 
 	@Inject
-	public UserService(UserDao dao, CryptService crypt, SuscripcionService suscripcion) {
+	public UserService(
+		UserDao dao,
+		CryptService crypt,
+		SuscripcionService suscripcion,
+		CiudadanoService ciudadano,
+		TransportistaService transportista
+	) {
 		this.dao = dao;
 		this.crypt = crypt;
 		this.suscripcion = suscripcion;
+		this.ciudadano = ciudadano;
+		this.transportista = transportista;
 	}
 
 	public UserDto login(String username, String password) throws ServiceException {
@@ -50,7 +60,16 @@ public class UserService {
 			user = dao.save(t, user);
 			dto.id = user.id;
 
-			// TODO: crear los distintos tipos de usuarios
+			switch ( user.tipo ) {
+				case CIUDADANO -> ciudadano.save(t, user);
+				case TRANSPORTISTA -> {
+					var c = ciudadano.save(t, user);
+					transportista.save(t, c);
+				}
+				case RECICLADOR_URBANO -> throw new IllegalArgumentException("RECICLADOR_URBANO todavía no definido");
+				case ORGANIZACION -> throw new IllegalArgumentException("ORGANIZACION todavía no definido");
+				default -> throw new IllegalStateException("hay un TipoUsuario no contemplado al guardar");
+			}
 
 			var s = suscripcion.subscribe(t, user);
 			dto.suscripcion = SuscripcionDto.from(s);
