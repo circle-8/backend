@@ -40,18 +40,20 @@ public class PuntoReciclajeDao extends Dao{
 					}else {						
 						var listTipoResiduo = new ArrayList<TipoResiduo>();
 						listTipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
-						List<Dia> dias = obtenerDia(rs.getString("DiasAbierto"));
+						List<Dia> dias = Dia.obtenerDia(rs.getString("DiasAbierto"));
 						if(filter.hasDias()) {
 							for(int i = 0; i < dias.size(); i++) {
 								if(filter.dias.contains(String.valueOf(dias.get(i).ordinal()))) {
-									l.put(rs.getLong("ID"), new PuntoReciclaje(rs.getLong("ID"), rs.getDouble("Latitud"), rs.getDouble("Longitud"),
-											dias, listTipoResiduo , "/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"), null));
+									l.put(rs.getLong("ID"), new PuntoReciclaje(rs.getLong("ID"), rs.getString("Titulo"),
+											rs.getDouble("Latitud"), rs.getDouble("Longitud"), dias, listTipoResiduo,
+											"/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"), null));
 									break;
 								}
 							}
 						}else {
-							l.put(rs.getLong("ID"), new PuntoReciclaje(rs.getLong("ID"), rs.getDouble("Latitud"), rs.getDouble("Longitud"),
-									dias, listTipoResiduo , "/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"), null));
+							l.put(rs.getLong("ID"), new PuntoReciclaje(rs.getLong("ID"), rs.getString("Titulo"),
+									rs.getDouble("Latitud"), rs.getDouble("Longitud"), dias, listTipoResiduo,
+									"/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"), null));
 						}						
 					}
 				}				
@@ -61,27 +63,7 @@ public class PuntoReciclajeDao extends Dao{
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting punto reciclaje", e);
 		}		
-	}
-	
-	/**
-	 * Parsea el string de dias y devuelve el listado
-	 * en base a los que esten marcados como 1
-	 * @param rs
-	 * @return
-	 */
-	private List<Dia> obtenerDia(String rs) {		
-		var result = rs.replace("[", "").replace("]", "");
-		var listDias = new ArrayList<Dia>();
-		if(result.contains("1")) {
-			var dias = result.split(",");
-			for (int i = 0; i < dias.length; i++) {				
-	            if (dias[i].trim().equals("1")) {
-	            	listDias.add(Dia.get(i));
-	            }
-	        }
-		}		
-		return listDias;
-	}
+	}	
 	
 	/**
 	 * Arma el Select para la consulta de list
@@ -100,7 +82,7 @@ public class PuntoReciclajeDao extends Dao{
 		  """;
 
 		// TODO: cambiar por expand, ver de donde obtener el reciclador_id
-		var select = "pr.\"ID\", pr.\"Latitud\","
+		var select = "pr.\"ID\",pr.\"Titulo\", pr.\"Latitud\","
 				+ " pr.\"Longitud\", pr.\"DiasAbierto\","
 				+ " prtr.\"TipoResiduoId\", tr.\"Nombre\", ciu.\"UsuarioId\"";
 		
@@ -114,11 +96,6 @@ public class PuntoReciclajeDao extends Dao{
 
 		var b = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
-		
-//		if(f.hasDias()) {			
-//			b.append("AND pr.\"DiasAbierto\"  LIKE \'%"+f.dias+"%\'\n");
-//			parameters.add(f.dias);
-//		}
 		
 		if ( f.hasTipo() ) {
 			String marks = f.tiposResiduos.stream()
@@ -147,9 +124,6 @@ public class PuntoReciclajeDao extends Dao{
 		for (int i = 0; i < parameters.size(); i++) {
 			p.setObject(i+1, parameters.get(i));
 		}	
-		
-		System.out.println(sql);
-
 		return p;
 	}
 

@@ -8,6 +8,7 @@ import org.circle8.entity.PuntoReciclaje;
 
 public class PuntoReciclajeDto {
 	public long id;
+	public String titulo;
 	public double latitud;
 	public double longitud;
 	public List<Dia> dias;
@@ -16,15 +17,10 @@ public class PuntoReciclajeDto {
 	public long recicladorId;
 	public CiudadanoDto reciclador;
 	
-	
-//	public static PuntoReciclajeDto from() {
-//		var pr = new PuntoReciclajeDto();
-//		return pr;
-//	}
-	
 	public static PuntoReciclajeDto from(PuntoReciclaje entity) {
 		var pr = new PuntoReciclajeDto();
 		pr.id = entity.id;
+		pr.titulo = entity.titulo;
 		pr.latitud = entity.latitud;
 		pr.longitud = entity.longitud;
 		pr.dias = entity.dias;
@@ -36,7 +32,7 @@ public class PuntoReciclajeDto {
 	}
 	
 	public PuntoReciclajeResponse toResponse() {
-		return new PuntoReciclajeResponse(id, latitud, longitud, 
+		return new PuntoReciclajeResponse(id, titulo, latitud, longitud, 
 				dias.stream().map(DiaResponse::from).toList(),
 				tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList(), recicladorUri, 
 				recicladorId, reciclador != null ?  reciclador.toResponse() : null);
@@ -45,6 +41,7 @@ public class PuntoReciclajeDto {
 	public PuntoReciclaje toEntity() {
 		return PuntoReciclaje.builder()
 				.id(id)
+				.titulo(titulo)
 				.latitud(latitud)
 				.longitud(longitud)
 				.dias(dias)

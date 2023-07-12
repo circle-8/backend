@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PuntoReciclaje {
 	public long id;
+	public String titulo;
 	public double latitud;
 	public double longitud;
 	public List<Dia> dias;

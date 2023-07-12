@@ -11,6 +11,7 @@ import java.util.List;
 @Builder(toBuilder = true)
 public class PuntoReciclajeResponse implements ApiResponse {
 	public long id;
+	public String titulo;
 	public double latitud;
 	public double longitud;
 	public List<DiaResponse> dias;

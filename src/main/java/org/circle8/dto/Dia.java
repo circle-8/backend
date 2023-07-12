@@ -1,5 +1,8 @@
 package org.circle8.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gson.annotations.SerializedName;
 
 public enum Dia {
@@ -29,5 +32,25 @@ public enum Dia {
 		case 6 -> DOMINGO;
 		default -> null;
 		};
+	}
+	
+	/**
+	 * Parsea el string de dias y devuelve el listado
+	 * en base a los que esten marcados como 1
+	 * @param rs
+	 * @return
+	 */
+	public static List<Dia> obtenerDia(String rs) {		
+		var result = rs.replace("[", "").replace("]", "");
+		var listDias = new ArrayList<Dia>();
+		if(result.contains("1")) {
+			var dias = result.split(",");
+			for (int i = 0; i < dias.length; i++) {				
+	            if (dias[i].trim().equals("1")) {
+	            	listDias.add(Dia.get(i));
+	            }
+	        }
+		}		
+		return listDias;
 	}
 }
