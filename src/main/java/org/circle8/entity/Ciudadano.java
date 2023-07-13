@@ -1,13 +1,13 @@
-package org.circle8.controller.response;
+package org.circle8.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder(toBuilder = true)
-public class CiudadanoResponse implements ApiResponse {
+@NoArgsConstructor
+@Builder
+public class Ciudadano {
 	public int id;
 	public String username;
 	public String nombre;

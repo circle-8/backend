@@ -10,12 +10,13 @@ import java.util.List;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class PuntoReciclajeResponse implements ApiResponse {
-	public int id;
-	public float latitud;
-	public float longitud;
+	public long id;
+	public String titulo;
+	public double latitud;
+	public double longitud;
 	public List<DiaResponse> dias;
 	public List<TipoResiduoResponse> tipoResiduo;
 	public String recicladorUri;
-	public Integer recicladorId;
+	public Long recicladorId;
 	public CiudadanoResponse reciclador;
 }
