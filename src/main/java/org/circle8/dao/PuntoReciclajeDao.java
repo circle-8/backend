@@ -1,6 +1,7 @@
 package org.circle8.dao;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,38 +33,56 @@ public class PuntoReciclajeDao extends Dao{
 	public List<PuntoReciclaje> list(PuntoReciclajeFilter filter) throws PersistenceException{
 		try ( var t = open(true); var select = createSelectForList(t, filter) ) {
 			try ( var rs = select.executeQuery() ) {
-				HashMap<Long, PuntoReciclaje> l = new HashMap<Long, PuntoReciclaje>();
-				while ( rs.next() ) {
-					if(l.containsKey(rs.getLong("ID"))) {
-						var tr = new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre"));
-						l.get(rs.getLong("ID")).tipoResiduo.add(tr);
-					}else {						
-						var listTipoResiduo = new ArrayList<TipoResiduo>();
-						listTipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
-						List<Dia> dias = Dia.obtenerDia(rs.getString("DiasAbierto"));
-						if(filter.hasDias()) {
-							for(int i = 0; i < dias.size(); i++) {
-								if(filter.dias.contains(String.valueOf(dias.get(i).ordinal()))) {
-									l.put(rs.getLong("ID"), new PuntoReciclaje(rs.getLong("ID"), rs.getString("Titulo"),
-											rs.getDouble("Latitud"), rs.getDouble("Longitud"), dias, listTipoResiduo,
-											"/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"), null));
-									break;
-								}
-							}
-						}else {
-							l.put(rs.getLong("ID"), new PuntoReciclaje(rs.getLong("ID"), rs.getString("Titulo"),
-									rs.getDouble("Latitud"), rs.getDouble("Longitud"), dias, listTipoResiduo,
-									"/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"), null));
-						}						
-					}
-				}				
-
-				return new ArrayList<PuntoReciclaje>(l.values());
+				return getList(rs, filter);
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting punto reciclaje", e);
 		}		
 	}	
+	
+	/**
+	 * Procesa el resultado de la consulta de list
+	 * Agrupa los tipos de residuo por cada punto
+	 * Valida el filtro de dias
+	 * @param rs
+	 * @param filter
+	 * @return
+	 * @throws SQLException
+	 */
+	private List<PuntoReciclaje> getList(ResultSet rs, PuntoReciclajeFilter filter) throws SQLException{
+		var l = new HashMap<Long, PuntoReciclaje>();
+		while ( rs.next() ) {
+			if(l.containsKey(rs.getLong("ID"))) {
+				var tr = new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre"));
+				l.get(rs.getLong("ID")).tipoResiduo.add(tr);
+			}else {						
+				var listTipoResiduo = new ArrayList<TipoResiduo>();
+				listTipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
+				List<Dia> dias = Dia.getDia(rs.getString("DiasAbierto"));
+				if(filter.hasDias()) {
+					for(int i = 0; i < dias.size(); i++) {
+						if(filter.dias.contains(String.valueOf(dias.get(i).ordinal()))) {
+							l.put(rs.getLong("ID"),
+									new PuntoReciclaje(rs.getLong("ID"),
+									rs.getString("Titulo"),	rs.getDouble("Latitud"),
+									rs.getDouble("Longitud"), dias, listTipoResiduo,
+									"/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"),
+									null));
+							break;
+						}
+					}
+				}else {
+					l.put(rs.getLong("ID"),
+							new PuntoReciclaje(rs.getLong("ID"),
+							rs.getString("Titulo"),	rs.getDouble("Latitud"),
+							rs.getDouble("Longitud"), dias, listTipoResiduo,
+							"/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"),
+							null));
+				}						
+			}
+		}
+		return new ArrayList<PuntoReciclaje>(l.values());
+	}
 	
 	/**
 	 * Arma el Select para la consulta de list
@@ -84,7 +103,8 @@ public class PuntoReciclajeDao extends Dao{
 		// TODO: cambiar por expand, ver de donde obtener el reciclador_id
 		var select = "pr.\"ID\",pr.\"Titulo\", pr.\"Latitud\","
 				+ " pr.\"Longitud\", pr.\"DiasAbierto\","
-				+ " prtr.\"TipoResiduoId\", tr.\"Nombre\", ciu.\"UsuarioId\"";
+				+ " prtr.\"TipoResiduoId\", tr.\"Nombre\","
+				+ " ciu.\"UsuarioId\"";
 		
 		var join = """
 		   LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
@@ -126,5 +146,4 @@ public class PuntoReciclajeDao extends Dao{
 		}	
 		return p;
 	}
-
 }

@@ -19,6 +19,6 @@ public class PuntoReciclaje {
 	public List<Dia> dias;
 	public List<TipoResiduo> tipoResiduo;
 	public String recicladorUri;
-	public long recicladorId;
+	public Long recicladorId;
 	public Ciudadano reciclador;
 }

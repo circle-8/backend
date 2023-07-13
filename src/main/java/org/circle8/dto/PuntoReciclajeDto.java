@@ -14,7 +14,7 @@ public class PuntoReciclajeDto {
 	public List<Dia> dias;
 	public List<TipoResiduoDto> tipoResiduo;
 	public String recicladorUri;
-	public long recicladorId;
+	public Long recicladorId;
 	public CiudadanoDto reciclador;
 	
 	public static PuntoReciclajeDto from(PuntoReciclaje entity) {

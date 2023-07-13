@@ -17,6 +17,6 @@ public class PuntoReciclajeResponse implements ApiResponse {
 	public List<DiaResponse> dias;
 	public List<TipoResiduoResponse> tipoResiduo;
 	public String recicladorUri;
-	public long recicladorId;
+	public Long recicladorId;
 	public CiudadanoResponse reciclador;
 }

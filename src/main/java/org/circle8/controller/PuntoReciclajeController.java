@@ -45,7 +45,7 @@ public class PuntoReciclajeController {
 	public ApiResponse get(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Integer.parseInt(ctx.pathParam(ID_RECICLADOR_PARAM)))
+			.recicladorId(Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM)))
 			.build();
 	}
 	/**
@@ -54,7 +54,7 @@ public class PuntoReciclajeController {
 	public ApiResponse put(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Integer.parseInt(ctx.pathParam(ID_RECICLADOR_PARAM)))
+			.recicladorId(Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM)))
 			.build();
 	}
 
@@ -74,7 +74,7 @@ public class PuntoReciclajeController {
 	 * POST /reciclador/{id_reciclador}/punto_reciclaje
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock.toBuilder().recicladorId(Integer.parseInt(ctx.pathParam(ID_RECICLADOR_PARAM))).build();
+		return mock.toBuilder().recicladorId(Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM))).build();
 	}
 
 	/**
@@ -83,7 +83,7 @@ public class PuntoReciclajeController {
 	public ApiResponse notificacion(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Integer.parseInt(ctx.pathParam(ID_RECICLADOR_PARAM)))
+			.recicladorId(Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM)))
 			.build();
 	}
 
@@ -108,7 +108,7 @@ public class PuntoReciclajeController {
 			var l = this.service.list(filter);
 			return new ListResponse<>(0, 1, 2, null, null, l.stream().map(PuntoReciclajeDto::toResponse).toList());
 		} catch (ServiceError e) {
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		}
 	}
 }

@@ -25,18 +25,7 @@ public class PuntoReciclajeRequest implements IRequest{
 		this.longitud = parseDouble(queryParams, "longitud");
 		this.radio = parseDouble(queryParams, "radio");	
 	}
-	
-	@Nullable
-	private String parseString(Map<String, List<String>> queryParams, String paramName) {
-		try {
-			var param = queryParams.getOrDefault(paramName, List.of());
-			return !param.isEmpty() ? param.get(0) : null;
-		} catch ( NumberFormatException e ) {
-			validation.add(String.format("%s debe ser un numero", paramName));
-			return null;
-		}
-	}
-	
+		
 	@Nullable
 	private Long parseInt(Map<String, List<String>> queryParams, String paramName) {
 		try {
