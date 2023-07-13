@@ -8,4 +8,5 @@ public class PuntoResiduo {
 	public double latitud;
 	public double longitud;
 	public long ciudadanoId;
+	public User ciudadano;
 }

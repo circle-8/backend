@@ -14,6 +14,7 @@ import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.dto.PuntoResiduoDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
 import org.circle8.service.PuntoResiduoService;
 
@@ -40,8 +41,10 @@ public class PuntoResiduoController {
 			.tipoResiduos(req.tipoResiduo)
 			.build();
 
+		val expand = new PuntoResiduoExpand(req.expands);
+
 		try {
-			val points = service.list(filter);
+			val points = service.list(filter, expand);
 			return new ListResponse<>(points.stream().map(PuntoResiduoDto::toResponse).toList());
 		} catch ( ServiceError e ) {
 			log.error("[Request:{}] error saving new user", req, e);

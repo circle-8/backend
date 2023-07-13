@@ -8,12 +8,16 @@ public class PuntoResiduoDto {
 	public long id;
 	public double latitud;
 	public double longitud;
+	public long ciudadanoId;
+	public UserDto ciudadano;
 
 	public static PuntoResiduoDto from(PuntoResiduo entity) {
 		val p = new PuntoResiduoDto();
 		p.id = entity.id;
 		p.latitud = entity.latitud;
 		p.longitud = entity.longitud;
+		p.ciudadanoId = entity.ciudadanoId;
+		p.ciudadano = UserDto.from(entity.ciudadano);
 		return p;
 	}
 
@@ -22,6 +26,9 @@ public class PuntoResiduoDto {
 		r.id = this.id;
 		r.latitud = this.latitud;
 		r.longitud = this.longitud;
+		r.ciudadanoId = this.ciudadanoId;
+		r.ciudadanoUri = "/user/" + this.ciudadanoId;
+		r.ciudadano = this.ciudadano.toResponse();
 		return r;
 	}
 }

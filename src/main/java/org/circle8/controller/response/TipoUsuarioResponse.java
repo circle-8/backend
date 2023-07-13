@@ -9,6 +9,7 @@ public enum TipoUsuarioResponse implements ApiResponse {
 	ORGANIZACION;
 
 	public static TipoUsuarioResponse from(TipoUsuario tipo) {
+		if ( tipo == null ) return null;
 		return switch(tipo) {
 			case CIUDADANO -> CIUDADANO;
 			case TRANSPORTISTA -> TRANSPORTISTA;

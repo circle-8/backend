@@ -2,8 +2,11 @@ package org.circle8.dao;
 
 import com.google.inject.Inject;
 import lombok.val;
+import org.circle8.dto.TipoUsuario;
 import org.circle8.entity.PuntoResiduo;
+import org.circle8.entity.User;
 import org.circle8.exception.PersistenceException;
+import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
 
 import javax.sql.DataSource;
@@ -17,17 +20,25 @@ public class PuntoResiduoDao extends Dao {
 	@Inject
 	public PuntoResiduoDao(DataSource ds) { super(ds); }
 
-	public List<PuntoResiduo> list(PuntoResiduoFilter f) throws PersistenceException {
-		try ( val t = open(true); val select = createSelect(t, f) ) {
+	public List<PuntoResiduo> list(PuntoResiduoFilter f, PuntoResiduoExpand x) throws PersistenceException {
+		try ( val t = open(true); val select = createSelect(t, f, x) ) {
 			try ( val rs = select.executeQuery() ) {
 				val l = new ArrayList<PuntoResiduo>();
 				while ( rs.next() ) {
-					// TODO: Tener en cuenta el expand
+					val u = new User();
+					u.id = rs.getLong("UsuarioId");
+					if ( x.ciudadano ) {
+						u.username = rs.getString("Username");
+						u.nombre = rs.getString("NombreApellido");
+						u.email = rs.getString("Email");
+						u.tipo = TipoUsuario.valueOf(rs.getString("TipoUsuario"));
+					}
 					l.add(new PuntoResiduo(
 						rs.getLong("ID"),
 						rs.getDouble("Latitud"),
 						rs.getDouble("Longitud"),
-						rs.getLong("CiudadanoId")
+						rs.getLong("CiudadanoId"),
+						u
 					));
 				}
 				return l;
@@ -37,7 +48,11 @@ public class PuntoResiduoDao extends Dao {
 		}
 	}
 
-	private PreparedStatement createSelect(Transaction t, PuntoResiduoFilter f) throws PersistenceException, SQLException {
+	private PreparedStatement createSelect(
+		Transaction t,
+		PuntoResiduoFilter f,
+		PuntoResiduoExpand x
+	) throws PersistenceException, SQLException {
 		val selectFmt = """
  SELECT %s
    FROM "PuntoResiduo" AS pr
@@ -45,13 +60,31 @@ public class PuntoResiduoDao extends Dao {
   WHERE 1=1
   """;
 
-		// TODO: cambiar por expand
-		val select = "pr.\"ID\", \"Latitud\", \"Longitud\", \"CiudadanoId\"";
-		val join = f.hasTipo() ? """
-   JOIN "Residuo" AS r ON r."PuntoResiduoId" = pr."ID"
-   JOIN "TipoResiduo" AS tr on tr."ID" = r."TipoResiduoId"
-   """ : "";
+		// TODO: constantes
+		final String select;
+		if ( x.ciudadano ) {
+			select = "pr.\"ID\", \"Latitud\", \"Longitud\", \"CiudadanoId\", c.\"UsuarioId\"," +
+				"u.\"Username\", u.\"NombreApellido\", u.\"Email\", u.\"TipoUsuario\"";
+		} else {
+			select = "pr.\"ID\", \"Latitud\", \"Longitud\", \"CiudadanoId\", c.\"UsuarioId\"";
+		}
 
+		final StringBuilder joinB = new StringBuilder("""
+JOIN "Ciudadano" AS c ON c."ID" = pr."CiudadanoId"
+""");
+		if ( f.hasTipo() ) {
+			joinB.append("""
+JOIN "Residuo" AS r ON r."PuntoResiduoId" = pr."ID"
+JOIN "TipoResiduo" AS tr on tr."ID" = r."TipoResiduoId"
+""");
+		}
+		if ( x.ciudadano ) {
+			joinB.append("""
+JOIN "Usuario" AS u ON u."ID" = c."UsuarioId"
+""");
+		}
+
+		val join = joinB.toString();
 		val sql = String.format(selectFmt, select, join);
 
 		val b = new StringBuilder(sql);

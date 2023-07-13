@@ -15,12 +15,15 @@ public class PuntosResiduosRequest implements IRequest {
 
 	public List<String> tipoResiduo;
 
+	public List<String> expands;
+
 	public PuntosResiduosRequest(Map<String, List<String>> queryParams) {
 		this.latitud = parse(queryParams, "latitud");
 		this.longitud = parse(queryParams, "longitud");
 		this.radio = parse(queryParams, "radio");
 
 		this.tipoResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
+		this.expands = queryParams.getOrDefault("expand", List.of());
 	}
 
 	@Nullable
