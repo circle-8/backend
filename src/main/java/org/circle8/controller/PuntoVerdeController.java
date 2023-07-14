@@ -1,18 +1,41 @@
 package org.circle8.controller;
 
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import java.util.List;
+
+import org.circle8.controller.request.punto_verde.PuntoVerdeRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.DiaResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoVerdeResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
+import org.circle8.dto.Dia;
+import org.circle8.dto.PuntoVerdeDto;
+import org.circle8.exception.ServiceError;
+import org.circle8.filter.PuntoVerdeFilter;
+import org.circle8.service.PuntoVerdeService;
 
-import java.util.List;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Slf4j
 public class PuntoVerdeController {
+	
+	private PuntoVerdeService service;
+	
+	@Inject
+	public PuntoVerdeController(PuntoVerdeService puntoVerdeService) {
+		this.service = puntoVerdeService;
+	}
+
+	
 	private final PuntoVerdeResponse mock = PuntoVerdeResponse.builder()
 		.id(1)
 		.latitud(-34.6516556f).longitud(-58.5356009f)
@@ -59,11 +82,23 @@ public class PuntoVerdeController {
 	 * GET /puntos_verdes
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2).build()
-		);
+		val req = new PuntoVerdeRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(valid);
 
-		return new ListResponse<>(0, 1, 2, null, null, l);
+		val filter = PuntoVerdeFilter.builder()
+				.dias(req.dias.stream().map(Dia::get).toList())
+				.tiposResiduos(req.tiposResiduo)
+				.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
+				.build();
+
+		try {
+			val l = this.service.list(filter);
+			return new ListResponse<>(l.stream().map(PuntoVerdeDto::toResponse).toList());
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error list puntos verde", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
 	}
 }

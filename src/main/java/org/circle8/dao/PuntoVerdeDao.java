@@ -11,29 +11,28 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import lombok.val;
 import org.circle8.dto.Dia;
-import org.circle8.entity.PuntoReciclaje;
+import org.circle8.entity.PuntoVerde;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.exception.PersistenceException;
-import org.circle8.filter.PuntoReciclajeFilter;
+import org.circle8.filter.PuntoVerdeFilter;
 
 import com.google.inject.Inject;
 
-public class PuntoReciclajeDao extends Dao{
+import lombok.val;
 
+public class PuntoVerdeDao extends Dao{	
 	private static final String WHERE_AREA = """
-		AND pr."Latitud" BETWEEN ? AND ?
-		AND pr."Longitud" BETWEEN ? AND ?
-		""";
+			AND pr."Latitud" BETWEEN ? AND ?
+			AND pr."Longitud" BETWEEN ? AND ?
+			""";
 	private static final String SELECT = """
-		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", prtr."TipoResiduoId", tr."Nombre", ciu."UsuarioId"
+		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", prtr."TipoResiduoId", tr."Nombre"
 		     FROM "PuntoReciclaje" AS pr
 		LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
 		LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
-		LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
 		    WHERE 1=1
-		    AND pr."CiudadanoId" IS NOT NULL
+		    AND pr."CiudadanoId" IS NULL
 		""";
 	private static final String WHERE_TIPO = """
 		    AND pr."ID" IN (
@@ -46,43 +45,44 @@ public class PuntoReciclajeDao extends Dao{
 		""";
 
 	@Inject
-	PuntoReciclajeDao(DataSource ds) {
+	PuntoVerdeDao(DataSource ds) {
 		super(ds);
 	}
-
+	
 	/**
-	 * Obtiene el listado de puntos de reciclaje
+	 * obtiene el listado de puntos verdes
+	 * @param filter
+	 * @return
+	 * @throws PersistenceException
 	 */
-	public List<PuntoReciclaje> list(PuntoReciclajeFilter filter) throws PersistenceException{
+	public List<PuntoVerde> list(PuntoVerdeFilter filter) throws PersistenceException{
 		try ( var t = open(true); var select = createSelectForList(t, filter) ) {
 			try ( var rs = select.executeQuery() ) {
 				return getList(rs, filter);
 			}
 		} catch ( SQLException e ) {
-			throw new PersistenceException("error getting punto reciclaje", e);
+			throw new PersistenceException("error getting puntos verdes", e);
 		}
 	}
-
+	
 	/**
 	 * Procesa el resultado de la consulta de list
 	 * Agrupa los tipos de residuo por cada punto
 	 * Valida el filtro de dias
 	 */
-	private List<PuntoReciclaje> getList(ResultSet rs, PuntoReciclajeFilter filter) throws SQLException{
-		var mapPuntos = new HashMap<Long, PuntoReciclaje>();
+	private List<PuntoVerde> getList(ResultSet rs, PuntoVerdeFilter filter) throws SQLException{
+		var mapPuntos = new HashMap<Long, PuntoVerde>();
 		while ( rs.next() ) {
 			val id = rs.getLong("ID");
-			PuntoReciclaje punto = mapPuntos.get(id);
+			PuntoVerde punto = mapPuntos.get(id);
 			if ( punto == null) {
-				punto = new PuntoReciclaje(
+				punto = new PuntoVerde(
 					id,
 					rs.getString("Titulo"),
 					rs.getDouble("Latitud"),
 					rs.getDouble("Longitud"),
 					Dia.getDia(rs.getString("DiasAbierto")),
-					new ArrayList<>(),
-					rs.getLong("UsuarioId"),
-					null
+					new ArrayList<>()
 				);
 				mapPuntos.put(id, punto);
 			}
@@ -94,10 +94,8 @@ public class PuntoReciclajeDao extends Dao{
 			.filter(p -> !filter.hasDias() || !Collections.disjoint(filter.dias, p.dias))
 			.toList();
 	}
-
-	/**
-	 */
-	private PreparedStatement createSelectForList(Transaction t, PuntoReciclajeFilter f) throws PersistenceException, SQLException {
+	
+	private PreparedStatement createSelectForList(Transaction t, PuntoVerdeFilter f) throws PersistenceException, SQLException {
 		var b = new StringBuilder(SELECT);
 		List<Object> parameters = new ArrayList<>();
 
@@ -109,12 +107,7 @@ public class PuntoReciclajeDao extends Dao{
 			b.append(String.format(WHERE_TIPO, marks));
 			parameters.addAll(f.tiposResiduos);
 		}
-
-		if( f.hasReciclador() ) {
-			b.append("AND pr.\"CiudadanoId\" = ?\n");
-			parameters.add(f.reciclador_id);
-		}
-
+		
 		if ( f.hasArea() ) {
 			b.append(WHERE_AREA);
 			parameters.add(f.latitud - f.radio);
@@ -129,4 +122,5 @@ public class PuntoReciclajeDao extends Dao{
 
 		return p;
 	}
+
 }

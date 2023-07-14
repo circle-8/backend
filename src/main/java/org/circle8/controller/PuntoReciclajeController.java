@@ -111,7 +111,7 @@ public class PuntoReciclajeController {
 			val l = this.service.list(filter);
 			return new ListResponse<>(l.stream().map(PuntoReciclajeDto::toResponse).toList());
 		} catch (ServiceError e) {
-			log.error("[Request:{}] error list punto residuo", req, e);
+			log.error("[Request:{}] error list puntos reciclaje", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		}
 	}
