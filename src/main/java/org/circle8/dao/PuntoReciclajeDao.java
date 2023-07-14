@@ -4,12 +4,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import lombok.val;
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.TipoResiduo;
@@ -20,6 +22,28 @@ import com.google.inject.Inject;
 
 public class PuntoReciclajeDao extends Dao{
 
+	private static final String WHERE_AREA = """
+		AND pr."Latitud" BETWEEN ? AND ?
+		AND pr."Longitud" BETWEEN ? AND ?
+		""";
+	private static final String SELECT = """
+		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", prtr."TipoResiduoId", tr."Nombre", ciu."UsuarioId"
+		     FROM "PuntoReciclaje" AS pr
+		LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
+		LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
+		LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
+		    WHERE 1=1
+		""";
+	private static final String WHERE_TIPO = """
+		    AND pr."ID" IN (
+		    SELECT spr."ID"
+		      FROM "PuntoReciclaje" spr
+		 LEFT JOIN "PuntoReciclaje_TipoResiduo" AS sprtr ON sprtr."PuntoReciclajeId" = spr."ID"
+		 LEFT JOIN "TipoResiduo" AS str on str."ID" = sprtr."TipoResiduoId"
+		     WHERE str."Nombre" IN (%s)
+		    )
+		""";
+
 	@Inject
 	PuntoReciclajeDao(DataSource ds) {
 		super(ds);
@@ -27,8 +51,6 @@ public class PuntoReciclajeDao extends Dao{
 
 	/**
 	 * Obtiene el listado de puntos de reciclaje
-	 * @return
-	 * @throws PersistenceException
 	 */
 	public List<PuntoReciclaje> list(PuntoReciclajeFilter filter) throws PersistenceException{
 		try ( var t = open(true); var select = createSelectForList(t, filter) ) {
@@ -44,77 +66,37 @@ public class PuntoReciclajeDao extends Dao{
 	 * Procesa el resultado de la consulta de list
 	 * Agrupa los tipos de residuo por cada punto
 	 * Valida el filtro de dias
-	 * @param rs
-	 * @param filter
-	 * @return
-	 * @throws SQLException
 	 */
 	private List<PuntoReciclaje> getList(ResultSet rs, PuntoReciclajeFilter filter) throws SQLException{
-		var l = new HashMap<Long, PuntoReciclaje>();
+		var mapPuntos = new HashMap<Long, PuntoReciclaje>();
 		while ( rs.next() ) {
-			if(l.containsKey(rs.getLong("ID"))) {
-				var tr = new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre"));
-				l.get(rs.getLong("ID")).tipoResiduo.add(tr);
-			}else {
-				var listTipoResiduo = new ArrayList<TipoResiduo>();
-				listTipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
-				List<Dia> dias = Dia.getDia(rs.getString("DiasAbierto"));
-				if(filter.hasDias()) {
-					for(int i = 0; i < dias.size(); i++) {
-						if(filter.dias.contains(String.valueOf(dias.get(i).ordinal()))) {
-							l.put(rs.getLong("ID"),
-									new PuntoReciclaje(rs.getLong("ID"),
-									rs.getString("Titulo"),	rs.getDouble("Latitud"),
-									rs.getDouble("Longitud"), dias, listTipoResiduo,
-									"/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"),
-									null));
-							break;
-						}
-					}
-				}else {
-					l.put(rs.getLong("ID"),
-							new PuntoReciclaje(rs.getLong("ID"),
-							rs.getString("Titulo"),	rs.getDouble("Latitud"),
-							rs.getDouble("Longitud"), dias, listTipoResiduo,
-							"/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"),
-							null));
-				}
+			val id = rs.getLong("ID");
+			PuntoReciclaje punto = mapPuntos.get(id);
+			if ( punto == null) {
+				punto = new PuntoReciclaje(
+					id,
+					rs.getString("Titulo"),
+					rs.getDouble("Latitud"),
+					rs.getDouble("Longitud"),
+					Dia.getDia(rs.getString("DiasAbierto")),
+					new ArrayList<>(),
+					rs.getLong("UsuarioId"),
+					null
+				);
+				mapPuntos.put(id, punto);
 			}
+			punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
 		}
-		return new ArrayList<>(l.values());
+
+		return mapPuntos.values().stream()
+			.filter(p -> !filter.hasDias() || !Collections.disjoint(filter.dias, p.dias))
+			.toList();
 	}
 
 	/**
-	 * Arma el Select para la consulta de list
-	 * @param t
-	 * @param f
-	 * @return
-	 * @throws PersistenceException
-	 * @throws SQLException
 	 */
 	private PreparedStatement createSelectForList(Transaction t, PuntoReciclajeFilter f) throws PersistenceException, SQLException {
-		var selectFmt = """
-SELECT %s
-  FROM "PuntoReciclaje" AS pr
-    %s
- WHERE 1=1
-""";
-
-		// TODO: cambiar por expand, ver de donde obtener el reciclador_id
-		var select = "pr.\"ID\",pr.\"Titulo\", pr.\"Latitud\","
-				+ " pr.\"Longitud\", pr.\"DiasAbierto\","
-				+ " prtr.\"TipoResiduoId\", tr.\"Nombre\","
-				+ " ciu.\"UsuarioId\"";
-
-		var join = """
-   LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
-   LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
-   LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
-""" ;
-
-		var sql = String.format(selectFmt, select, join);
-
-		var b = new StringBuilder(sql);
+		var b = new StringBuilder(SELECT);
 		List<Object> parameters = new ArrayList<>();
 
 		if ( f.hasTipo() ) {
@@ -122,15 +104,7 @@ SELECT %s
 					.map(tr -> "?")
 					.collect(Collectors.joining(","));
 
-			b.append(String.format("""
-    AND pr."ID" IN (
-    SELECT spr."ID"
-      FROM "PuntoReciclaje" spr
- LEFT JOIN "PuntoReciclaje_TipoResiduo" AS sprtr ON sprtr."PuntoReciclajeId" = spr."ID"
- LEFT JOIN "TipoResiduo" AS str on str."ID" = sprtr."TipoResiduoId"
-     WHERE str."Nombre" IN (%s)
-    )
-""", marks));
+			b.append(String.format(WHERE_TIPO, marks));
 			parameters.addAll(f.tiposResiduos);
 		}
 
@@ -140,8 +114,7 @@ SELECT %s
 		}
 
 		if ( f.hasArea() ) {
-			b.append("AND pr.\"Latitud\" BETWEEN ? AND ?\n")
-				.append("AND pr.\"Longitud\" BETWEEN ? AND ?\n");
+			b.append(WHERE_AREA);
 			parameters.add(f.latitud - f.radio);
 			parameters.add(f.latitud + f.radio);
 			parameters.add(f.longitud - f.radio);
@@ -149,9 +122,9 @@ SELECT %s
 		}
 
 		var p = t.prepareStatement(b.toString());
-		for (int i = 0; i < parameters.size(); i++) {
+		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i+1, parameters.get(i));
-		}
+
 		return p;
 	}
 }

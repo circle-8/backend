@@ -13,7 +13,6 @@ public class PuntoReciclajeDto {
 	public double longitud;
 	public List<Dia> dias;
 	public List<TipoResiduoDto> tipoResiduo;
-	public String recicladorUri;
 	public Long recicladorId;
 	public UserDto reciclador;
 
@@ -25,7 +24,6 @@ public class PuntoReciclajeDto {
 		pr.longitud = entity.longitud;
 		pr.dias = entity.dias;
 		pr.tipoResiduo = entity.tipoResiduo.stream().map(TipoResiduoDto::from).toList();
-		pr.recicladorUri = entity.recicladorUri;
 		pr.recicladorId = entity.recicladorId;
 		pr.reciclador = entity.reciclador != null ? UserDto.from(entity.reciclador) : null;
 		return pr;
@@ -39,22 +37,9 @@ public class PuntoReciclajeDto {
 			longitud,
 			dias.stream().map(DiaResponse::from).toList(),
 			tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList(),
-			recicladorUri,
+			"/user/" + recicladorId,
 			recicladorId,
 			reciclador != null ?  reciclador.toResponse() : null
 		);
-	}
-
-	public PuntoReciclaje toEntity() {
-		return PuntoReciclaje.builder()
-				.id(id)
-				.titulo(titulo)
-				.latitud(latitud)
-				.longitud(longitud)
-				.dias(dias)
-				.recicladorUri(recicladorUri)
-				.recicladorId(recicladorId)
-				.reciclador(reciclador != null ? reciclador.toEntity() : null)
-				.build();
 	}
 }

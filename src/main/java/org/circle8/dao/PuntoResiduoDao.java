@@ -17,32 +17,56 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class PuntoResiduoDao extends Dao {
+	private static final String SELECT_FMT = """
+		SELECT %s
+		  FROM "PuntoResiduo" AS pr
+		  JOIN "Ciudadano" AS c ON c."ID" = pr."CiudadanoId"
+		    %s
+		 WHERE 1=1
+		""";
+	private static final String SELECT_SIMPLE = "pr.\"ID\", \"Latitud\", \"Longitud\", \"CiudadanoId\", c.\"UsuarioId\"";
+	private static final String SELECT_CIUDADANO = SELECT_SIMPLE + ", u.\"Username\", u.\"NombreApellido\", u.\"Email\", u.\"TipoUsuario\"\n";
+	private static final String JOIN_TIPO = """
+		JOIN "Residuo" AS r ON r."PuntoResiduoId" = pr."ID"
+		JOIN "TipoResiduo" AS tr on tr."ID" = r."TipoResiduoId"
+		""";
+	private static final String JOIN_CIUDADANO = "JOIN \"Usuario\" AS u ON u.\"ID\" = c.\"UsuarioId\"\n";
+	private static final String WHERE_AREA = """
+		AND pr."Latitud" BETWEEN ? AND ?
+		AND pr."Longitud" BETWEEN ? AND ?
+		""";
+	private static final String WHERE_TIPO = """
+		AND tr."Nombre" IN ( %s )
+		AND r."RecorridoId" IS NULL
+		AND r."TransaccionId" IS NULL
+		""";
+
 	@Inject
 	public PuntoResiduoDao(DataSource ds) { super(ds); }
 
 	public List<PuntoResiduo> list(PuntoResiduoFilter f, PuntoResiduoExpand x) throws PersistenceException {
-		try ( val t = open(true); val select = createSelect(t, f, x) ) {
-			try ( val rs = select.executeQuery() ) {
-				val l = new ArrayList<PuntoResiduo>();
-				while ( rs.next() ) {
-					val u = new User();
-					u.id = rs.getLong("UsuarioId");
-					if ( x.ciudadano ) {
-						u.username = rs.getString("Username");
-						u.nombre = rs.getString("NombreApellido");
-						u.email = rs.getString("Email");
-						u.tipo = TipoUsuario.valueOf(rs.getString("TipoUsuario"));
-					}
-					l.add(new PuntoResiduo(
-						rs.getLong("ID"),
-						rs.getDouble("Latitud"),
-						rs.getDouble("Longitud"),
-						rs.getLong("CiudadanoId"),
-						u
-					));
+		try ( val t = open(true); val select = createSelect(t, f, x); val rs = select.executeQuery() ) {
+			val l = new ArrayList<PuntoResiduo>();
+			while ( rs.next() ) {
+				val u = new User();
+				u.id = rs.getLong("UsuarioId");
+				if ( x.ciudadano ) {
+					u.username = rs.getString("Username");
+					u.nombre = rs.getString("NombreApellido");
+					u.email = rs.getString("Email");
+					u.tipo = TipoUsuario.valueOf(rs.getString("TipoUsuario"));
 				}
-				return l;
+
+				l.add(new PuntoResiduo(
+					rs.getLong("ID"),
+					rs.getDouble("Latitud"),
+					rs.getDouble("Longitud"),
+					rs.getLong("CiudadanoId"),
+					u
+				));
 			}
+
+			return l;
 		} catch ( SQLException e) {
 			throw new PersistenceException("error getting PuntoResiduo", e);
 		}
@@ -53,46 +77,19 @@ public class PuntoResiduoDao extends Dao {
 		PuntoResiduoFilter f,
 		PuntoResiduoExpand x
 	) throws PersistenceException, SQLException {
-		val selectFmt = """
- SELECT %s
-   FROM "PuntoResiduo" AS pr
-   %s
-  WHERE 1=1
-  """;
+		final String select = x.ciudadano ? SELECT_CIUDADANO : SELECT_SIMPLE;
 
-		// TODO: constantes
-		final String select;
-		if ( x.ciudadano ) {
-			select = "pr.\"ID\", \"Latitud\", \"Longitud\", \"CiudadanoId\", c.\"UsuarioId\"," +
-				"u.\"Username\", u.\"NombreApellido\", u.\"Email\", u.\"TipoUsuario\"";
-		} else {
-			select = "pr.\"ID\", \"Latitud\", \"Longitud\", \"CiudadanoId\", c.\"UsuarioId\"";
-		}
-
-		final StringBuilder joinB = new StringBuilder("""
-JOIN "Ciudadano" AS c ON c."ID" = pr."CiudadanoId"
-""");
-		if ( f.hasTipo() ) {
-			joinB.append("""
-JOIN "Residuo" AS r ON r."PuntoResiduoId" = pr."ID"
-JOIN "TipoResiduo" AS tr on tr."ID" = r."TipoResiduoId"
-""");
-		}
-		if ( x.ciudadano ) {
-			joinB.append("""
-JOIN "Usuario" AS u ON u."ID" = c."UsuarioId"
-""");
-		}
+		val joinB = new StringBuilder();
+		if ( f.hasTipo() ) joinB.append(JOIN_TIPO);
+		if ( x.ciudadano ) joinB.append(JOIN_CIUDADANO);
 
 		val join = joinB.toString();
-		val sql = String.format(selectFmt, select, join);
+		val sql = String.format(SELECT_FMT, select, join);
 
-		val b = new StringBuilder(sql);
+		val conditions = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
 		if ( f.hasArea() ) {
-			// TODO: constantes
-			b.append("AND pr.\"Latitud\" BETWEEN ? AND ?\n")
-				.append("AND pr.\"Longitud\" BETWEEN ? AND ?\n");
+			conditions.append(WHERE_AREA);
 			parameters.add(f.latitud - f.radio);
 			parameters.add(f.latitud + f.radio);
 			parameters.add(f.longitud - f.radio);
@@ -100,24 +97,17 @@ JOIN "Usuario" AS u ON u."ID" = c."UsuarioId"
 		}
 
 		if ( f.hasTipo() ) {
-			// TODO: constantes
-			String marks = f.tipoResiduos.stream()
+			val marks = f.tipoResiduos.stream()
 				.map(tr -> "?")
 				.collect(Collectors.joining(","));
 
-			b.append("AND tr.\"Nombre\" IN (").append(marks).append(")\n")
-				.append("AND r.\"FechaRetiro\" IS NULL\n")
-				.append("AND r.\"RecorridoId\" IS NULL\n")
-				.append("AND r.\"TransaccionId\" IS NULL\n")
-			;
-
+			conditions.append(String.format(WHERE_TIPO, marks));
 			parameters.addAll(f.tipoResiduos);
 		}
 
-		val p = t.prepareStatement(b.toString());
-		for (int i = 0; i < parameters.size(); i++) {
+		val p = t.prepareStatement(conditions.toString());
+		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i+1, parameters.get(i));
-		}
 
 		return p;
 	}

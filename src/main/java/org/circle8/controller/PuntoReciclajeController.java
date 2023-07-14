@@ -12,6 +12,7 @@ import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoReciclajeResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
+import org.circle8.dto.Dia;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.filter.PuntoReciclajeFilter;
@@ -100,7 +101,7 @@ public class PuntoReciclajeController {
 			return new ErrorResponse(valid);
 
 		val filter = PuntoReciclajeFilter.builder()
-				.dias(req.dias)
+				.dias(req.dias.stream().map(Dia::get).toList())
 				.tiposResiduos(req.tiposResiduo)
 				.reciclador_id(req.recicladorId)
 				.latitud(req.latitud).longitud(req.longitud).radio(req.radio)

@@ -10,7 +10,7 @@ import jakarta.annotation.Nullable;
 public class PuntoReciclajeRequest implements IRequest {
 	private final Validation validation = new Validation();
 
-	public List<String> dias;
+	public List<Integer> dias;
 	public List<String> tiposResiduo;
 	public Long recicladorId;
 	public Double latitud;
@@ -18,7 +18,15 @@ public class PuntoReciclajeRequest implements IRequest {
 	public Double radio;
 
 	public PuntoReciclajeRequest(Map<String, List<String>> queryParams) {
-		this.dias = queryParams.getOrDefault("dias", List.of());
+		try {
+			this.dias = queryParams.getOrDefault("dias", List.of())
+				.stream()
+				.map(Integer::parseInt)
+				.toList();
+		} catch ( NumberFormatException e ) {
+			validation.add("'dias' deben ser números del 0 al 6. Comenzando por LUNES.");
+		}
+
 		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
 		this.recicladorId = parseInt(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
