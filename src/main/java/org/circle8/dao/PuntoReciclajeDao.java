@@ -24,7 +24,7 @@ public class PuntoReciclajeDao extends Dao{
 	PuntoReciclajeDao(DataSource ds) {
 		super(ds);
 	}
-	
+
 	/**
 	 * Obtiene el listado de puntos de reciclaje
 	 * @return
@@ -37,9 +37,9 @@ public class PuntoReciclajeDao extends Dao{
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting punto reciclaje", e);
-		}		
-	}	
-	
+		}
+	}
+
 	/**
 	 * Procesa el resultado de la consulta de list
 	 * Agrupa los tipos de residuo por cada punto
@@ -55,7 +55,7 @@ public class PuntoReciclajeDao extends Dao{
 			if(l.containsKey(rs.getLong("ID"))) {
 				var tr = new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre"));
 				l.get(rs.getLong("ID")).tipoResiduo.add(tr);
-			}else {						
+			}else {
 				var listTipoResiduo = new ArrayList<TipoResiduo>();
 				listTipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
 				List<Dia> dias = Dia.getDia(rs.getString("DiasAbierto"));
@@ -78,12 +78,12 @@ public class PuntoReciclajeDao extends Dao{
 							rs.getDouble("Longitud"), dias, listTipoResiduo,
 							"/user/"+rs.getLong("UsuarioId"), rs.getLong("UsuarioId"),
 							null));
-				}						
+				}
 			}
 		}
-		return new ArrayList<PuntoReciclaje>(l.values());
+		return new ArrayList<>(l.values());
 	}
-	
+
 	/**
 	 * Arma el Select para la consulta de list
 	 * @param t
@@ -94,43 +94,51 @@ public class PuntoReciclajeDao extends Dao{
 	 */
 	private PreparedStatement createSelectForList(Transaction t, PuntoReciclajeFilter f) throws PersistenceException, SQLException {
 		var selectFmt = """
-		 SELECT %s
-		   FROM "PuntoReciclaje" AS pr
-		   %s
-		  WHERE 1=1 		  
-		  """;
+SELECT %s
+  FROM "PuntoReciclaje" AS pr
+    %s
+ WHERE 1=1
+""";
 
 		// TODO: cambiar por expand, ver de donde obtener el reciclador_id
 		var select = "pr.\"ID\",pr.\"Titulo\", pr.\"Latitud\","
 				+ " pr.\"Longitud\", pr.\"DiasAbierto\","
 				+ " prtr.\"TipoResiduoId\", tr.\"Nombre\","
 				+ " ciu.\"UsuarioId\"";
-		
+
 		var join = """
-		   LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
-		   LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
-		   LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
-		   """ ;
+   LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
+   LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
+   LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
+""" ;
 
 		var sql = String.format(selectFmt, select, join);
 
 		var b = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
-		
+
 		if ( f.hasTipo() ) {
 			String marks = f.tiposResiduos.stream()
 					.map(tr -> "?")
 					.collect(Collectors.joining(","));
 
-			b.append("AND tr.\"Nombre\" IN (").append(marks).append(")\n");
+			b.append(String.format("""
+    AND pr."ID" IN (
+    SELECT spr."ID"
+      FROM "PuntoReciclaje" spr
+ LEFT JOIN "PuntoReciclaje_TipoResiduo" AS sprtr ON sprtr."PuntoReciclajeId" = spr."ID"
+ LEFT JOIN "TipoResiduo" AS str on str."ID" = sprtr."TipoResiduoId"
+     WHERE str."Nombre" IN (%s)
+    )
+""", marks));
 			parameters.addAll(f.tiposResiduos);
 		}
-		
-		if(f.hasReciclador()) {
+
+		if( f.hasReciclador() ) {
 			b.append("AND pr.\"CiudadanoId\" = ?\n");
 			parameters.add(f.reciclador_id);
 		}
-		
+
 		if ( f.hasArea() ) {
 			b.append("AND pr.\"Latitud\" BETWEEN ? AND ?\n")
 				.append("AND pr.\"Longitud\" BETWEEN ? AND ?\n");
@@ -138,12 +146,12 @@ public class PuntoReciclajeDao extends Dao{
 			parameters.add(f.latitud + f.radio);
 			parameters.add(f.longitud - f.radio);
 			parameters.add(f.longitud + f.radio);
-		}		
-		
+		}
+
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++) {
 			p.setObject(i+1, parameters.get(i));
-		}	
+		}
 		return p;
 	}
 }

@@ -21,7 +21,8 @@ INSERT INTO public."PuntoReciclaje" ("CiudadanoId", "Latitud", "Longitud", "Dias
 INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResiduoId") VALUES (1, 1);
 INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResiduoId") VALUES (1, 2);
 INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResiduoId") VALUES (1, 4);
-INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResiduoId") VALUES (2, 1);
+INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResiduoId") VALUES (2, 3);
+INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResiduoId") VALUES (2, 4);
 
 INSERT INTO public."PuntoResiduo" ("CiudadanoId", "Latitud", "Longitud") VALUES (1, -34.6611203, -58.5422521);
 
