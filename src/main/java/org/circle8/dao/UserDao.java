@@ -39,7 +39,7 @@ public class UserDao extends Dao {
 
 			try ( var rs = insert.getGeneratedKeys() ) {
 				if (rs.next())
-					user.id = rs.getInt(1);
+					user.id = rs.getLong(1);
 				else
 					throw new SQLException("Creating the user failed, no ID obtained");
 			}

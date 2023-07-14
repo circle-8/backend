@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import io.javalin.http.Context;
 import io.javalin.http.Cookie;
 import io.javalin.http.SameSite;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.configuration2.Configuration;
 import org.circle8.controller.request.user.RefreshTokenRequest;
@@ -30,8 +31,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 @Singleton
+@Slf4j
 public class UserController {
-	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
 	private static final UserResponse mock = UserResponse.builder()
 		.id(1)
@@ -94,7 +95,7 @@ public class UserController {
 		} catch ( NotFoundException e ) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceError e ) {
-			logger.error("[Request:{}] error login in", req, e);
+			log.error("[Request:{}] error login in", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
@@ -152,13 +153,13 @@ public class UserController {
 
 		val valid = req.valid();
 		if ( !valid.valid() )
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+			return new ErrorResponse(valid);
 
 		var dto = UserDto.from(req);
 		try {
 			dto = service.save(dto, req.password);
 		} catch ( ServiceError e ) {
-			logger.error("[Request:{}] error saving new user", req, e);
+			log.error("[Request:{}] error saving new user", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());

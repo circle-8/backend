@@ -3,9 +3,8 @@ package org.circle8.entity;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class Ciudadano {
+public class Transportista {
 	public long id;
-	public String username;
-	public String nombre;
 	public final long usuarioId;
+	// TODO: polyline
 }

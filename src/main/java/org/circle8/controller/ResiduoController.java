@@ -17,7 +17,7 @@ public class ResiduoController {
 	private final ResiduoResponse mock = ResiduoResponse.builder()
 		.id(1)
 		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30))
-		.puntoResiduo(new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f))
+		.puntoResiduo(new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f, 1L, "/user/1", null, List.of()))
 		.tipoResiduo(new TipoResiduoResponse(1, "ORGANICO"))
 		.recorridoUri("/recorrido/1").recorridoId(1)
 		.build();

@@ -3,29 +3,37 @@ package org.circle8.controller.request.punto_reciclaje;
 import java.util.List;
 import java.util.Map;
 
-import org.circle8.controller.request.user.IRequest;
+import org.circle8.controller.request.IRequest;
 
 import jakarta.annotation.Nullable;
 
-public class PuntoReciclajeRequest implements IRequest{
+public class PuntoReciclajeRequest implements IRequest {
 	private final Validation validation = new Validation();
-	
-	public List<String> dias;
+
+	public List<Integer> dias;
 	public List<String> tiposResiduo;
-	public Long reciclador_id;
+	public Long recicladorId;
 	public Double latitud;
 	public Double longitud;
-	public Double radio;	
-	
+	public Double radio;
+
 	public PuntoReciclajeRequest(Map<String, List<String>> queryParams) {
-		this.dias = queryParams.getOrDefault("dias", List.of());
+		try {
+			this.dias = queryParams.getOrDefault("dias", List.of())
+				.stream()
+				.map(Integer::parseInt)
+				.toList();
+		} catch ( NumberFormatException e ) {
+			validation.add("'dias' deben ser números del 0 al 6. Comenzando por LUNES.");
+		}
+
 		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
-		this.reciclador_id = parseInt(queryParams, "reciclador_id");
+		this.recicladorId = parseInt(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
-		this.radio = parseDouble(queryParams, "radio");	
+		this.radio = parseDouble(queryParams, "radio");
 	}
-		
+
 	@Nullable
 	private Long parseInt(Map<String, List<String>> queryParams, String paramName) {
 		try {
@@ -36,7 +44,7 @@ public class PuntoReciclajeRequest implements IRequest{
 			return null;
 		}
 	}
-	
+
 	@Nullable
 	private Double parseDouble(Map<String, List<String>> queryParams, String paramName) {
 		try {
@@ -47,7 +55,7 @@ public class PuntoReciclajeRequest implements IRequest{
 			return null;
 		}
 	}
-	
+
 	@Override
 	public Validation valid() {
 		if ( latitud != null && (longitud == null || radio == null) )
@@ -56,6 +64,7 @@ public class PuntoReciclajeRequest implements IRequest{
 			validation.add("Si se especifica longitud, se debe enviar latitud y radio");
 		if ( radio != null && (latitud == null || longitud == null) )
 			validation.add("Si se especifica radio, se debe enviar latitud y longitud");
+
 		return validation;
 	}
 

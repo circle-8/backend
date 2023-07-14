@@ -15,16 +15,14 @@ import com.google.inject.Singleton;
 public class PuntoReciclajeService {
 
 	private final PuntoReciclajeDao dao;
-	
+
 	@Inject
 	public PuntoReciclajeService(PuntoReciclajeDao dao) {
 		this.dao = dao;
 	}
-	
+
 	/**
 	 * Obtiene el listado de puntos de reciclaje
-	 * @return
-	 * @throws ServiceError
 	 */
 	public List<PuntoReciclajeDto> list(PuntoReciclajeFilter filter) throws ServiceError{
 		try {
