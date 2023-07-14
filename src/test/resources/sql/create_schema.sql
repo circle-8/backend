@@ -5,9 +5,10 @@ CREATE TYPE public."TipoUsuario" AS ENUM
 
 CREATE TABLE IF NOT EXISTS public."Ciudadano"
 (
-    "ID" bigint NOT NULL,
+    "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
     "UsuarioId" bigint NOT NULL,
-    CONSTRAINT "Ciudadano_pkey" PRIMARY KEY ("ID")
+    CONSTRAINT "Ciudadano_pkey" PRIMARY KEY ("ID"),
+    CONSTRAINT "Ciudadano_UsuarioId_key" UNIQUE ("UsuarioId")
 );
 
 CREATE TABLE IF NOT EXISTS public."Organizacion"
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS public."PuntoReciclaje"
     "Latitud" double precision NOT NULL,
     "Longitud" double precision NOT NULL,
     "DiasAbierto" character varying NOT NULL,
+    "Titulo" character varying NOT NULL,
     CONSTRAINT "PuntoReciclaje_pkey" PRIMARY KEY ("ID")
 );
 

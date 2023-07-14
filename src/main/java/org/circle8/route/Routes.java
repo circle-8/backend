@@ -11,6 +11,7 @@ import io.javalin.http.Handler;
 import io.javalin.http.HttpStatus;
 import io.javalin.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.configuration2.Configuration;
 import org.circle8.controller.PlanController;
 import org.circle8.controller.PuntoReciclajeController;
 import org.circle8.controller.PuntoResiduoController;
@@ -52,10 +53,12 @@ public class Routes {
 	private final JwtService jwtService;
 
 	private final Gson gson;
+	private final Configuration cfg;
 
 	@Inject
 	public Routes(
 		Gson gson,
+		Configuration cfg,
 		JwtService jwtService,
 		ResiduoController residuoController,
 		PuntoReciclajeController puntoReciclajeController,
@@ -71,6 +74,7 @@ public class Routes {
 		PuntoVerdeController puntoVerdeController
 	) {
 		this.gson = gson;
+		this.cfg = cfg;
 		this.jwtService = jwtService;
 		this.residuoController = residuoController;
 		this.puntoReciclajeController = puntoReciclajeController;
@@ -227,16 +231,18 @@ public class Routes {
 	private Handler result(Function<Context, ApiResponse> h) {
 		return ctx -> {
 			try {
-				var token = ctx.cookie("access_token");
-				if (Strings.isNullOrEmpty(token)) {
-					var err = new ErrorResponse(ErrorCode.TOKEN_NOT_FOUND, "Debe enviar un token", "");
-					setContext(ctx, err);
-					return;
-				}
-				if (!jwtService.isValid(token)) {
-					var err = new ErrorResponse(ErrorCode.TOKEN_EXPIRED, "Token expirado", "");
-					setContext(ctx, err);
-					return;
+				if ( this.cfg.getBoolean("jwt.require.token") ) {
+					var token = ctx.cookie("access_token");
+					if (Strings.isNullOrEmpty(token)) {
+						var err = new ErrorResponse(ErrorCode.TOKEN_NOT_FOUND, "Debe enviar un token", "");
+						setContext(ctx, err);
+						return;
+					}
+					if (!jwtService.isValid(token)) {
+						var err = new ErrorResponse(ErrorCode.TOKEN_EXPIRED, "Token expirado", "");
+						setContext(ctx, err);
+						return;
+					}
 				}
 
 				ctx.contentType(ContentType.APPLICATION_JSON);

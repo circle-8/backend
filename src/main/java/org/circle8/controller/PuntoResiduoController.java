@@ -10,15 +10,12 @@ import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
-import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.dto.PuntoResiduoDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
 import org.circle8.service.PuntoResiduoService;
-
-import java.util.List;
 
 @Singleton
 @Slf4j
@@ -47,7 +44,7 @@ public class PuntoResiduoController {
 			val points = service.list(filter, expand);
 			return new ListResponse<>(points.stream().map(PuntoResiduoDto::toResponse).toList());
 		} catch ( ServiceError e ) {
-			log.error("[Request:{}] error saving new user", req, e);
+			log.error("[Request:{}] error list punto residuo", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());

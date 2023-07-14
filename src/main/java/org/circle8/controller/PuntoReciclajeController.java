@@ -2,6 +2,8 @@ package org.circle8.controller;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.DiaResponse;
@@ -22,6 +24,7 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 @Singleton
+@Slf4j
 public class PuntoReciclajeController {
 	private static final String ID_RECICLADOR_PARAM = "id_reciclador";
 
@@ -91,23 +94,23 @@ public class PuntoReciclajeController {
 	 * GET /puntos_reciclaje
 	 */
 	public ApiResponse list(Context ctx) {
+		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(valid);
+
+		val filter = PuntoReciclajeFilter.builder()
+				.dias(req.dias)
+				.tiposResiduos(req.tiposResiduo)
+				.reciclador_id(req.recicladorId)
+				.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
+				.build();
+
 		try {
-			var req = new PuntoReciclajeRequest(ctx.queryParamMap());
-			var valid = req.valid();
-			if ( !valid.valid() )
-				return new ErrorResponse(valid);
-
-			var filter = PuntoReciclajeFilter.builder()
-					.dias(req.dias)
-					.tiposResiduos(req.tiposResiduo)
-					.reciclador_id(req.recicladorId)
-					.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
-					.build();
-
-			//TODO llevar al list response de datos unicamente
-			var l = this.service.list(filter);
-			return new ListResponse<>(0, 1, 2, null, null, l.stream().map(PuntoReciclajeDto::toResponse).toList());
+			val l = this.service.list(filter);
+			return new ListResponse<>(l.stream().map(PuntoReciclajeDto::toResponse).toList());
 		} catch (ServiceError e) {
+			log.error("[Request:{}] error list punto residuo", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		}
 	}
