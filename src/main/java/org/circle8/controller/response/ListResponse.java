@@ -34,4 +34,14 @@ public class ListResponse<T> implements ApiResponse {
 		this.data = data;
 		this.pageSize = this.data.size();
 	}
+
+	public ListResponse(List<T> data) {
+		this.data = data;
+
+		this.pageNumber = 0;
+		this.totalPages = 1;
+		this.count = this.pageSize = this.data.size();
+		this.nextPage = null;
+		this.prevPage = null;
+	}
 }

@@ -1,4 +1,4 @@
-package org.circle8.controller.request.user;
+package org.circle8.controller.request;
 
 import java.util.ArrayList;
 import java.util.List;

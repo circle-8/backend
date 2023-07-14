@@ -1,4 +1,4 @@
-package org.circle8.controller.response;
+package org.circle8.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder(toBuilder = true)
-public class TipoResiduoResponse implements ApiResponse {
+@Builder
+public class TipoResiduo {
 	public int id;
 	public String nombre;
 }

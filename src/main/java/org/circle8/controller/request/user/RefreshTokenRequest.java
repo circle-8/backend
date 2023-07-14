@@ -2,6 +2,7 @@ package org.circle8.controller.request.user;
 
 import com.google.common.base.Strings;
 import lombok.val;
+import org.circle8.controller.request.IRequest;
 
 public class RefreshTokenRequest implements IRequest {
 	public String refreshToken;
