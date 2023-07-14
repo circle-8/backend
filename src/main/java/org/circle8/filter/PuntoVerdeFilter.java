@@ -6,21 +6,16 @@ import lombok.Builder;
 import org.circle8.dto.Dia;
 
 @Builder
-public class PuntoReciclajeFilter {
+public class PuntoVerdeFilter {
 
 	public List<Dia> dias;
 	public List<String> tiposResiduos;
-	public Long reciclador_id;
 	public Double latitud;
 	public Double longitud;
 	public Double radio;
 
 	public boolean hasDias() {
 		return dias != null && !dias.isEmpty();
-	}
-	
-	public boolean hasReciclador() {
-		return reciclador_id != null;
 	}
 
 	public boolean hasTipo() {
