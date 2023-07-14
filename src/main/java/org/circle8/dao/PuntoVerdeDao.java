@@ -26,7 +26,7 @@ public class PuntoVerdeDao extends Dao{
 			AND pr."Latitud" BETWEEN ? AND ?
 			AND pr."Longitud" BETWEEN ? AND ?
 			""";
-	private static final String SELECT = """
+	private static final String SELECT_LIST = """
 		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", prtr."TipoResiduoId", tr."Nombre"
 		     FROM "PuntoReciclaje" AS pr
 		LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
@@ -95,8 +95,16 @@ public class PuntoVerdeDao extends Dao{
 			.toList();
 	}
 	
+	/**
+	 * Crea la consulta de select para el metodo list
+	 * @param t
+	 * @param f
+	 * @return
+	 * @throws PersistenceException
+	 * @throws SQLException
+	 */
 	private PreparedStatement createSelectForList(Transaction t, PuntoVerdeFilter f) throws PersistenceException, SQLException {
-		var b = new StringBuilder(SELECT);
+		var b = new StringBuilder(SELECT_LIST);
 		List<Object> parameters = new ArrayList<>();
 
 		if ( f.hasTipo() ) {
