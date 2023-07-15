@@ -26,14 +26,24 @@ public class PuntoReciclajeDao extends Dao{
 		AND pr."Latitud" BETWEEN ? AND ?
 		AND pr."Longitud" BETWEEN ? AND ?
 		""";
+	
 	private static final String SELECT = """
 		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", prtr."TipoResiduoId", tr."Nombre", ciu."UsuarioId"
 		     FROM "PuntoReciclaje" AS pr
 		LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
 		LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
 		LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
-		    WHERE 1=1
+		    WHERE 1=1		    
 		""";
+	
+	private static final String WHERE_CIUDADADO_NULL = """
+			AND pr."CiudadanoId" IS NULL
+			""";
+	
+	private static final String WHERE_CIUDADADO_NOT_NULL = """
+			AND pr."CiudadanoId" IS NOT NULL
+			""";
+	
 	private static final String WHERE_TIPO = """
 		    AND pr."ID" IN (
 		    SELECT spr."ID"
@@ -85,7 +95,8 @@ public class PuntoReciclajeDao extends Dao{
 				);
 				mapPuntos.put(id, punto);
 			}
-			punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
+			if(rs.getInt("TipoResiduoId") != 0)
+				punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
 		}
 
 		return mapPuntos.values().stream()
@@ -98,6 +109,8 @@ public class PuntoReciclajeDao extends Dao{
 	private PreparedStatement createSelectForList(Transaction t, PuntoReciclajeFilter f) throws PersistenceException, SQLException {
 		var b = new StringBuilder(SELECT);
 		List<Object> parameters = new ArrayList<>();
+		
+		b.append(f.isPuntoVerde() ? WHERE_CIUDADADO_NULL : WHERE_CIUDADADO_NOT_NULL);
 
 		if ( f.hasTipo() ) {
 			String marks = f.tiposResiduos.stream()
