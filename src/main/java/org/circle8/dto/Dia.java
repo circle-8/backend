@@ -1,5 +1,7 @@
 package org.circle8.dto;
 
+import java.sql.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -34,4 +36,30 @@ public enum Dia {
 			.mapToObj(Dia::get)
 			.toList();
 	}
+
+	public static String getDias(List<Dia> list) {
+		StringBuilder respuesta = new StringBuilder("[");
+		String[] array = new String[7];
+		for(int i = 0; i < 7; i ++) {
+			if(list.contains(get(i))) {
+				array[i] = "1";
+			}
+			else {
+				array[i] = "0";
+			}
+		}
+		respuesta.append(String.join(",", array)).append("]");
+		return respuesta.toString();
+	}
+
+	/**
+	 * Transforma una lista de Integers en una lista de dias usando la función interna
+	 * @param ld
+	 * @return List<Dia>
+	 */
+	public static List<Dia> getDia(List<Integer> ld) {
+		return ld.stream().map(Dia::get).toList();
+	}
+
+
 }

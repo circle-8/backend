@@ -78,7 +78,21 @@ public class PuntoReciclajeController {
 	 * POST /reciclador/{id_reciclador}/punto_reciclaje
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock.toBuilder().recicladorId(Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM))).build();
+		//TODO: falta implementar el guardado de los tipos de residuo
+		//TODO: Cómo se toma el id_reciclador
+		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
+		val valid = req.validForPost();
+		if ( !valid.valid()) {
+			return new ErrorResponse(valid);
+		}
+		val dto = PuntoReciclajeDto.from(req);
+		try {
+			service.save(dto);
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error saving new PuntoReciclaje", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
+		return dto.toResponse();
 	}
 
 	/**

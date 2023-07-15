@@ -12,7 +12,13 @@ public class TipoResiduoDto {
 		tr.id = entity.id;
 		tr.nombre = entity.nombre;
 		return tr;
-	}	
+	}
+
+	public static TipoResiduoDto from(String tipoResiduo) {
+		var tr = new TipoResiduoDto();
+		tr.nombre = tipoResiduo;
+		return tr;
+	}
 	
 	public TipoResiduoResponse toResponse() {
 		return new TipoResiduoResponse(id, nombre);

@@ -3,6 +3,7 @@ package org.circle8.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,6 +16,8 @@ import lombok.val;
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.TipoResiduo;
+import org.circle8.entity.User;
+import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.PuntoReciclajeFilter;
 
@@ -47,6 +50,37 @@ public class PuntoReciclajeDao extends Dao{
 	@Inject
 	PuntoReciclajeDao(DataSource ds) {
 		super(ds);
+	}
+
+
+	public PuntoReciclaje save(Transaction t, PuntoReciclaje punto) throws PersistenceException {
+		var insertSQL = """
+			INSERT INTO public."PuntoReciclaje"(
+				"CiudadanoId", "Latitud", "Longitud", "DiasAbierto", "Titulo")
+				VALUES (?, ?, ?, ?, ?)""";
+
+		try ( var insert = t.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setLong(1, punto.recicladorId);
+			insert.setDouble(2, punto.latitud);
+			insert.setDouble(3, punto.longitud);
+			insert.setString(4, Dia.getDias(punto.dias));
+			insert.setString(5, punto.titulo);
+
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new SQLException("Creating the PuntoReciclaje failed, no affected rows");
+
+			try ( var rs = insert.getGeneratedKeys() ) {
+				if (rs.next())
+					punto.id = rs.getLong(1);
+				else
+					throw new SQLException("Creating the PuntoReciclaje failed, no ID obtained");
+			}
+		} catch ( SQLException e ) {
+				throw new PersistenceException("error inserting PuntoReciclaje", e);
+		}
+
+		return punto;
 	}
 
 	/**
