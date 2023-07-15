@@ -6,7 +6,6 @@ import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
-import org.circle8.exception.ServiceException;
 import org.circle8.filter.PuntoReciclajeFilter;
 
 import com.google.inject.Inject;
@@ -38,8 +37,7 @@ public class PuntoReciclajeService {
 		try(var t = dao.open()) {
 			entity = dao.save(t, entity);
 			dto.id = entity.id;
-
-			//TODO: llamar al otro dao
+			dao.getIds(t, entity.tipoResiduo);
 			t.commit();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar el punto de reciclaje", e);

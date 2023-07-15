@@ -25,6 +25,22 @@ import com.google.inject.Inject;
 
 public class PuntoReciclajeDao extends Dao{
 
+
+	private static final String SELECT_TIPOS = """
+		   SELECT tr."ID", tr."Nombre"
+		     FROM public."TipoResiduo" AS tr
+		    WHERE 1=1
+		""";
+
+	private static final String WHERE_NOMBRE_TIPOS = """
+			AND tr."Nombre" IN (%s)
+		""";
+
+	private static final String INSERT_SQL = """
+      INSERT INTO public."PuntoReciclaje"("CiudadanoId", "Latitud", "Longitud", "DiasAbierto", "Titulo")
+  		VALUES (?, ?, ?, ?, ?)
+  		""";
+
 	private static final String WHERE_AREA = """
 		AND pr."Latitud" BETWEEN ? AND ?
 		AND pr."Longitud" BETWEEN ? AND ?
@@ -54,12 +70,8 @@ public class PuntoReciclajeDao extends Dao{
 
 
 	public PuntoReciclaje save(Transaction t, PuntoReciclaje punto) throws PersistenceException {
-		var insertSQL = """
-			INSERT INTO public."PuntoReciclaje"(
-				"CiudadanoId", "Latitud", "Longitud", "DiasAbierto", "Titulo")
-				VALUES (?, ?, ?, ?, ?)""";
 
-		try ( var insert = t.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS) ) {
+		try ( var insert = t.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setLong(1, punto.recicladorId);
 			insert.setDouble(2, punto.latitud);
 			insert.setDouble(3, punto.longitud);
@@ -160,5 +172,21 @@ public class PuntoReciclajeDao extends Dao{
 			p.setObject(i+1, parameters.get(i));
 
 		return p;
+	}
+
+	public HashMap<String, Integer> getIds(Transaction t, List<TipoResiduo> tipos) throws PersistenceException {
+		var consulta = new StringBuilder(SELECT_TIPOS);
+		String marks = tipos.stream()
+								  .map(tr -> "'" + tr.nombre + "'")
+								  .collect(Collectors.joining(","));
+		consulta.append(String.format(WHERE_NOMBRE_TIPOS, marks));
+		var p = t.prepareStatement(consulta.toString());
+		try {
+			var rs = p.executeQuery();
+			generateMap
+		} catch (SQLException e) {
+			throw new PersistenceException("error getting list of TipoResiduo", e);
+		}
+		return null;
 	}
 }

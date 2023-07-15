@@ -48,7 +48,7 @@ public enum Dia {
 				array[i] = "0";
 			}
 		}
-		respuesta.append(String.join(",", array)).append("]");
+		respuesta.append(String.join(", ", array)).append("]");
 		return respuesta.toString();
 	}
 

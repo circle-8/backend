@@ -79,8 +79,8 @@ public class PuntoReciclajeController {
 	 */
 	public ApiResponse post(Context ctx) {
 		//TODO: falta implementar el guardado de los tipos de residuo
-		//TODO: Cómo se toma el id_reciclador
 		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
+		req.recicladorId = Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM));
 		val valid = req.validForPost();
 		if ( !valid.valid()) {
 			return new ErrorResponse(valid);
