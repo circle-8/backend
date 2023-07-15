@@ -38,12 +38,12 @@ public class PuntoReciclajeDto {
 			longitud,
 			dias.stream().map(DiaResponse::from).toList(),
 			tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList(),
-			"/user/" + recicladorId,
+			"/user/" + reciclador.id,
 			recicladorId,
-			reciclador != null ?  reciclador.toResponse() : null
+			reciclador.toResponse()
 		);
 	}
-	
+
 	public PuntoVerdeResponse toPuntoVerdeResponse() {
 		return new PuntoVerdeResponse(
 				id,
@@ -52,6 +52,6 @@ public class PuntoReciclajeDto {
 				longitud,
 				dias.stream().map(DiaResponse::from).toList(),
 				tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList()
-			);		
+			);
 	}
 }
