@@ -2,7 +2,7 @@ package org.circle8.controller;
 
 import java.util.List;
 
-import org.circle8.controller.request.punto_verde.PuntoVerdeRequest;
+import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.DiaResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -11,10 +11,10 @@ import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoVerdeResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.Dia;
-import org.circle8.dto.PuntoVerdeDto;
+import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.exception.ServiceError;
-import org.circle8.filter.PuntoVerdeFilter;
-import org.circle8.service.PuntoVerdeService;
+import org.circle8.filter.PuntoReciclajeFilter;
+import org.circle8.service.PuntoReciclajeService;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -28,11 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PuntoVerdeController {
 	
-	private PuntoVerdeService service;
+	private PuntoReciclajeService service;
 	
 	@Inject
-	public PuntoVerdeController(PuntoVerdeService puntoVerdeService) {
-		this.service = puntoVerdeService;
+	public PuntoVerdeController(PuntoReciclajeService puntoReciclajeService) {
+		this.service = puntoReciclajeService;
 	}
 
 	
@@ -82,20 +82,21 @@ public class PuntoVerdeController {
 	 * GET /puntos_verdes
 	 */
 	public ApiResponse list(Context ctx) {
-		val req = new PuntoVerdeRequest(ctx.queryParamMap());
+		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(valid);
 
-		val filter = PuntoVerdeFilter.builder()
+		val filter = PuntoReciclajeFilter.builder()
 				.dias(req.dias.stream().map(Dia::get).toList())
 				.tiposResiduos(req.tiposResiduo)
 				.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
+				.isPuntoVerde(true)
 				.build();
 
 		try {
 			val l = this.service.list(filter);
-			return new ListResponse<>(l.stream().map(PuntoVerdeDto::toResponse).toList());
+			return new ListResponse<>(l.stream().map(PuntoReciclajeDto::toPuntoVerdeResponse).toList());
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error list puntos verde", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
