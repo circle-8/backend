@@ -27,7 +27,7 @@ public class PuntoResiduoDto {
 		r.latitud = this.latitud;
 		r.longitud = this.longitud;
 		r.ciudadanoId = this.ciudadanoId;
-		r.ciudadanoUri = "/user/" + this.ciudadanoId;
+		r.ciudadanoUri = "/user/" + this.ciudadano.id;
 		r.ciudadano = this.ciudadano.toResponse();
 		return r;
 	}

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.circle8.controller.response.DiaResponse;
 import org.circle8.controller.response.PuntoReciclajeResponse;
+import org.circle8.controller.response.PuntoVerdeResponse;
 import org.circle8.entity.PuntoReciclaje;
 
 public class PuntoReciclajeDto {
@@ -37,9 +38,20 @@ public class PuntoReciclajeDto {
 			longitud,
 			dias.stream().map(DiaResponse::from).toList(),
 			tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList(),
-			"/user/" + recicladorId,
+			"/user/" + reciclador.id,
 			recicladorId,
-			reciclador != null ?  reciclador.toResponse() : null
+			reciclador.toResponse()
 		);
+	}
+
+	public PuntoVerdeResponse toPuntoVerdeResponse() {
+		return new PuntoVerdeResponse(
+				id,
+				titulo,
+				latitud,
+				longitud,
+				dias.stream().map(DiaResponse::from).toList(),
+				tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList()
+			);
 	}
 }
