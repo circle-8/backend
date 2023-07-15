@@ -3,6 +3,7 @@ package org.circle8.controller.request.punto_reciclaje;
 import java.util.List;
 import java.util.Map;
 
+import io.javalin.http.Context;
 import org.circle8.controller.request.IRequest;
 
 import jakarta.annotation.Nullable;
@@ -16,6 +17,7 @@ public class PuntoReciclajeRequest implements IRequest {
 	public Double latitud;
 	public Double longitud;
 	public Double radio;
+	public Integer id;
 
 	public PuntoReciclajeRequest(Map<String, List<String>> queryParams) {
 		try {
@@ -28,17 +30,34 @@ public class PuntoReciclajeRequest implements IRequest {
 		}
 
 		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
-		this.recicladorId = parseInt(queryParams, "reciclador_id");
+		this.recicladorId = parseLong(queryParams, "id_reciclador");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
 		this.radio = parseDouble(queryParams, "radio");
+		this.id = parseInt(queryParams, "id");
+	}
+
+	public PuntoReciclajeRequest(Context ctx) {
+		this.recicladorId = Long.parseLong(ctx.pathParam("id_reciclador"));
+		this.id = Integer.parseInt(ctx.pathParam("id"));
 	}
 
 	@Nullable
-	private Long parseInt(Map<String, List<String>> queryParams, String paramName) {
+	private Long parseLong(Map<String, List<String>> queryParams, String paramName) {
 		try {
 			var param = queryParams.getOrDefault(paramName, List.of());
 			return !param.isEmpty() ? Long.parseLong(param.get(0)) : null;
+		} catch ( NumberFormatException e ) {
+			validation.add(String.format("%s debe ser un numero", paramName));
+			return null;
+		}
+	}
+
+	@Nullable
+	private Integer parseInt(Map<String, List<String>> queryParams, String paramName) {
+		try {
+			var param = queryParams.getOrDefault(paramName, List.of());
+			return !param.isEmpty() ? Integer.parseInt(param.get(0)) : null;
 		} catch ( NumberFormatException e ) {
 			validation.add(String.format("%s debe ser un numero", paramName));
 			return null;
@@ -64,6 +83,10 @@ public class PuntoReciclajeRequest implements IRequest {
 			validation.add("Si se especifica longitud, se debe enviar latitud y radio");
 		if ( radio != null && (latitud == null || longitud == null) )
 			validation.add("Si se especifica radio, se debe enviar latitud y longitud");
+		if(id != null && recicladorId == null)
+			validation.add("Si se especifica id, el recicladorId no puede ser nulo");
+		if(recicladorId != null && id == null)
+			validation.add("Si se especifica recicladorId, el id no puede ser nulo");
 
 		return validation;
 	}

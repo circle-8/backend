@@ -20,13 +20,13 @@ import org.circle8.filter.PuntoReciclajeFilter;
 
 import com.google.inject.Inject;
 
-public class PuntoReciclajeDao extends Dao{
+public class PuntoReciclajeDao extends Dao {
 
 	private static final String WHERE_AREA = """
 		AND pr."Latitud" BETWEEN ? AND ?
 		AND pr."Longitud" BETWEEN ? AND ?
 		""";
-	
+
 	private static final String SELECT = """
 		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", prtr."TipoResiduoId", tr."Nombre", ciu."UsuarioId"
 		     FROM "PuntoReciclaje" AS pr
@@ -35,15 +35,23 @@ public class PuntoReciclajeDao extends Dao{
 		LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
 		    WHERE 1=1		    
 		""";
-	
+
+	private static final String SELECT_GET = """
+		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."CiudadanoId" , prtr."TipoResiduoId", tr."Nombre"
+		   	FROM "PuntoReciclaje" AS pr
+		   		LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
+				LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
+		    WHERE 	    
+		""";
+
 	private static final String WHERE_CIUDADADO_NULL = """
-			AND pr."CiudadanoId" IS NULL
-			""";
-	
+		AND pr."CiudadanoId" IS NULL
+		""";
+
 	private static final String WHERE_CIUDADADO_NOT_NULL = """
-			AND pr."CiudadanoId" IS NOT NULL
-			""";
-	
+		AND pr."CiudadanoId" IS NOT NULL
+		""";
+
 	private static final String WHERE_TIPO = """
 		    AND pr."ID" IN (
 		    SELECT spr."ID"
@@ -62,12 +70,25 @@ public class PuntoReciclajeDao extends Dao{
 	/**
 	 * Obtiene el listado de puntos de reciclaje
 	 */
-	public List<PuntoReciclaje> list(PuntoReciclajeFilter filter) throws PersistenceException{
-		try ( var t = open(true); var select = createSelectForList(t, filter) ) {
-			try ( var rs = select.executeQuery() ) {
+	public List<PuntoReciclaje> list(PuntoReciclajeFilter filter) throws PersistenceException {
+		try (var t = open(true); var select = createSelectForList(t, filter)) {
+			try (var rs = select.executeQuery()) {
 				return getList(rs, filter);
 			}
-		} catch ( SQLException e ) {
+		} catch (SQLException e) {
+			throw new PersistenceException("error getting punto reciclaje", e);
+		}
+	}
+
+	/**
+	 * Obtiene un punto de reciclaje por medio de su id
+	 */
+	public PuntoReciclaje get(PuntoReciclajeFilter filter) throws PersistenceException {
+		try (var t = open(true); var select = createSelectForGet(t, filter)) {
+			try (var rs = select.executeQuery()) {
+				return getPunto(rs);
+			}
+		} catch (SQLException e) {
 			throw new PersistenceException("error getting punto reciclaje", e);
 		}
 	}
@@ -77,12 +98,12 @@ public class PuntoReciclajeDao extends Dao{
 	 * Agrupa los tipos de residuo por cada punto
 	 * Valida el filtro de dias
 	 */
-	private List<PuntoReciclaje> getList(ResultSet rs, PuntoReciclajeFilter filter) throws SQLException{
+	private List<PuntoReciclaje> getList(ResultSet rs, PuntoReciclajeFilter filter) throws SQLException {
 		var mapPuntos = new HashMap<Long, PuntoReciclaje>();
-		while ( rs.next() ) {
+		while (rs.next()) {
 			val id = rs.getLong("ID");
 			PuntoReciclaje punto = mapPuntos.get(id);
-			if ( punto == null) {
+			if (punto == null) {
 				punto = new PuntoReciclaje(
 					id,
 					rs.getString("Titulo"),
@@ -95,7 +116,7 @@ public class PuntoReciclajeDao extends Dao{
 				);
 				mapPuntos.put(id, punto);
 			}
-			if(rs.getInt("TipoResiduoId") != 0)
+			if (rs.getInt("TipoResiduoId") != 0)
 				punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
 		}
 
@@ -105,28 +126,51 @@ public class PuntoReciclajeDao extends Dao{
 	}
 
 	/**
+	 * Procesa el resultado de la consulta de get
+	 */
+	private PuntoReciclaje getPunto(ResultSet rs) throws SQLException {
+		PuntoReciclaje punto = null;
+		while (rs.next()) {
+			punto = new PuntoReciclaje(
+				rs.getLong("ID"),
+				rs.getString("Titulo"),
+				rs.getDouble("Latitud"),
+				rs.getDouble("Longitud"),
+				Dia.getDia(rs.getString("DiasAbierto")),
+				new ArrayList<>(),
+				rs.getLong("CiudadanoId"),
+				null
+			);
+			if (rs.getInt("TipoResiduoId") != 0)
+				punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
+		}
+		return punto;
+	}
+
+	/**
+	 *
 	 */
 	private PreparedStatement createSelectForList(Transaction t, PuntoReciclajeFilter f) throws PersistenceException, SQLException {
 		var b = new StringBuilder(SELECT);
 		List<Object> parameters = new ArrayList<>();
-		
+
 		b.append(f.isPuntoVerde() ? WHERE_CIUDADADO_NULL : WHERE_CIUDADADO_NOT_NULL);
 
-		if ( f.hasTipo() ) {
+		if (f.hasTipo()) {
 			String marks = f.tiposResiduos.stream()
-					.map(tr -> "?")
-					.collect(Collectors.joining(","));
+				.map(tr -> "?")
+				.collect(Collectors.joining(","));
 
 			b.append(String.format(WHERE_TIPO, marks));
 			parameters.addAll(f.tiposResiduos);
 		}
 
-		if( f.hasReciclador() ) {
+		if (f.hasReciclador()) {
 			b.append("AND pr.\"CiudadanoId\" = ?\n");
 			parameters.add(f.reciclador_id);
 		}
 
-		if ( f.hasArea() ) {
+		if (f.hasArea()) {
 			b.append(WHERE_AREA);
 			parameters.add(f.latitud - f.radio);
 			parameters.add(f.latitud + f.radio);
@@ -136,7 +180,28 @@ public class PuntoReciclajeDao extends Dao{
 
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++)
-			p.setObject(i+1, parameters.get(i));
+			p.setObject(i + 1, parameters.get(i));
+
+		return p;
+	}
+
+	private PreparedStatement createSelectForGet(Transaction t, PuntoReciclajeFilter f) throws PersistenceException, SQLException {
+		var b = new StringBuilder(SELECT_GET);
+		List<Object> parameters = new ArrayList<>();
+
+		if (f.hasId()) {
+			b.append(" pr.\"ID\" = ?\n");
+			parameters.add(f.id);
+		}
+
+		if (f.hasReciclador()) {
+			b.append("AND pr.\"CiudadanoId\" = ?\n");
+			parameters.add(f.reciclador_id);
+		}
+
+		var p = t.prepareStatement(b.toString());
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
 
 		return p;
 	}

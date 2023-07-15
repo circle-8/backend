@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dto.PuntoReciclajeDto;
+import org.circle8.entity.PuntoReciclaje;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.filter.PuntoReciclajeFilter;
@@ -27,6 +28,17 @@ public class PuntoReciclajeService {
 	public List<PuntoReciclajeDto> list(PuntoReciclajeFilter filter) throws ServiceError{
 		try {
 			return this.dao.list(filter).stream().map(PuntoReciclajeDto::from).toList();
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al obtener el listado de puntos de reciclaje", e);
+		}
+	}
+
+	/**
+	 * Obtiene un punto de reciclaje por medio de su id
+	 */
+	public PuntoReciclaje get(PuntoReciclajeFilter filter) throws ServiceError{
+		try {
+			return this.dao.get(filter);
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el listado de puntos de reciclaje", e);
 		}

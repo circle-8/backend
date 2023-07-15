@@ -1,28 +1,20 @@
 package org.circle8.controller;
 
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
-import org.circle8.controller.response.ApiResponse;
-import org.circle8.controller.response.DiaResponse;
-import org.circle8.controller.response.ErrorCode;
-import org.circle8.controller.response.ErrorResponse;
-import org.circle8.controller.response.ListResponse;
-import org.circle8.controller.response.PuntoReciclajeResponse;
-import org.circle8.controller.response.TipoResiduoResponse;
+import org.circle8.controller.response.*;
 import org.circle8.dto.Dia;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.filter.PuntoReciclajeFilter;
 import org.circle8.service.PuntoReciclajeService;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import java.util.List;
 
 @Singleton
 @Slf4j
@@ -47,11 +39,30 @@ public class PuntoReciclajeController {
 	 * GET /reciclador/{id_reciclador}/punto_reciclaje/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM)))
-			.build();
+		try {
+
+			val req = new PuntoReciclajeRequest(ctx);
+			val valid = req.valid();
+			if (!valid.valid())
+				return new ErrorResponse(valid);
+
+			var filter = PuntoReciclajeFilter.builder()
+				.reciclador_id(req.recicladorId)
+				.id(req.id)
+				.build();
+
+			var puntoReciclaje = this.service.get(filter);
+
+			if (puntoReciclaje == null) {
+				return new ErrorResponse(ErrorCode.NOT_FOUND, "El punto de reciclaje no existe", "");
+			}
+
+			return PuntoReciclajeDto.from(puntoReciclaje).toResponse();
+		} catch (ServiceError e) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
 	}
+
 	/**
 	 * PUT /reciclador/{id_reciclador}/punto_reciclaje/{id}
 	 */
@@ -97,16 +108,16 @@ public class PuntoReciclajeController {
 	public ApiResponse list(Context ctx) {
 		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
 		val valid = req.valid();
-		if ( !valid.valid() )
+		if (!valid.valid())
 			return new ErrorResponse(valid);
 
-		val filter = PuntoReciclajeFilter.builder()				
-				.dias(req.dias.stream().map(Dia::get).toList())
-				.tiposResiduos(req.tiposResiduo)
-				.reciclador_id(req.recicladorId)
-				.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
-				.isPuntoVerde(false)
-				.build();
+		val filter = PuntoReciclajeFilter.builder()
+			.dias(req.dias.stream().map(Dia::get).toList())
+			.tiposResiduos(req.tiposResiduo)
+			.reciclador_id(req.recicladorId)
+			.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
+			.isPuntoVerde(false)
+			.build();
 
 		try {
 			val l = this.service.list(filter);
