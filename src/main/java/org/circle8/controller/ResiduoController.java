@@ -1,16 +1,21 @@
 package org.circle8.controller;
 
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.circle8.controller.request.residuo.ResiduoRequest;
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import lombok.val;
 
 @Singleton
 public class ResiduoController {
@@ -19,7 +24,7 @@ public class ResiduoController {
 		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30))
 		.puntoResiduo(new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f, 1L, "/user/1", null, List.of()))
 		.tipoResiduo(new TipoResiduoResponse(1, "ORGANICO"))
-		.recorridoUri("/recorrido/1").recorridoId(1)
+		.recorridoUri("/recorrido/1").recorridoId(1L)
 		.build();
 
 	/**
@@ -39,9 +44,18 @@ public class ResiduoController {
 
 	/**
 	 * POST /residuo
-	 * Requiere de Tipo de Residuo y Punto de Residuo
+	 * Requiere de :
+	 * Tipo de Residuo
+	 * Punto de Residuo
+	 * Fecha limite retiro (opcional)
+	 * Descripcion
 	 */
 	public ApiResponse post(Context ctx) {
+		val req = new ResiduoRequest(ctx.queryParamMap());
+		val valid = req.validForPost();
+		if ( !valid.valid() )
+			return new ErrorResponse(valid);
+		
 		return mock;
 	}
 
