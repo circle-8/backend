@@ -17,6 +17,8 @@ import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
 import org.circle8.service.PuntoResiduoService;
 
+import java.util.List;
+
 @Singleton
 @Slf4j
 public class PuntoResiduoController {
@@ -25,6 +27,28 @@ public class PuntoResiduoController {
 	@Inject
 	public PuntoResiduoController(PuntoResiduoService puntoResiduoService) {
 		this.service = puntoResiduoService;
+	}
+
+	public ApiResponse get(Context ctx) {
+		final Long ciudadanoId;
+		final Long id;
+		try {
+			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+
+		val expand = new PuntoResiduoExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
+
+		try {
+			return service.get(ciudadanoId, id, expand).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request: ciudadano_id={}, id={}] error get punto residuo", ciudadanoId, id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	public ApiResponse list(Context ctx) {

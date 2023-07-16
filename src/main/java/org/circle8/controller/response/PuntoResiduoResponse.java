@@ -9,9 +9,9 @@ import java.util.List;
 @NoArgsConstructor
 public class PuntoResiduoResponse implements ApiResponse {
 	public long id;
-	public double latitud;
-	public double longitud;
-	public long ciudadanoId;
+	public Double latitud;
+	public Double longitud;
+	public Long ciudadanoId;
 	public String ciudadanoUri;
 	public UserResponse ciudadano;
 	public List<ResiduoResponse> residuos; // TODO: not implemented for list
