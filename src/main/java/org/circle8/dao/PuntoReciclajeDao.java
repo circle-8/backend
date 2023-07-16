@@ -38,10 +38,11 @@ public class PuntoReciclajeDao extends Dao {
 		""";
 
 	private static final String SELECT_GET = """
-		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."CiudadanoId" , prtr."TipoResiduoId", tr."Nombre"
+		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."CiudadanoId" , prtr."TipoResiduoId", tr."Nombre", ciu."UsuarioId"
 		   	FROM "PuntoReciclaje" AS pr
 		   		LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
 				LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
+				LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
 		    WHERE 	    
 		""";
 
@@ -140,7 +141,7 @@ public class PuntoReciclajeDao extends Dao {
 				Dia.getDia(rs.getString("DiasAbierto")),
 				new ArrayList<>(),
 				rs.getLong("CiudadanoId"),
-				null
+				User.builder().id(rs.getLong("UsuarioId")).build()
 			);
 			if (rs.getInt("TipoResiduoId") != 0)
 				punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));

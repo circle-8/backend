@@ -51,13 +51,13 @@ public class PuntoReciclajeController {
 				.id(req.id)
 				.build();
 
-			var puntoReciclaje = this.service.get(filter);
+			var puntoReciclajeDto = this.service.get(filter);
 
-			if (puntoReciclaje == null) {
+			if (puntoReciclajeDto == null) {
 				return new ErrorResponse(ErrorCode.NOT_FOUND, "El punto de reciclaje no existe", "");
 			}
 
-			return PuntoReciclajeDto.from(puntoReciclaje).toResponse();
+			return puntoReciclajeDto.toResponse();
 		} catch (ServiceError e) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		}

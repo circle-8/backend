@@ -36,9 +36,9 @@ public class PuntoReciclajeService {
 	/**
 	 * Obtiene un punto de reciclaje por medio de su id
 	 */
-	public PuntoReciclaje get(PuntoReciclajeFilter filter) throws ServiceError{
+	public PuntoReciclajeDto get(PuntoReciclajeFilter filter) throws ServiceError{
 		try {
-			return this.dao.get(filter);
+			return PuntoReciclajeDto.from(this.dao.get(filter));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el listado de puntos de reciclaje", e);
 		}
