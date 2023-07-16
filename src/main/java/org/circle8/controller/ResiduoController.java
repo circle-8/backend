@@ -10,6 +10,7 @@ import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
+import org.circle8.dto.ResiduoDto;
 
 import com.google.inject.Singleton;
 
@@ -55,6 +56,8 @@ public class ResiduoController {
 		val valid = req.validForPost();
 		if ( !valid.valid() )
 			return new ErrorResponse(valid);
+		
+		val dto = ResiduoDto.from(req);
 		
 		return mock;
 	}

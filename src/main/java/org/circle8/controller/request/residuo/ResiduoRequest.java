@@ -62,5 +62,4 @@ public class ResiduoRequest implements IRequest{
 			validation.add("Se debe especificar el punto de reciduo");
 		return validation;
 	}
-
 }
