@@ -11,6 +11,7 @@ import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.dto.PuntoResiduoDto;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.PuntoResiduoExpand;
@@ -46,6 +47,8 @@ public class PuntoResiduoController {
 		} catch ( ServiceError e ) {
 			log.error("[Request: ciudadano_id={}, id={}] error get punto residuo", ciudadanoId, id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}

@@ -42,13 +42,15 @@ public class PuntoResiduoDao extends Dao {
 		AND pr."Latitud" BETWEEN ? AND ?
 		AND pr."Longitud" BETWEEN ? AND ?
 		""";
-	private static final String WHERE_TIPO = """
-		AND tr."Nombre" IN ( %s )
+	private static final String WHERE_RESIDUO = """
 		AND r."RecorridoId" IS NULL
 		AND r."TransaccionId" IS NULL
 		AND r."FechaRetiro" IS NULL
 		AND ( r."FechaLimiteRetiro" IS NULL OR r."FechaLimiteRetiro" > ? )
 		""";
+	private static final String WHERE_TIPO = """
+		AND tr."Nombre" IN ( %s )
+		""" + WHERE_RESIDUO;
 	private static final String WHERE_IDS = """
 		AND "CiudadanoId" = ?
 		AND pr."ID" = ?
@@ -190,10 +192,11 @@ public class PuntoResiduoDao extends Dao {
 		var join = JOIN_TIPO;
 		if ( x.ciudadano ) join += JOIN_CIUDADANO;
 
-		val sql = String.format(SELECT_FMT, select, join) + WHERE_IDS;
+		val sql = String.format(SELECT_FMT, select, join) + WHERE_IDS + WHERE_RESIDUO;
 		val p = t.prepareStatement(sql);
 		p.setLong(1, ciudadanoId);
 		p.setLong(2, id);
+		p.setTimestamp(3, Timestamp.from(ZonedDateTime.now().toInstant()));
 
 		return p;
 	}
