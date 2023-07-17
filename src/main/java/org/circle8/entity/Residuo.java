@@ -2,14 +2,14 @@ package org.circle8.entity;
 
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Builder
 public class Residuo {
 	public long id;
 	public long ciudadanoId;
-	public LocalDateTime fechaRetiro;
-	public LocalDateTime fechaCreacion;
+	public ZonedDateTime fechaRetiro;
+	public ZonedDateTime fechaCreacion;
 	public PuntoResiduo punto;
 	public TipoResiduo tipo;
 	public Recorrido recorrido;

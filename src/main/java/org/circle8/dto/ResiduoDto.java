@@ -3,13 +3,13 @@ package org.circle8.dto;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.entity.Residuo;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 public class ResiduoDto {
 	public long id;
 	public long ciudadanoId;
-	public LocalDateTime fechaRetiro;
-	public LocalDateTime fechaCreacion;
+	public ZonedDateTime fechaRetiro;
+	public ZonedDateTime fechaCreacion;
 	public PuntoResiduoDto punto;
 	public TipoResiduoDto tipo;
 	public RecorridoDto recorrido;

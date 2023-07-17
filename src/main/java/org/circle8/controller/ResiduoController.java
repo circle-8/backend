@@ -8,15 +8,17 @@ import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
+import org.circle8.utils.Dates;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Singleton
 public class ResiduoController {
 	private final ResiduoResponse mock = ResiduoResponse.builder()
 		.id(1)
-		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30))
+		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30).atZone(Dates.UTC))
 		.puntoResiduo(new PuntoResiduoResponse(1, -34.6701907d, -58.5656422d, 1L, "/user/1", null, List.of()))
 		.tipoResiduo(new TipoResiduoResponse(1, "ORGANICO"))
 		.recorridoUri("/recorrido/1").recorridoId(1L)
@@ -96,7 +98,7 @@ public class ResiduoController {
 	public ApiResponse fulfill(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaRetiro(LocalDateTime.now())
+			.fechaRetiro(ZonedDateTime.now(Dates.UTC))
 			.build();
 	}
 

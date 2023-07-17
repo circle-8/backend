@@ -10,6 +10,7 @@ import org.circle8.entity.User;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
+import org.circle8.utils.Dates;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
@@ -165,7 +166,7 @@ public class PuntoResiduoDao extends Dao {
 					val r = Residuo.builder()
 						.id(rs.getLong("ResiduoId"))
 						.ciudadanoId(ciudadanoId)
-						.fechaCreacion(rs.getTimestamp("FechaCreacion").toLocalDateTime())
+						.fechaCreacion(rs.getTimestamp("FechaCreacion").toLocalDateTime().atZone(Dates.UTC))
 						.tipo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
 						.punto(new PuntoResiduo(p.id)) // para evitar recursividad dentro de residuo
 						.build();

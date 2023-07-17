@@ -4,15 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
 public class ResiduoResponse implements ApiResponse {
 	public long id;
-	public LocalDateTime fechaRetiro;
-	public LocalDateTime fechaCreacion;
+	public ZonedDateTime fechaRetiro;
+	public ZonedDateTime fechaCreacion;
 	public String puntoResiduoUri;
 	public Long puntoResiduoId;
 	public PuntoResiduoResponse puntoResiduo;
