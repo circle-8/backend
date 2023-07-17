@@ -40,24 +40,23 @@ public class PuntoReciclajeController {
 	 */
 	public ApiResponse get(Context ctx) {
 		try {
+			final Long id;
+			final Long recicladorId;
 
-			val req = new PuntoReciclajeRequest(ctx);
-			val valid = req.valid();
-			if (!valid.valid())
-				return new ErrorResponse(valid);
+			try {
+				id = Long.parseLong(ctx.pathParam("id"));
+				recicladorId = Long.parseLong(ctx.pathParam("reciclador_id"));
+			} catch ( NumberFormatException e) {
+				return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+			}
 
-			var filter = PuntoReciclajeFilter.builder()
-				.reciclador_id(req.recicladorId)
-				.id(req.id)
-				.build();
-
-			var puntoReciclajeDto = this.service.get(filter);
+			var puntoReciclajeDto = this.service.get(id, recicladorId).toResponse();
 
 			if (puntoReciclajeDto == null) {
 				return new ErrorResponse(ErrorCode.NOT_FOUND, "El punto de reciclaje no existe", "");
 			}
 
-			return puntoReciclajeDto.toResponse();
+			return puntoReciclajeDto;
 		} catch (ServiceError e) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		}

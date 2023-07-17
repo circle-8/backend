@@ -17,7 +17,6 @@ public class PuntoReciclajeRequest implements IRequest {
 	public Double latitud;
 	public Double longitud;
 	public Double radio;
-	public Integer id;
 
 	public PuntoReciclajeRequest(Map<String, List<String>> queryParams) {
 		try {
@@ -30,16 +29,10 @@ public class PuntoReciclajeRequest implements IRequest {
 		}
 
 		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
-		this.recicladorId = parseLong(queryParams, "id_reciclador");
+		this.recicladorId = parseLong(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
 		this.radio = parseDouble(queryParams, "radio");
-		this.id = parseInt(queryParams, "id");
-	}
-
-	public PuntoReciclajeRequest(Context ctx) {
-		this.recicladorId = Long.parseLong(ctx.pathParam("id_reciclador"));
-		this.id = Integer.parseInt(ctx.pathParam("id"));
 	}
 
 	@Nullable
@@ -83,10 +76,6 @@ public class PuntoReciclajeRequest implements IRequest {
 			validation.add("Si se especifica longitud, se debe enviar latitud y radio");
 		if ( radio != null && (latitud == null || longitud == null) )
 			validation.add("Si se especifica radio, se debe enviar latitud y longitud");
-		if(id != null && recicladorId == null)
-			validation.add("Si se especifica id, el recicladorId no puede ser nulo");
-		if(recicladorId != null && id == null)
-			validation.add("Si se especifica recicladorId, el id no puede ser nulo");
 
 		return validation;
 	}

@@ -85,8 +85,8 @@ public class PuntoReciclajeDao extends Dao {
 	/**
 	 * Obtiene un punto de reciclaje por medio de su id
 	 */
-	public PuntoReciclaje get(PuntoReciclajeFilter filter) throws PersistenceException {
-		try (var t = open(true); var select = createSelectForGet(t, filter)) {
+	public PuntoReciclaje get(Long id, Long recicladorId) throws PersistenceException {
+		try (var t = open(true); var select = createSelectForGet(t, id, recicladorId)) {
 			try (var rs = select.executeQuery()) {
 				return getPunto(rs);
 			}
@@ -187,24 +187,12 @@ public class PuntoReciclajeDao extends Dao {
 		return p;
 	}
 
-	private PreparedStatement createSelectForGet(Transaction t, PuntoReciclajeFilter f) throws PersistenceException, SQLException {
+	private PreparedStatement createSelectForGet(Transaction t, Long id, Long recicladorId) throws PersistenceException, SQLException {
 		var b = new StringBuilder(SELECT_GET);
-		List<Object> parameters = new ArrayList<>();
 
-		if (f.hasId()) {
-			b.append(" pr.\"ID\" = ?\n");
-			parameters.add(f.id);
-		}
+		b.append(" pr.\"ID\" = " + id);
+		b.append("\n AND pr.\"CiudadanoId\" = " + recicladorId);
 
-		if (f.hasReciclador()) {
-			b.append("AND pr.\"CiudadanoId\" = ?\n");
-			parameters.add(f.reciclador_id);
-		}
-
-		var p = t.prepareStatement(b.toString());
-		for (int i = 0; i < parameters.size(); i++)
-			p.setObject(i + 1, parameters.get(i));
-
-		return p;
+		return t.prepareStatement(b.toString());
 	}
 }

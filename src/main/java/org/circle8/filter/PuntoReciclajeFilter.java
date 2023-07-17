@@ -15,7 +15,6 @@ public class PuntoReciclajeFilter {
 	public Double longitud;
 	public Double radio;
 	public boolean isPuntoVerde;
-	public Integer id;
 
 	public boolean hasDias() {
 		return dias != null && !dias.isEmpty();
@@ -37,5 +36,4 @@ public class PuntoReciclajeFilter {
 		return isPuntoVerde;
 	}
 
-	public boolean hasId() { return id != null; }
 }
