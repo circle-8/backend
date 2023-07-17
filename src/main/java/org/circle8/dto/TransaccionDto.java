@@ -3,6 +3,7 @@ package org.circle8.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.circle8.controller.response.TransaccionResponse;
 import org.circle8.entity.Transaccion;
 
 public class TransaccionDto {
@@ -30,5 +31,10 @@ public class TransaccionDto {
 		t.puntoReciclaje = PuntoReciclajeDto.from(entity.puntoReciclaje);
 		t.residuos = entity.residuos.stream().map(ResiduoDto::from).toList();
 		return t;
+	}
+	
+	public TransaccionResponse toResponse(){
+		//TODO: llenar cuando corresponda
+		return new TransaccionResponse();
 	}
 }

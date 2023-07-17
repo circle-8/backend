@@ -17,6 +17,7 @@ public class ResiduoRequest implements IRequest{
 	public Long recorridoId;
 	public Long tipoResiduoId;
 	public Long puntoResiduo;
+	public Long ciudadnoId;
 	public LocalDateTime fechaLimite;
 	public String descripcion;
 	
@@ -45,21 +46,20 @@ public class ResiduoRequest implements IRequest{
 		this.recorridoId = Parser.parseLong(validation, queryParams, "recorrido");
 		this.tipoResiduoId = Parser.parseLong(validation, queryParams, "tipo_residuo");
 		this.puntoResiduo = Parser.parseLong(validation, queryParams, "punto_residuo");
+		this.ciudadnoId = Parser.parseLong(validation, queryParams, "ciudadano_id");
 		this.fechaLimite = Parser.parseLocalDateTime(validation, queryParams, "fecha_limite_retiro");
 		this.descripcion = Parser.parseString(validation, queryParams, "descripcion");
 	}
 
 	@Override
 	public Validation valid() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	public Validation validForPost() {
+		//Son las viladaciones para el POST
 		if(tipoResiduoId == null)
 			validation.add("Se debe especificar el tipo de residuo");
 		if(puntoResiduo == null)
 			validation.add("Se debe especificar el punto de reciduo");
+		if(ciudadnoId == null)
+			validation.add("Se debe especificar el id del ciudadano");
 		return validation;
 	}
 }

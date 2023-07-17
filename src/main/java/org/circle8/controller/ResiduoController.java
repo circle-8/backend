@@ -5,21 +5,35 @@ import java.util.List;
 
 import org.circle8.controller.request.residuo.ResiduoRequest;
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.ResiduoDto;
+import org.circle8.exception.ServiceError;
+import org.circle8.service.ResiduoService;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Slf4j
 public class ResiduoController {
+	
+	private final ResiduoService service;
+	
+	@Inject
+	public ResiduoController(ResiduoService service) {
+		this.service = service;
+	}
+	
 	private final ResiduoResponse mock = ResiduoResponse.builder()
 		.id(1)
 		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30))
@@ -53,13 +67,18 @@ public class ResiduoController {
 	 */
 	public ApiResponse post(Context ctx) {
 		val req = new ResiduoRequest(ctx.queryParamMap());
-		val valid = req.validForPost();
+		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(valid);
 		
-		val dto = ResiduoDto.from(req);
-		
-		return mock;
+		var dto = ResiduoDto.from(req);		
+		try {
+			dto = service.save(dto);
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error saving new residuo", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}		
+		return dto.toResponse();
 	}
 
 	public ApiResponse delete(Context ctx) {

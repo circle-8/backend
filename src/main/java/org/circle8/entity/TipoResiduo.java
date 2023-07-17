@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class TipoResiduo {
-	public int id;
+	public long id;
 	public String nombre;
 }

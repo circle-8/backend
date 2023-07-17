@@ -3,6 +3,7 @@ package org.circle8.dto;
 import java.time.LocalDateTime;
 
 import org.circle8.controller.request.residuo.ResiduoRequest;
+import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.entity.Residuo;
 
 public class ResiduoDto {
@@ -11,6 +12,7 @@ public class ResiduoDto {
 	public LocalDateTime fechaRetiro;	
 	public LocalDateTime fechaLimiteRetiro;
 	public String descripcion;
+	public Long ciudadanoId;
 	public String puntoResiduoUri;
 	public Long puntoResiduoId;
 	public PuntoResiduoDto puntoResiduo;
@@ -28,6 +30,7 @@ public class ResiduoDto {
 		var r = new ResiduoDto();
 		r.fechaLimiteRetiro = req.fechaLimite;
 		r.descripcion = req.descripcion;
+		r.ciudadanoId = req.ciudadnoId;
 		r.puntoResiduoId = req.puntoResiduo;
 		r.tipoResiduoId = req.tipoResiduoId;
 		r.recorridoId = req.recorridoId;
@@ -56,4 +59,35 @@ public class ResiduoDto {
 		r.transaccion = TransaccionDto.from(entity.transaccion);
 		return r;
 	}
+	
+	public ResiduoResponse toResponse() {
+		return new ResiduoResponse(
+				this.id,
+				this.fechaRetiro,
+				this.fechaCreacion,
+				this.fechaLimiteRetiro,
+				this.descripcion,
+				"/ciudadano/"+this.ciudadanoId+"/punto_residuo/"+this.puntoResiduoId,
+				this.puntoResiduoId,
+				this.puntoResiduo != null ? this.puntoResiduo.toResponse() : null,
+				"/tipo_residuo/"+this.tipoResiduoId,
+				this.tipoResiduoId,
+				this.tipoResiduo != null ? this.tipoResiduo.toResponse() : null,
+				this.recorridoId != null ? "/recorrido/"+this.recorridoId : null,
+				this.recorridoId,
+				this.recorrido != null ? this.recorrido.toResponse() : null,
+				this.transaccionId != null ? "/transaccion/"+this.transaccionId : null,
+				this.transaccionId,
+				this.transaccion != null ? this.transaccion.toResponse() : null);
+	}
+	
+	public Residuo toEntity() {	
+		//Son los atributos necesarios para hacer el POST
+		return Residuo.builder()				
+				.fechaLimiteRetiro(this.fechaLimiteRetiro)
+				.descripcion(this.descripcion)
+				.puntoResiduoId(this.puntoResiduoId)
+				.tipoResiduoId(this.tipoResiduoId)
+				.build();
+	}	
 }

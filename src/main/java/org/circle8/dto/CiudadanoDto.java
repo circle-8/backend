@@ -1,5 +1,6 @@
 package org.circle8.dto;
 
+import org.circle8.controller.response.CiudadanoResponse;
 import org.circle8.entity.Ciudadano;
 
 public class CiudadanoDto {
@@ -15,5 +16,13 @@ public class CiudadanoDto {
 		c.nombre = entity.nombre;
 		c.usuarioId = entity.usuarioId;
 		return c;
+	}
+	
+	public CiudadanoResponse toResponse() {
+		return CiudadanoResponse.builder()
+				.id(this.id)
+				.username(this.username)
+				.nombre(this.nombre)
+				.build();
 	}
 }

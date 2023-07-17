@@ -44,9 +44,9 @@ public class Parser {
 	public static LocalDateTime parseLocalDateTime(Validation validation,Map<String, List<String>> queryParams, String paramName) {
 		try {
 			var param = queryParams.getOrDefault(paramName, List.of());
-			return !param.isEmpty() ? LocalDate.parse(param.get(0),DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay() : null;
+			return !param.isEmpty() ? LocalDate.parse(param.get(0),DateTimeFormatter.ISO_LOCAL_DATE).atTime(0, 0, 0) : null;
 		} catch ( DateTimeParseException e ) {
-			validation.add(String.format("%s debe ser en formato ISO", paramName));
+			validation.add(String.format("%s debe ser en formato ISO (2023-07-25)", paramName));
 			return null;
 		}		
 	}

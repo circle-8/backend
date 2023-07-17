@@ -31,4 +31,14 @@ public class PuntoResiduoDto {
 		r.ciudadano = this.ciudadano.toResponse();
 		return r;
 	}
+	
+	public PuntoResiduo toEntity() {
+		return PuntoResiduo.builder()
+				.id(this.id)
+				.latitud(this.latitud)
+				.longitud(this.longitud)
+				.ciudadanoId(this.ciudadanoId)
+				.ciudadano(this.ciudadano.toEntity())
+				.build();
+	}
 }

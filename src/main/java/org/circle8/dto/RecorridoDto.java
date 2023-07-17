@@ -3,6 +3,7 @@ package org.circle8.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.circle8.controller.response.RecorridoResponse;
 import org.circle8.entity.Recorrido;
 
 public class RecorridoDto {
@@ -36,5 +37,10 @@ public class RecorridoDto {
 		r.puntoFin = PuntoDto.from(entity.puntoFin);
 		r.puntos = entity.puntos.stream().map(RetiroDto::from).toList();
 		return r;
+	}
+	
+	public RecorridoResponse toResponse() {
+		//TODO : Completar cuando corresponda
+		return new RecorridoResponse();
 	}
 }
