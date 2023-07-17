@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS public."Plan"
 CREATE TABLE IF NOT EXISTS public."PuntoReciclaje"
 (
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
-    "CiudadanoId" bigint NOT NULL,
+    "CiudadanoId" bigint,
     "Latitud" double precision NOT NULL,
     "Longitud" double precision NOT NULL,
     "DiasAbierto" character varying NOT NULL,
