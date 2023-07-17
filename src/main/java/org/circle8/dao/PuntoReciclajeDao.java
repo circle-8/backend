@@ -17,7 +17,6 @@ import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.User;
-import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.PuntoReciclajeFilter;
 
@@ -45,14 +44,24 @@ public class PuntoReciclajeDao extends Dao{
 		AND pr."Latitud" BETWEEN ? AND ?
 		AND pr."Longitud" BETWEEN ? AND ?
 		""";
+
 	private static final String SELECT = """
-		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", prtr."TipoResiduoId", tr."Nombre", ciu."UsuarioId"
+		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", prtr."TipoResiduoId", tr."Nombre", pr."CiudadanoId", ciu."UsuarioId"
 		     FROM "PuntoReciclaje" AS pr
 		LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
 		LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
 		LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
 		    WHERE 1=1
 		""";
+
+	private static final String WHERE_CIUDADADO_NULL = """
+			AND pr."CiudadanoId" IS NULL
+			""";
+
+	private static final String WHERE_CIUDADADO_NOT_NULL = """
+			AND pr."CiudadanoId" IS NOT NULL
+			""";
+
 	private static final String WHERE_TIPO = """
 		    AND pr."ID" IN (
 		    SELECT spr."ID"
@@ -126,12 +135,13 @@ public class PuntoReciclajeDao extends Dao{
 					rs.getDouble("Longitud"),
 					Dia.getDia(rs.getString("DiasAbierto")),
 					new ArrayList<>(),
-					rs.getLong("UsuarioId"),
-					null
+					rs.getLong("CiudadanoId"),
+					User.builder().id(rs.getLong("UsuarioId")).build()
 				);
 				mapPuntos.put(id, punto);
 			}
-			punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
+			if(rs.getInt("TipoResiduoId") != 0)
+				punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
 		}
 
 		return mapPuntos.values().stream()
@@ -144,6 +154,8 @@ public class PuntoReciclajeDao extends Dao{
 	private PreparedStatement createSelectForList(Transaction t, PuntoReciclajeFilter f) throws PersistenceException, SQLException {
 		var b = new StringBuilder(SELECT);
 		List<Object> parameters = new ArrayList<>();
+
+		b.append(f.isPuntoVerde() ? WHERE_CIUDADADO_NULL : WHERE_CIUDADADO_NOT_NULL);
 
 		if ( f.hasTipo() ) {
 			String marks = f.tiposResiduos.stream()
@@ -183,7 +195,7 @@ public class PuntoReciclajeDao extends Dao{
 		var p = t.prepareStatement(consulta.toString());
 		try {
 			var rs = p.executeQuery();
-			generateMap
+			//generateMap
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting list of TipoResiduo", e);
 		}

@@ -14,11 +14,12 @@ public class PuntoReciclajeFilter {
 	public Double latitud;
 	public Double longitud;
 	public Double radio;
+	public boolean isPuntoVerde;
 
 	public boolean hasDias() {
 		return dias != null && !dias.isEmpty();
 	}
-
+	
 	public boolean hasReciclador() {
 		return reciclador_id != null;
 	}
@@ -29,5 +30,9 @@ public class PuntoReciclajeFilter {
 
 	public boolean hasArea() {
 		return latitud != null && longitud != null && radio != null;
+	}
+	
+	public boolean isPuntoVerde() {
+		return isPuntoVerde;
 	}
 }
