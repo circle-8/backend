@@ -166,7 +166,7 @@ public class PuntoResiduoDao extends Dao {
 					val r = Residuo.builder()
 						.id(rs.getLong("ResiduoId"))
 						.ciudadanoId(ciudadanoId)
-						.fechaCreacion(rs.getTimestamp("FechaCreacion").toLocalDateTime().atZone(Dates.UTC))
+						.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
 						.tipo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
 						.punto(new PuntoResiduo(p.id)) // para evitar recursividad dentro de residuo
 						.build();
