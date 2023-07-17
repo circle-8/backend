@@ -2,8 +2,6 @@ package org.circle8.controller.request.punto_reciclaje;
 
 import java.util.List;
 import java.util.Map;
-
-import org.checkerframework.checker.units.qual.N;
 import org.circle8.controller.request.IRequest;
 
 import jakarta.annotation.Nullable;
@@ -28,9 +26,10 @@ public class PuntoReciclajeRequest implements IRequest {
 		} catch ( NumberFormatException e ) {
 			validation.add("'dias' deben ser números del 0 al 6. Comenzando por LUNES.");
 		}
-
+		
 		this.tiposResiduo = queryParams.getOrDefault("tipo_residuo", List.of());
-		this.recicladorId = parseInt(queryParams, "reciclador_id");
+		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
+		this.recicladorId = parseLong(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
 		this.radio = parseDouble(queryParams, "radio");
@@ -38,10 +37,21 @@ public class PuntoReciclajeRequest implements IRequest {
 	}
 
 	@Nullable
-	private Long parseInt(Map<String, List<String>> queryParams, String paramName) {
+	private Long parseLong(Map<String, List<String>> queryParams, String paramName) {
 		try {
 			var param = queryParams.getOrDefault(paramName, List.of());
 			return !param.isEmpty() ? Long.parseLong(param.get(0)) : null;
+		} catch ( NumberFormatException e ) {
+			validation.add(String.format("%s debe ser un numero", paramName));
+			return null;
+		}
+	}
+
+	@Nullable
+	private Integer parseInt(Map<String, List<String>> queryParams, String paramName) {
+		try {
+			var param = queryParams.getOrDefault(paramName, List.of());
+			return !param.isEmpty() ? Integer.parseInt(param.get(0)) : null;
 		} catch ( NumberFormatException e ) {
 			validation.add(String.format("%s debe ser un numero", paramName));
 			return null;
