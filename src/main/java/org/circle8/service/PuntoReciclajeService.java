@@ -5,6 +5,7 @@ import java.util.List;
 import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.entity.PuntoReciclaje;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.filter.PuntoReciclajeFilter;
@@ -36,9 +37,10 @@ public class PuntoReciclajeService {
 	/**
 	 * Obtiene un punto de reciclaje por medio de su id
 	 */
-	public PuntoReciclajeDto get(Long id, Long recicladorId) throws ServiceError{
+	public PuntoReciclajeDto get(Long id, Long recicladorId) throws ServiceError, NotFoundException {
 		try {
-			return PuntoReciclajeDto.from(this.dao.get(id, recicladorId));
+			return PuntoReciclajeDto.from(this.dao.get(id, recicladorId).
+				orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje")));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el listado de puntos de reciclaje", e);
 		}
