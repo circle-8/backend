@@ -47,6 +47,7 @@ public class ResiduoDto {
 	public static ResiduoDto from(Residuo entity) {
 		var r = new ResiduoDto();
 		r.id = entity.id;
+		r.ciudadanoId = entity.ciudadanoId;
 		r.fechaCreacion = entity.fechaCreacion;
 		r.fechaRetiro = entity.fechaRetiro;
 		r.fechaLimiteRetiro = entity.fechaLimiteRetiro;

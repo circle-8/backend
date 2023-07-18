@@ -33,9 +33,6 @@ INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResidu
 
 INSERT INTO public."PuntoResiduo" ("CiudadanoId", "Latitud", "Longitud") VALUES (1, -34.6611203, -58.5422521);
 
-<<<<<<< HEAD
-INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00+00', NULL, 1, 1, NULL, NULL, 'Prueba 1', '2023-07-31 19:41:00+00');
-=======
-INSERT INTO public."Residuo" ("FechaCreacion", "FechaLimiteRetiro", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId") VALUES ('2023-07-02 19:41:00-00', NULL, NULL, 1, 1, NULL, NULL);
-INSERT INTO public."Residuo" ("FechaCreacion", "FechaLimiteRetiro", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId") VALUES ('2023-07-02 19:41:00-00', '2023-07-10 19:41:00-00', NULL, 1, 1, NULL, NULL);
->>>>>>> develop
+
+INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, NULL, NULL, 'Prueba 1', NULL);
+INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, NULL, NULL, 'Prueba 2', '2023-07-10 19:41:00-00');
