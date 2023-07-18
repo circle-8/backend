@@ -3,13 +3,14 @@ package org.circle8.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-
 import javax.sql.DataSource;
 
 import lombok.val;
@@ -60,7 +61,8 @@ public class PuntoReciclajeDao extends Dao {
 		   		LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
 				LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
 				LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
-		    WHERE 	    
+		    WHERE pr."ID" = ?
+		    	AND pr."CiudadanoId" = ?
 		""";
 
 	private static final String WHERE_CIUDADADO_NULL = """
@@ -129,11 +131,10 @@ public class PuntoReciclajeDao extends Dao {
 	/**
 	 * Obtiene un punto de reciclaje por medio de su id
 	 */
-	public PuntoReciclaje get(Long id, Long recicladorId) throws PersistenceException {
-		try (var t = open(true); var select = createSelectForGet(t, id, recicladorId)) {
-			try (var rs = select.executeQuery()) {
-				return getPunto(rs);
-			}
+	public Optional<PuntoReciclaje> get(Long id, Long recicladorId) throws PersistenceException {
+		try (var t = open(true); var select = createSelectForGet(t, id, recicladorId);
+			 var rs = select.executeQuery()) {
+			return Optional.of(getPunto(rs));
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting punto reciclaje", e);
 		}
@@ -176,7 +177,7 @@ public class PuntoReciclajeDao extends Dao {
 	 */
 	private PuntoReciclaje getPunto(ResultSet rs) throws SQLException {
 		PuntoReciclaje punto = null;
-		while (rs.next()) {
+		if (rs.next()) {
 			punto = new PuntoReciclaje(
 				rs.getLong("ID"),
 				rs.getString("Titulo"),
@@ -249,10 +250,15 @@ public class PuntoReciclajeDao extends Dao {
 
 	private PreparedStatement createSelectForGet(Transaction t, Long id, Long recicladorId) throws PersistenceException, SQLException {
 		var b = new StringBuilder(SELECT_GET);
+		List<Object> parameters = new ArrayList<>();
 
-		b.append(" pr.\"ID\" = " + id);
-		b.append("\n AND pr.\"CiudadanoId\" = " + recicladorId);
+		parameters.add(id);
+		parameters.add(recicladorId);
 
-		return t.prepareStatement(b.toString());
+		var p = t.prepareStatement(b.toString());
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+
+		return p;
 	}
 }

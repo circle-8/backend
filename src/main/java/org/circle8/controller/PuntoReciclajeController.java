@@ -10,6 +10,7 @@ import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
 import org.circle8.controller.response.*;
 import org.circle8.dto.Dia;
 import org.circle8.dto.PuntoReciclajeDto;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.filter.PuntoReciclajeFilter;
 import org.circle8.service.PuntoReciclajeService;
@@ -19,7 +20,7 @@ import java.util.List;
 @Singleton
 @Slf4j
 public class PuntoReciclajeController {
-	private static final String ID_RECICLADOR_PARAM = "id_reciclador";
+	private static final String RECICLADOR_ID_PARAM = "reciclador_id";
 
 	private PuntoReciclajeService service;
 
@@ -39,19 +40,18 @@ public class PuntoReciclajeController {
 	 * GET /reciclador/{id_reciclador}/punto_reciclaje/{id}
 	 */
 	public ApiResponse get(Context ctx) {
+		final Long id;
+		final Long recicladorId;
+
 		try {
-			final Long id;
-			final Long recicladorId;
+			id = Long.parseLong(ctx.pathParam("id"));
+			recicladorId = Long.parseLong(ctx.pathParam("reciclador_id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
 
-			try {
-				id = Long.parseLong(ctx.pathParam("id"));
-				recicladorId = Long.parseLong(ctx.pathParam("reciclador_id"));
-			} catch ( NumberFormatException e) {
-				return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
-			}
-
+		try {
 			var puntoReciclajeDto = this.service.get(id, recicladorId).toResponse();
-
 			if (puntoReciclajeDto == null) {
 				return new ErrorResponse(ErrorCode.NOT_FOUND, "El punto de reciclaje no existe", "");
 			}
@@ -59,6 +59,8 @@ public class PuntoReciclajeController {
 			return puntoReciclajeDto;
 		} catch (ServiceError e) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}
 	}
 
@@ -68,7 +70,7 @@ public class PuntoReciclajeController {
 	public ApiResponse put(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM)))
+			.recicladorId(Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM)))
 			.build();
 	}
 
@@ -88,9 +90,10 @@ public class PuntoReciclajeController {
 	 * POST /reciclador/{id_reciclador}/punto_reciclaje
 	 */
 	public ApiResponse post(Context ctx) {
+
 		//TODO: falta implementar el guardado de los tipos de residuo
 		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
-		req.recicladorId = Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM));
+		req.recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
 		val valid = req.validForPost();
 		if ( !valid.valid()) {
 			return new ErrorResponse(valid);
@@ -103,6 +106,7 @@ public class PuntoReciclajeController {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		}
 		return dto.toResponse();
+
 	}
 
 	/**
@@ -111,7 +115,7 @@ public class PuntoReciclajeController {
 	public ApiResponse notificacion(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Long.parseLong(ctx.pathParam(ID_RECICLADOR_PARAM)))
+			.recicladorId(Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM)))
 			.build();
 	}
 
