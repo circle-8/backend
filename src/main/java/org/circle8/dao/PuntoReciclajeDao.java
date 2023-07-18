@@ -83,6 +83,13 @@ public class PuntoReciclajeDao extends Dao {
 		    )
 		""";
 
+	private static final String INSERT_PUNTO_RECICLAJE_TIPO_RESIDUO = """
+		    INSERT INTO public."PuntoReciclaje_TipoResiduo"(
+		    		"PuntoReciclajeId", "TipoResiduoId")
+		    	VALUES (?, ?);
+		""";
+
+
 	@Inject
 	PuntoReciclajeDao(DataSource ds) {
 		super(ds);
@@ -232,20 +239,23 @@ public class PuntoReciclajeDao extends Dao {
 		return p;
 	}
 
-	public HashMap<String, Integer> getIds(Transaction t, List<TipoResiduo> tipos) throws PersistenceException {
+	public List<Long> getIds(Transaction t, List<TipoResiduo> tipos) throws PersistenceException {
 		var consulta = new StringBuilder(SELECT_TIPOS);
 		String marks = tipos.stream()
 			.map(tr -> "'" + tr.nombre + "'")
 			.collect(Collectors.joining(","));
 		consulta.append(String.format(WHERE_NOMBRE_TIPOS, marks));
 		var p = t.prepareStatement(consulta.toString());
+		List<Long> idList = new ArrayList<>();
 		try {
 			var rs = p.executeQuery();
-			//generateMap
+			while (rs.next()) {
+				idList.add(rs.getLong("ID"));
+			}
+			return idList;
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting list of TipoResiduo", e);
 		}
-		return null;
 	}
 
 	private PreparedStatement createSelectForGet(Transaction t, Long id, Long recicladorId) throws PersistenceException, SQLException {
@@ -260,5 +270,20 @@ public class PuntoReciclajeDao extends Dao {
 			p.setObject(i + 1, parameters.get(i));
 
 		return p;
+	}
+
+	public void saveRelacion(Transaction t, long trId, long prId) throws PersistenceException {
+		try ( var insert = t.prepareStatement(INSERT_PUNTO_RECICLAJE_TIPO_RESIDUO, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setLong(1, prId);
+			insert.setDouble(2, trId);
+
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new SQLException("Creating the relation between punto reciclaje and tipo residuo failed," +
+					" no affected rows");
+
+		} catch (SQLException | PersistenceException e ) {
+			throw new PersistenceException("error creating the relation between punto reciclaje and tipo residuo", e);
+		}
 	}
 }

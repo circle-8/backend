@@ -4,7 +4,7 @@ import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.entity.TipoResiduo;
 
 public class TipoResiduoDto {
-	public int id;
+	public long id;
 	public String nombre;
 	
 	public static TipoResiduoDto from(TipoResiduo entity) {
@@ -16,7 +16,7 @@ public class TipoResiduoDto {
 
 	public static TipoResiduoDto from(String tipoResiduo) {
 		var tr = new TipoResiduoDto();
-		tr.nombre = tipoResiduo;
+		tr.id = Integer.parseInt(tipoResiduo);
 		return tr;
 	}
 	

@@ -20,6 +20,7 @@ import java.util.List;
 @Singleton
 @Slf4j
 public class PuntoReciclajeController {
+
 	private static final String RECICLADOR_ID_PARAM = "reciclador_id";
 
 	private PuntoReciclajeService service;
@@ -87,11 +88,10 @@ public class PuntoReciclajeController {
 	}
 
 	/**
-	 * POST /reciclador/{id_reciclador}/punto_reciclaje
+	 * POST /reciclador/{reciclador_id}/punto_reciclaje
 	 */
 	public ApiResponse post(Context ctx) {
 
-		//TODO: falta implementar el guardado de los tipos de residuo
 		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
 		req.recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
 		val valid = req.validForPost();
@@ -123,6 +123,7 @@ public class PuntoReciclajeController {
 	 * GET /puntos_reciclaje
 	 */
 	public ApiResponse list(Context ctx) {
+		//TODO cambiar la manera de obtener el tipoResiduo, debe recibir el id y buscar por id, no por nombre
 		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
 		val valid = req.valid();
 		if (!valid.valid())

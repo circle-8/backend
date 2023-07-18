@@ -1,11 +1,13 @@
 package org.circle8.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dto.PuntoReciclajeDto;
-import org.circle8.entity.PuntoReciclaje;
+import org.circle8.dto.TipoResiduoDto;
 import org.circle8.exception.NotFoundException;
+
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.filter.PuntoReciclajeFilter;
@@ -39,7 +41,9 @@ public class PuntoReciclajeService {
 		try (var t = dao.open()) {
 			entity = dao.save(t, entity);
 			dto.id = entity.id;
-			dao.getIds(t, entity.tipoResiduo);
+			for(TipoResiduoDto tr : dto.tipoResiduo){
+				dao.saveRelacion(t, tr.id, dto.id);
+			}
 			t.commit();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar el punto de reciclaje", e);
