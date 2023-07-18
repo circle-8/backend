@@ -1,7 +1,7 @@
-package org.circle8.utiles;
+package org.circle8.utils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -41,10 +41,10 @@ public class Parser {
 	}
 	
 	@Nullable
-	public static LocalDateTime parseLocalDateTime(Validation validation,Map<String, List<String>> queryParams, String paramName) {
+	public static ZonedDateTime parseLocalZonedDateTime(Validation validation,Map<String, List<String>> queryParams, String paramName) {
 		try {
 			var param = queryParams.getOrDefault(paramName, List.of());
-			return !param.isEmpty() ? LocalDate.parse(param.get(0),DateTimeFormatter.ISO_LOCAL_DATE).atTime(0, 0, 0) : null;
+			return !param.isEmpty() ? LocalDate.parse(param.get(0),DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay(Dates.UTC) : null;
 		} catch ( DateTimeParseException e ) {
 			validation.add(String.format("%s debe ser en formato ISO (2023-07-25)", paramName));
 			return null;

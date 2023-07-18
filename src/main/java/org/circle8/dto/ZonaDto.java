@@ -8,7 +8,6 @@ public class ZonaDto {
 	public Long id;
 	public String nombre;
 	public List<PuntoDto> polyline;
-	public String organizacionUri;
 	public Long organizacionId;
 	public OrganizacionDto organizacion;
 	public List<TipoResiduoDto> tipoResiduo;
@@ -18,7 +17,6 @@ public class ZonaDto {
 		z.id = entity.id;
 		z.nombre = entity.nombre;
 		z.polyline = entity.polyline.stream().map(PuntoDto::from).toList();
-		z.organizacionUri = entity.organizacionUri;
 		z.organizacionId = entity.organizacionId;
 		z.organizacion = OrganizacionDto.from(entity.organizacion);
 		z.tipoResiduo = entity.tipoResiduo.stream().map(TipoResiduoDto::from).toList();

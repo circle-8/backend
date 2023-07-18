@@ -2,6 +2,8 @@ package org.circle8;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.sql.DataSource;
 
@@ -35,12 +37,18 @@ class DependencyInjection extends AbstractModule {
 		return new GsonBuilder()
 			.registerTypeAdapter(
 				LocalDateTime.class,
-				(JsonSerializer<LocalDateTime>) (o, type, jsonSerializationContext) -> new JsonPrimitive(o.toString())
+				(JsonSerializer<LocalDateTime>) (o, type, jsonSerializationContext) -> 
+				new JsonPrimitive(o.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 			)
 			.registerTypeAdapter(
 				LocalDate.class,
-				(JsonSerializer<LocalDate>) (o, type, jsonSerializationContext) -> new JsonPrimitive(o.toString())
-			)
+				(JsonSerializer<LocalDate>) (o, type, jsonSerializationContext) -> 
+				new JsonPrimitive(o.format(DateTimeFormatter.ISO_LOCAL_DATE))
+			).registerTypeAdapter(
+					ZonedDateTime.class,
+					(JsonSerializer<ZonedDateTime>) (o, type, jsonSerializationContext) -> 
+					new JsonPrimitive(o.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+				)
 			.create();
 	}
 

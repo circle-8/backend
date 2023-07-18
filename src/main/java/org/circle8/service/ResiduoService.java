@@ -23,10 +23,9 @@ public class ResiduoService {
 	 */
 	public ResiduoDto save(ResiduoDto dto) throws ServiceError {
 		var residuo = dto.toEntity();		
-		try( var t = dao.open()) {
+		try( var t = dao.open(true)) {
 			residuo = dao.save(t, residuo);
-			dto.id = residuo.id;			
-			t.commit();
+			dto.id = residuo.id;
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar el residuo", e);
 		}		

@@ -9,10 +9,8 @@ public class Transporte {
 	public LocalDateTime fechaInicio;
 	public LocalDateTime fechaFin;
 	public BigDecimal precioAcordado;
-	public String transportistaUri;
 	public Long transportistaId;
 	public Transportista transportista;
-	public String transaccionUri;
 	public Long transaccionId;
 	public boolean pagoConfirmado;
 	public boolean entregaConfirmada;

@@ -13,7 +13,6 @@ public class Zona {
 	public Long id;
 	public String nombre;
 	public List<Punto> polyline;
-	public String organizacionUri;
 	public Long organizacionId;
 	public Organizacion organizacion;
 	public List<TipoResiduo> tipoResiduo;

@@ -1,26 +1,19 @@
 package org.circle8.controller.request.residuo;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 import org.circle8.controller.request.IRequest;
-import org.circle8.utiles.Parser;
+import org.circle8.utils.Parser;
 
-public class ResiduoRequest implements IRequest{
+public class ResiduoRequest implements IRequest {
 	private final Validation validation = new Validation();
 	
 	public List<Integer> puntosResiduo;
 	public List<Integer> ciudadanos;
 	public List<String> tiposResiduo;
 	public Long transaccionId;
-	public Long recorridoId;
-	public Long tipoResiduoId;
-	public Long puntoResiduo;
-	public Long ciudadnoId;
-	public LocalDateTime fechaLimite;
-	public String descripcion;
-	
+	public Long recorridoId;	
 
 	public ResiduoRequest(Map<String, List<String>> queryParams) {
 		try {
@@ -42,24 +35,12 @@ public class ResiduoRequest implements IRequest{
 		}
 		
 		this.tiposResiduo = queryParams.getOrDefault("tipo", List.of());
-		this.transaccionId = Parser.parseLong(validation, queryParams, "transaccion");
-		this.recorridoId = Parser.parseLong(validation, queryParams, "recorrido");
-		this.tipoResiduoId = Parser.parseLong(validation, queryParams, "tipo_residuo");
-		this.puntoResiduo = Parser.parseLong(validation, queryParams, "punto_residuo");
-		this.ciudadnoId = Parser.parseLong(validation, queryParams, "ciudadano_id");
-		this.fechaLimite = Parser.parseLocalDateTime(validation, queryParams, "fecha_limite_retiro");
-		this.descripcion = Parser.parseString(validation, queryParams, "descripcion");
+		this.transaccionId = Parser.parseLong(validation, queryParams, "transaccion_id");
+		this.recorridoId = Parser.parseLong(validation, queryParams, "recorrido_id");
 	}
 
 	@Override
 	public Validation valid() {
-		//Son las viladaciones para el POST
-		if(tipoResiduoId == null)
-			validation.add("Se debe especificar el tipo de residuo");
-		if(puntoResiduo == null)
-			validation.add("Se debe especificar el punto de reciduo");
-		if(ciudadnoId == null)
-			validation.add("Se debe especificar el id del ciudadano");
 		return validation;
 	}
 }

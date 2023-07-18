@@ -1,9 +1,10 @@
 package org.circle8.controller;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
-import org.circle8.controller.request.residuo.ResiduoRequest;
+import org.circle8.controller.request.residuo.PostResiduoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -14,6 +15,7 @@ import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.ResiduoDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.service.ResiduoService;
+import org.circle8.utils.Dates;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -36,8 +38,8 @@ public class ResiduoController {
 	
 	private final ResiduoResponse mock = ResiduoResponse.builder()
 		.id(1)
-		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30))
-		.puntoResiduo(new PuntoResiduoResponse(1, -34.6701907f, -58.5656422f, 1L, "/user/1", null, List.of()))
+		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30).atZone(Dates.UTC))
+		.puntoResiduo(new PuntoResiduoResponse(1, -34.6701907d, -58.5656422d, 1L, "/user/1", null, List.of()))
 		.tipoResiduo(new TipoResiduoResponse(1, "ORGANICO"))
 		.recorridoUri("/recorrido/1").recorridoId(1L)
 		.build();
@@ -66,7 +68,7 @@ public class ResiduoController {
 	 * Descripcion
 	 */
 	public ApiResponse post(Context ctx) {
-		val req = new ResiduoRequest(ctx.queryParamMap());
+		val req = new PostResiduoRequest(ctx.queryParamMap());
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(valid);
@@ -132,7 +134,7 @@ public class ResiduoController {
 	public ApiResponse fulfill(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaRetiro(LocalDateTime.now())
+			.fechaRetiro(ZonedDateTime.now(Dates.UTC))
 			.build();
 	}
 

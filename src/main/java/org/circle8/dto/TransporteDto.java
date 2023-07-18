@@ -11,10 +11,8 @@ public class TransporteDto {
 	public LocalDateTime fechaInicio;
 	public LocalDateTime fechaFin;
 	public BigDecimal precioAcordado;
-	public String transportistaUri;
 	public Long transportistaId;
 	public TransportistaDto transportista;
-	public String transaccionUri;
 	public Long transaccionId;
 	public boolean pagoConfirmado;
 	public boolean entregaConfirmada;
@@ -26,10 +24,8 @@ public class TransporteDto {
 		t.fechaInicio = entity.fechaInicio;
 		t.fechaFin = entity.fechaFin;
 		t.precioAcordado = entity.precioAcordado;
-		t.transportistaUri = entity.transaccionUri;
 		t.transportistaId = entity.transportistaId;
 		t.transportista = TransportistaDto.from(entity.transportista);
-		t.transaccionUri = entity.transaccionUri;
 		t.transaccionId = entity.transaccionId;
 		t.pagoConfirmado = entity.pagoConfirmado;
 		t.entregaConfirmada = entity.entregaConfirmada;
