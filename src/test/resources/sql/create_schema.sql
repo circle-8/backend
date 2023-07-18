@@ -84,6 +84,8 @@ CREATE TABLE IF NOT EXISTS public."Residuo"
     "TipoResiduoId" bigint NOT NULL,
     "TransaccionId" bigint,
     "RecorridoId" bigint,
+    "Descripcion" character varying NOT NULL,
+    "FechaLimiteRetiro" timestamp with time zone,
     CONSTRAINT "Residuo_pkey" PRIMARY KEY ("ID")
 );
 

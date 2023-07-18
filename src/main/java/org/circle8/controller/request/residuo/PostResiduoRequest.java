@@ -33,6 +33,8 @@ public class PostResiduoRequest implements IRequest {
 			validation.add("Se debe especificar el punto de reciduo");
 		if(ciudadanoId == null)
 			validation.add("Se debe especificar el id del ciudadano");
+		if(descripcion == null)
+			validation.add("Se debe especificar la descripcion");
 		if(fechaLimite != null && fechaLimite.isBefore(ZonedDateTime.now()))
 			validation.add("La fecha limite de retiro no puede ser inferior a la fecha actual");
 		return validation;
