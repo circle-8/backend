@@ -18,6 +18,7 @@ public class TransaccionDto {
 	public List<ResiduoDto> residuos;
 	
 	public static TransaccionDto from(Transaccion entity) {
+		if ( entity == null ) return null;
 		var t = new TransaccionDto();
 		t.id = entity.id;
 		t.fechaCreacion = entity.fechaCreacion;

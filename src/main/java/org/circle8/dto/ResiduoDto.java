@@ -1,6 +1,8 @@
 package org.circle8.dto;
 
+
 import java.time.ZonedDateTime;
+import java.util.Collections;
 
 import org.circle8.controller.request.residuo.PostResiduoRequest;
 import org.circle8.controller.response.ResiduoResponse;
@@ -34,6 +36,7 @@ public class ResiduoDto {
 		var pr = PuntoResiduo.builder()
 				.id(req.puntoResiduoId)
 				.ciudadano(User.builder().id(req.ciudadanoId).build())
+				.residuos(Collections.emptyList())
 				.build();
 		r.puntoResiduo = PuntoResiduoDto.from(pr);
 		r.tipoResiduoId = req.tipoResiduoId;
@@ -63,15 +66,15 @@ public class ResiduoDto {
 				this.fechaCreacion,
 				this.fechaLimiteRetiro,
 				this.descripcion,
-				"/ciudadano/"+this.ciudadanoId+"/punto_residuo/"+this.puntoResiduoId,
-				this.puntoResiduoId,
-				this.puntoResiduo != null ? this.puntoResiduo.toResponse() : null,
-				this.tipoResiduo != null ? this.tipoResiduo.toResponse() : null,
-				this.recorridoId != null ? "/recorrido/"+this.recorridoId : null,
-				this.recorridoId,
+				"/ciudadano/"+this.ciudadanoId+"/punto_residuo/"+this.puntoResiduo.id,
+				this.puntoResiduo.id,
+				this.puntoResiduo.toResponse(),
+				this.tipoResiduo.toResponse(),
+				this.recorrido != null ? "/recorrido/"+this.recorrido.id : null,
+				this.recorridoId != null ? this.recorrido.id : null,
 				this.recorrido != null ? this.recorrido.toResponse() : null,
-				this.transaccionId != null ? "/transaccion/"+this.transaccionId : null,
-				this.transaccionId,
+				this.transaccion != null ? "/transaccion/"+this.transaccion.id : null,
+				this.transaccion != null ? this.transaccion.id : null,
 				this.transaccion != null ? this.transaccion.toResponse() : null);
 	}
 	
@@ -83,5 +86,5 @@ public class ResiduoDto {
 				.puntoResiduo(this.puntoResiduo.toEntity())
 				.tipoResiduo(this.tipoResiduo.toEntity())
 				.build();
-	}	
+	}
 }

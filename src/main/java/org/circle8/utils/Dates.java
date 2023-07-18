@@ -5,6 +5,6 @@ import java.time.ZoneOffset;
 
 public class Dates {
 	public static final ZoneId UTC = ZoneOffset.UTC;
-	
+
 	private Dates() {}
 }

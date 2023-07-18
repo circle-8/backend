@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class Transaccion {
-	public Long id;
+	public long id;
 	public LocalDateTime fechaCreacion;
 	public LocalDateTime fechaRetiro;
 	public Long transporteId;

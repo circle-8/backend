@@ -1,14 +1,15 @@
 package org.circle8.entity;
 
+
 import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class Residuo {
 	public long id;
 	public long ciudadanoId;

@@ -1,5 +1,6 @@
 package org.circle8.dto;
 
+
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class RecorridoDto {
 	public List<RetiroDto> puntos;
 	
 	public static RecorridoDto from(Recorrido entity) {
+		if ( entity == null ) return null;
 		var r = new RecorridoDto();
 		r.id = entity.id;
 		r.fechaRetiro = entity.fechaRetiro;
@@ -34,9 +36,8 @@ public class RecorridoDto {
 		r.puntos = entity.puntos.stream().map(RetiroDto::from).toList();
 		return r;
 	}
-	
+
 	public RecorridoResponse toResponse() {
-		//TODO : Completar cuando corresponda
 		return new RecorridoResponse();
 	}
 }

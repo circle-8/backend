@@ -1,5 +1,6 @@
 package org.circle8.entity;
 
+
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class Recorrido {
-	public Long id;
+	public long id;
 	public ZonedDateTime fechaRetiro;
 	public ZonedDateTime fechaInicio;
 	public ZonedDateTime fechaFin;

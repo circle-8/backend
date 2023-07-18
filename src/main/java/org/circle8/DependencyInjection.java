@@ -45,10 +45,10 @@ class DependencyInjection extends AbstractModule {
 				(JsonSerializer<LocalDate>) (o, type, jsonSerializationContext) -> 
 				new JsonPrimitive(o.format(DateTimeFormatter.ISO_LOCAL_DATE))
 			).registerTypeAdapter(
-					ZonedDateTime.class,
-					(JsonSerializer<ZonedDateTime>) (o, type, jsonSerializationContext) -> 
-					new JsonPrimitive(o.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
-				)
+				ZonedDateTime.class,
+				(JsonSerializer<ZonedDateTime>) (o, type, jsonSerializationContext) -> 
+				new JsonPrimitive(o.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
+			)
 			.create();
 	}
 
