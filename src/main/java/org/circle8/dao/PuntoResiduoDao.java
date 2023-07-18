@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class PuntoResiduoDao extends Dao {
 	private static final String SELECT_FMT = """
-		SELECT %s
+		SELECT DISTINCT %s
 		  FROM "PuntoResiduo" AS pr
 		  JOIN "Ciudadano" AS c ON c."ID" = pr."CiudadanoId"
 		    %s
