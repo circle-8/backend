@@ -24,6 +24,7 @@ public class UserDto {
 	}
 
 	public static UserDto from(User entity) {
+		if ( entity == null ) return null;
 		var u = new UserDto();
 		u.id = entity.id;
 		u.username = entity.username;
