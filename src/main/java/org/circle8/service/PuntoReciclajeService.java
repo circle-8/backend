@@ -3,6 +3,7 @@ package org.circle8.service;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
 import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.dto.TipoResiduoDto;
@@ -36,6 +37,12 @@ public class PuntoReciclajeService {
 		}
 	}
 
+	/**
+	 * Guarda un nuevo punto de reciclaje
+	 * @param dto
+	 * @return
+	 * @throws ServiceError
+	 */
 	public PuntoReciclajeDto save(PuntoReciclajeDto dto) throws ServiceError {
 		var entity = dto.toEntity();
 		try (var t = dao.open()) {
@@ -64,6 +71,13 @@ public class PuntoReciclajeService {
 
 	}
 
+	/**
+	 * Elimina un punto de reciclaje
+	 * @param id
+	 * @param recicladorId
+	 * @return
+	 * @throws ServiceError
+	 */
 	public boolean delete(Long id, Long recicladorId) throws ServiceError {
 		boolean delete = false;
 		try (var t = dao.open()) {
@@ -73,6 +87,32 @@ public class PuntoReciclajeService {
 			return delete;
 		} catch (PersistenceException | SQLException e) {
 			throw new ServiceError("Ha ocurrido un error al eliminar el punto de reciclaje", e);
+		}
+	}
+
+	/**
+	 * Actualiza un punto de reciclaje
+	 * @param id
+	 * @param recicladorId
+	 * @param req
+	 * @return
+	 * @throws ServiceError
+	 */
+	public boolean put(Long id, Long recicladorId, PuntoReciclajeRequest req) throws ServiceError{
+		boolean update = false;
+		try (var t = dao.open()){
+
+			if(!req.tiposResiduo.isEmpty()){
+				dao.deleteRelacion(t, id);
+				for(Integer tr : req.tiposResiduo){
+					dao.saveRelacion(t, tr, id);
+				}
+			}
+			update = this.dao.put(t, id, recicladorId, req);
+			t.commit();
+			return update;
+		} catch (PersistenceException | SQLException e) {
+			throw new ServiceError("Ha ocurrido un error al obtener el listado de puntos de reciclaje", e);
 		}
 	}
 }

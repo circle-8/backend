@@ -14,6 +14,8 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import lombok.val;
+import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
+import org.circle8.controller.response.DiaResponse;
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.TipoResiduo;
@@ -24,7 +26,6 @@ import org.circle8.filter.PuntoReciclajeFilter;
 import com.google.inject.Inject;
 
 public class PuntoReciclajeDao extends Dao {
-
 
 	private static final String SELECT_TIPOS = """
 		   SELECT tr."ID", tr."Nombre"
@@ -79,7 +80,7 @@ public class PuntoReciclajeDao extends Dao {
 		      FROM "PuntoReciclaje" spr
 		 LEFT JOIN "PuntoReciclaje_TipoResiduo" AS sprtr ON sprtr."PuntoReciclajeId" = spr."ID"
 		 LEFT JOIN "TipoResiduo" AS str on str."ID" = sprtr."TipoResiduoId"
-		     WHERE str."Nombre" IN (%s)
+		     WHERE str."ID" IN (%s)
 		    )
 		""";
 
@@ -100,6 +101,15 @@ public class PuntoReciclajeDao extends Dao {
 		    	WHERE r."PuntoReciclajeId" = ?
 		""";
 
+	private static final String UPDATE = """
+		   UPDATE public."PuntoReciclaje"
+		   	SET 
+		""";
+
+	private static final String WHERE_ID_AND_CIUDADANO = """
+		   WHERE "ID" = ?
+		    	AND "CiudadanoId" = ?
+		""";
 
 	@Inject
 	PuntoReciclajeDao(DataSource ds) {
@@ -155,6 +165,27 @@ public class PuntoReciclajeDao extends Dao {
 			return Optional.of(getPunto(rs));
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting punto reciclaje", e);
+		}
+	}
+
+	/**
+	 * Actualiza un punto de reciclaje
+	 * @param id
+	 * @param recicladorId
+	 * @return
+	 * @throws PersistenceException
+	 */
+	public boolean put(Transaction t, Long id, Long recicladorId, PuntoReciclajeRequest req) throws SQLException, PersistenceException {
+
+		try (var update = createSelectForPut(t, id, recicladorId, req)) {
+
+			if (update.executeUpdate() <= 0)
+				return false;
+
+			return true;
+
+		} catch (SQLException | PersistenceException e) {
+			throw new PersistenceException("error updating PuntoReciclaje", e);
 		}
 	}
 
@@ -308,5 +339,46 @@ public class PuntoReciclajeDao extends Dao {
 		} catch (SQLException | PersistenceException e) {
 			throw new PersistenceException("error deleting the relation between puntoReciclaje and tipoResiduo", e);
 		}
+	}
+
+	private PreparedStatement createSelectForPut(Transaction t, Long id, Long recicladorId, PuntoReciclajeRequest req) throws PersistenceException, SQLException {
+
+		var b = new StringBuilder(UPDATE);
+		List<Object> parameters = new ArrayList<>();
+		List<String> setFragments = new ArrayList<>();
+
+		if(req.latitud != null){
+			setFragments.add("\"Latitud\"=? ");
+			parameters.add(req.latitud);
+		}
+
+		if (req.longitud != null) {
+			setFragments.add("\"Longitud\"=? ");
+			parameters.add(req.longitud);
+		}
+
+		if (!req.dias.isEmpty()) {
+			setFragments.add("\"DiasAbierto\"=? ");
+			parameters.add(Dia.getDias(Dia.getDia(req.dias)));
+		}
+
+		if (req.titulo != null) {
+			setFragments.add("\"Titulo\"=? ");
+			parameters.add(req.titulo);
+		}
+
+		b.append(String.join(", ", setFragments))
+			.append(System.lineSeparator())
+			.append(WHERE_ID_AND_CIUDADANO);
+
+		parameters.add(id);
+		parameters.add(recicladorId);
+
+		var p = t.prepareStatement(b.toString());
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+
+		return p;
+
 	}
 }

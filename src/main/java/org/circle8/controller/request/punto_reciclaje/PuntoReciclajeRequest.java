@@ -10,7 +10,7 @@ public class PuntoReciclajeRequest implements IRequest {
 	private final Validation validation = new Validation();
 
 	public List<Integer> dias;
-	public List<String> tiposResiduo; //TODO: definir cómo viajan los tipo de residuo front->back
+	public List<Integer> tiposResiduo; //TODO: definir cómo viajan los tipo de residuo front->back
 	public Long recicladorId;  //TODO: cómo se obtiene el valor de {reciclador_id} para el POST
 	public Double latitud;
 	public Double longitud;
@@ -23,11 +23,14 @@ public class PuntoReciclajeRequest implements IRequest {
 				.stream()
 				.map(Integer::parseInt)
 				.toList();
-		} catch ( NumberFormatException e ) {
+		} catch (NumberFormatException e) {
 			validation.add("'dias' deben ser números del 0 al 6. Comenzando por LUNES.");
 		}
 
-		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
+		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of())
+			.stream()
+			.map(Integer::parseInt)
+			.toList();
 		this.recicladorId = parseLong(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
@@ -40,17 +43,6 @@ public class PuntoReciclajeRequest implements IRequest {
 		try {
 			var param = queryParams.getOrDefault(paramName, List.of());
 			return !param.isEmpty() ? Long.parseLong(param.get(0)) : null;
-		} catch ( NumberFormatException e ) {
-			validation.add(String.format("%s debe ser un numero", paramName));
-			return null;
-		}
-	}
-
-	@Nullable
-	private Integer parseInt(Map<String, List<String>> queryParams, String paramName) {
-		try {
-			var param = queryParams.getOrDefault(paramName, List.of());
-			return !param.isEmpty() ? Integer.parseInt(param.get(0)) : null;
 		} catch ( NumberFormatException e ) {
 			validation.add(String.format("%s debe ser un numero", paramName));
 			return null;

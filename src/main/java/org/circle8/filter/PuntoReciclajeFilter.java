@@ -9,7 +9,7 @@ import org.circle8.dto.Dia;
 public class PuntoReciclajeFilter {
 
 	public List<Dia> dias;
-	public List<String> tiposResiduos;
+	public List<Integer> tiposResiduos;
 	public Long reciclador_id;
 	public Double latitud;
 	public Double longitud;

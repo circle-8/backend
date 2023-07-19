@@ -14,9 +14,9 @@ public class TipoResiduoDto {
 		return tr;
 	}
 
-	public static TipoResiduoDto from(String tipoResiduo) {
+	public static TipoResiduoDto from(Integer tipoResiduo) {
 		var tr = new TipoResiduoDto();
-		tr.id = Integer.parseInt(tipoResiduo);
+		tr.id = tipoResiduo;
 		return tr;
 	}
 	

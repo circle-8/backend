@@ -66,13 +66,32 @@ public class PuntoReciclajeController {
 	}
 
 	/**
-	 * PUT /reciclador/{id_reciclador}/punto_reciclaje/{id}
+	 * PUT /reciclador/{reciclador_id}/punto_reciclaje/{id}
 	 */
 	public ApiResponse put(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM)))
-			.build();
+		final Long id;
+		final Long recicladorId;
+
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+
+		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
+
+		try {
+			boolean update = this.service.put(id, recicladorId, req);
+			if(update) {
+				return new SuccessResponse("El punto se actualizo con exito.");
+			}
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El punto no se actualizo.", "");
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error list puntos reciclaje", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
+
 	}
 
 	/**
@@ -138,7 +157,6 @@ public class PuntoReciclajeController {
 	 * GET /puntos_reciclaje
 	 */
 	public ApiResponse list(Context ctx) {
-		//TODO cambiar la manera de obtener el tipoResiduo, debe recibir el id y buscar por id, no por nombre
 		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
 		val valid = req.valid();
 		if (!valid.valid())
