@@ -1,6 +1,9 @@
 package org.circle8.dto;
 
 import lombok.val;
+
+import org.circle8.controller.request.punto_residuo.PostPuntoResiduoRequest;
+import org.circle8.controller.request.punto_residuo.PutPuntoResiduoRequest;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.entity.PuntoResiduo;
 
@@ -13,6 +16,31 @@ public class PuntoResiduoDto {
 	public Long ciudadanoId;
 	public UserDto ciudadano;
 	public List<ResiduoDto> residuos;
+	
+	public static PuntoResiduoDto from(PostPuntoResiduoRequest request) {
+		var pr = new PuntoResiduoDto();
+		var user = new UserDto();
+		user.id = request.ciudadanoId;
+		pr.latitud = request.latitud;
+		pr.longitud = request.longitud;
+		pr.ciudadanoId = request.ciudadanoId;
+		pr.ciudadano = user;
+		pr.residuos = List.of();
+		return pr;
+	}
+	
+	public static PuntoResiduoDto from(PutPuntoResiduoRequest request) {
+		var pr = new PuntoResiduoDto();
+		var user = new UserDto();
+		user.id = request.ciudadanoId;
+		pr.id = request.id;
+		pr.latitud = request.latitud;
+		pr.longitud = request.longitud;
+		pr.ciudadanoId = request.ciudadanoId;
+		pr.ciudadano = user;
+		pr.residuos = List.of();
+		return pr;
+	}
 
 	public static PuntoResiduoDto from(PuntoResiduo entity) {
 		if ( entity == null ) return null;
@@ -36,5 +64,13 @@ public class PuntoResiduoDto {
 		r.ciudadano = this.ciudadano != null ? this.ciudadano.toResponse() : null;
 		r.residuos = !residuos.isEmpty() ? residuos.stream().map(ResiduoDto::toResponse).toList() : null;
 		return r;
+	}
+	
+	public PuntoResiduo toEntity() {
+		var pr = new PuntoResiduo(this.id);
+		pr.latitud = this.latitud;
+		pr.longitud = this.longitud;
+		pr.ciudadanoId = this.ciudadanoId;		
+		return pr;
 	}
 }

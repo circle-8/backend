@@ -19,6 +19,26 @@ public class PuntoResiduoService {
 	public PuntoResiduoService(PuntoResiduoDao puntoResiduoDao) {
 		this.dao = puntoResiduoDao;
 	}
+	
+	public PuntoResiduoDto save(PuntoResiduoDto dto) throws ServiceError {
+		var punto = dto.toEntity();		
+		try( var t = dao.open(true)) {
+			punto = dao.save(t, punto);
+			dto.id = punto.id;
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al guardar el punto de residuo", e);
+		}		
+		return dto;
+	}
+	
+	public void put(PuntoResiduoDto dto) throws ServiceError {
+		var punto = dto.toEntity();		
+		try( var t = dao.open(true)) {
+			punto = dao.put(t, punto);
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al actualizar el punto de residuo", e);
+		}
+	}
 
 	public List<PuntoResiduoDto> list(PuntoResiduoFilter f, PuntoResiduoExpand x) throws ServiceException {
 		try {

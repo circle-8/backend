@@ -1,11 +1,10 @@
 package org.circle8.controller;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+import java.util.List;
+
+import org.circle8.controller.request.punto_residuo.PostPuntoResiduoRequest;
 import org.circle8.controller.request.punto_residuo.PuntosResiduosRequest;
+import org.circle8.controller.request.punto_residuo.PutPuntoResiduoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -18,7 +17,12 @@ import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
 import org.circle8.service.PuntoResiduoService;
 
-import java.util.List;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @Slf4j
@@ -76,5 +80,45 @@ public class PuntoResiduoController {
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}
+	}
+	
+	/**
+	 * /ciudadano/{ciudadano_id}/punto_residuo
+	 * Requiere: latitud, longitud
+	 */
+	public ApiResponse post(Context ctx) {
+		val req = new PostPuntoResiduoRequest(ctx);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(valid);
+		
+		var dto = PuntoResiduoDto.from(req);		
+		try {
+			dto = this.service.save(dto);
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error saving new residuo", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}		
+		return dto.toResponse();
+	}
+	
+	/**
+	 * /ciudadano/{ciudadano_id}/punto_residuo/{id}
+	 * Requiere: latitud, longitud
+	 */
+	public ApiResponse put(Context ctx) {
+		val req = new PutPuntoResiduoRequest(ctx);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(valid);
+		
+		var dto = PuntoResiduoDto.from(req);		
+		try {
+			this.service.put(dto);
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error updating new residuo", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}		
+		return dto.toResponse();
 	}
 }

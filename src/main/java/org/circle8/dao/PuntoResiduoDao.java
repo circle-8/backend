@@ -15,6 +15,7 @@ import org.circle8.utils.Dates;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -56,6 +57,16 @@ public class PuntoResiduoDao extends Dao {
 		AND "CiudadanoId" = ?
 		AND pr."ID" = ?
 		""";
+	private static final String INSERT = """
+			INSERT INTO public."PuntoResiduo"(
+			"CiudadanoId", "Latitud", "Longitud")
+			VALUES (?, ?, ?);
+			  """;
+	private static final String PUT = """
+			UPDATE public."PuntoResiduo"
+			SET "Latitud"=?, "Longitud"=?
+			WHERE "ID"=? AND "CiudadanoId"=?;
+			  """;
 
 	@Inject
 	public PuntoResiduoDao(DataSource ds) { super(ds); }
@@ -200,5 +211,51 @@ public class PuntoResiduoDao extends Dao {
 		p.setTimestamp(3, Timestamp.from(ZonedDateTime.now().toInstant()));
 
 		return p;
+	}
+	
+	public PuntoResiduo save(Transaction t,PuntoResiduo punto) throws PersistenceException {
+		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setLong(1, punto.ciudadanoId);
+			insert.setDouble(2, punto.latitud);
+			insert.setDouble(3, punto.longitud);
+
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new SQLException("Creating the punto residuo failed, no affected rows");
+
+			try ( var rs = insert.getGeneratedKeys() ) {
+				if (rs.next())
+					punto.id = rs.getLong(1);
+				else
+					throw new SQLException("Creating the residuo failed, no ID obtained");
+			}
+		} catch (SQLException e) {
+			if ( e.getMessage().contains("PuntoResiduo_CiudadanoId_fkey") )
+				//TODO: cambiar por ForeingKeyException cuando se mergee
+				throw new PersistenceException("No existe el punto de residuo con ciudadano_id " + punto.ciudadanoId, e);
+			else
+				throw new PersistenceException("error inserting residuo", e);
+		} 
+		return punto;
+	}
+	
+	public PuntoResiduo put(Transaction t,PuntoResiduo punto) throws PersistenceException {
+		try ( var put = t.prepareStatement(PUT) ) {			
+			put.setDouble(1, punto.latitud);
+			put.setDouble(2, punto.longitud);
+			put.setLong(3, punto.id);
+			put.setLong(4, punto.ciudadanoId);			
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new SQLException("Updating the punto residuo failed, no affected rows");
+		} catch (SQLException e) {
+			if ( e.getMessage().contains("no affected rows") )				
+				throw new PersistenceException("No existe el punto de residuo con id "
+						+ punto.id + " o ciudadano_id " + punto.ciudadanoId, e);
+			else
+				throw new PersistenceException("error inserting residuo", e);
+		} 
+
+		return punto;
 	}
 }
