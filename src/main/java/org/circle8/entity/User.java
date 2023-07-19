@@ -15,4 +15,5 @@ public class User {
 	public String nombre;
 	public String email;
 	public TipoUsuario tipo;
+	public Long ciudadanoId; // TODO: se puede cambiar por Ciudadano. Que sea opcional (nullable)
 }

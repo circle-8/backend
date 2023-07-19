@@ -57,8 +57,9 @@ public class UserDao extends Dao {
 
 	public Optional<User> get(String username) throws PersistenceException {
 		var selectSQL = """
-   SELECT "ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email"
-     FROM "Usuario"
+   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId
+     FROM "Usuario" u
+LEFT JOIN "Ciudadano" c on c."UsuarioId" = u."ID"
     WHERE "Username" = ?""";
 
 		try ( var t = open(true); var select = t.prepareStatement(selectSQL) ) {
@@ -75,6 +76,7 @@ public class UserDao extends Dao {
 					.nombre(rs.getString("NombreApellido"))
 					.email(rs.getString("Email"))
 					.tipo(TipoUsuario.valueOf(rs.getString("TipoUsuario")))
+					.ciudadanoId(rs.getLong("CiudadanoId"))
 					.build());
 			}
 		} catch ( SQLException e ) {
