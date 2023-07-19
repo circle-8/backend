@@ -20,7 +20,9 @@ public class CiudadanoService {
 	Ciudadano save(Transaction t, User u) throws ServiceException {
 		var c = new Ciudadano(u.id);
 		try {
-			return dao.save(t, c);
+			c = dao.save(t, c);
+			u.ciudadanoId = c.id;
+			return c;
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar el ciudadano", e);
 		}

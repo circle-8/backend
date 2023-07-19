@@ -14,4 +14,7 @@ public class UserResponse implements ApiResponse {
 	public String email;
 	public TipoUsuarioResponse tipoUsuario;
 	public SuscripcionResponse suscripcion;
+	public Long ciudadanoId;
+	// TODO: para cuando haya que hacer el endpoint de users, se puede sumar mas info para ciudadano
+	// TODO: falta agregar info extra para reciclador comunitario
 }
