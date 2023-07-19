@@ -89,6 +89,17 @@ public class PuntoReciclajeDao extends Dao {
 		    	VALUES (?, ?);
 		""";
 
+	private static final String DELETE = """
+		    DELETE FROM public."PuntoReciclaje" AS pr
+		    	WHERE pr."ID" = ?
+		    	AND pr."CiudadanoId" = ?
+		""";
+
+	private static final String DELETE_RELACION = """
+		    DELETE FROM public."PuntoReciclaje_TipoResiduo" AS r
+		    	WHERE r."PuntoReciclajeId" = ?
+		""";
+
 
 	@Inject
 	PuntoReciclajeDao(DataSource ds) {
@@ -239,25 +250,6 @@ public class PuntoReciclajeDao extends Dao {
 		return p;
 	}
 
-	public List<Long> getIds(Transaction t, List<TipoResiduo> tipos) throws PersistenceException {
-		var consulta = new StringBuilder(SELECT_TIPOS);
-		String marks = tipos.stream()
-			.map(tr -> "'" + tr.nombre + "'")
-			.collect(Collectors.joining(","));
-		consulta.append(String.format(WHERE_NOMBRE_TIPOS, marks));
-		var p = t.prepareStatement(consulta.toString());
-		List<Long> idList = new ArrayList<>();
-		try {
-			var rs = p.executeQuery();
-			while (rs.next()) {
-				idList.add(rs.getLong("ID"));
-			}
-			return idList;
-		} catch (SQLException e) {
-			throw new PersistenceException("error getting list of TipoResiduo", e);
-		}
-	}
-
 	private PreparedStatement createSelectForGet(Transaction t, Long id, Long recicladorId) throws PersistenceException, SQLException {
 		var b = new StringBuilder(SELECT_GET);
 		List<Object> parameters = new ArrayList<>();
@@ -275,15 +267,46 @@ public class PuntoReciclajeDao extends Dao {
 	public void saveRelacion(Transaction t, long trId, long prId) throws PersistenceException {
 		try ( var insert = t.prepareStatement(INSERT_PUNTO_RECICLAJE_TIPO_RESIDUO, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setLong(1, prId);
-			insert.setDouble(2, trId);
+			insert.setLong(2, trId);
 
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
-				throw new SQLException("Creating the relation between punto reciclaje and tipo residuo failed," +
+				throw new SQLException("Creating the relation between puntoReciclaje and tipoResiduo failed," +
 					" no affected rows");
 
 		} catch (SQLException | PersistenceException e ) {
-			throw new PersistenceException("error creating the relation between punto reciclaje and tipo residuo", e);
+			throw new PersistenceException("error creating the relation between puntoReciclaje and tipoResiduo", e);
+		}
+	}
+
+	public boolean delete(Transaction t, Long id, Long recicladorId) throws PersistenceException, SQLException {
+
+		try (var delete = t.prepareStatement(DELETE, Statement.RETURN_GENERATED_KEYS)) {
+			delete.setLong(1, id);
+			delete.setLong(2, recicladorId);
+
+			if (delete.executeUpdate() <= 0 )
+				return false;
+
+			return true;
+
+		} catch (SQLException | PersistenceException e) {
+			throw new PersistenceException("error deleting puntoReciclaje", e);
+		}
+	}
+
+	public boolean deleteRelacion(Transaction t, Long id) throws PersistenceException, SQLException {
+
+		try (var delete = t.prepareStatement(DELETE_RELACION, Statement.RETURN_GENERATED_KEYS)) {
+			delete.setLong(1, id);
+
+			if (delete.executeUpdate() <= 0)
+				return false;
+
+			return true;
+
+		} catch (SQLException | PersistenceException e) {
+			throw new PersistenceException("error deleting the relation between puntoReciclaje and tipoResiduo", e);
 		}
 	}
 }

@@ -1,6 +1,6 @@
 package org.circle8.service;
 
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.circle8.dao.PuntoReciclajeDao;
@@ -62,5 +62,17 @@ public class PuntoReciclajeService {
 			throw new ServiceError("Ha ocurrido un error al obtener el listado de puntos de reciclaje", e);
 		}
 
+	}
+
+	public boolean delete(Long id, Long recicladorId) throws ServiceError {
+		boolean delete = false;
+		try (var t = dao.open()) {
+			dao.deleteRelacion(t, id);
+			delete = dao.delete(t, id, recicladorId);
+			t.commit();
+			return delete;
+		} catch (PersistenceException | SQLException e) {
+			throw new ServiceError("Ha ocurrido un error al eliminar el punto de reciclaje", e);
+		}
 	}
 }

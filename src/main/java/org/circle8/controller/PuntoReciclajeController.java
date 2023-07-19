@@ -76,15 +76,30 @@ public class PuntoReciclajeController {
 	}
 
 	/**
-	 * DELETE /reciclador/{id_reciclador}/punto_reciclaje/{id}
+	 * DELETE /reciclador/{reciclador_id}/punto_reciclaje/{id}
 	 */
 	public ApiResponse delete(Context ctx) {
-		return new ApiResponse() {
-			@Override
-			public HttpStatus status() {
-				return HttpStatus.ACCEPTED;
+		final Long id;
+		final Long recicladorId;
+
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+		try{
+			boolean delete = this.service.delete(id, recicladorId);
+
+			if(delete){
+				return new SuccessResponse("El punto se elimino con exito");
 			}
-		};
+
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "No se encontro el punto a eliminar", "");
+
+		} catch (ServiceError e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
