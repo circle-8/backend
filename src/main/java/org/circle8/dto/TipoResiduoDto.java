@@ -6,7 +6,7 @@ import org.circle8.entity.TipoResiduo;
 public class TipoResiduoDto {
 	public long id;
 	public String nombre;
-	
+
 	public static TipoResiduoDto from(TipoResiduo entity) {
 		var tr = new TipoResiduoDto();
 		tr.id = entity.id;
@@ -23,13 +23,13 @@ public class TipoResiduoDto {
 	public TipoResiduoResponse toResponse() {
 		return new TipoResiduoResponse(id, nombre);
 	}
-	
+
 	public TipoResiduo toEntity() {
 		return TipoResiduo.builder()
 				.id(id)
 				.nombre(nombre)
 				.build();
 	}
-	
-	
+
+
 }
