@@ -7,6 +7,7 @@ import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.User;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
@@ -213,7 +214,7 @@ public class PuntoResiduoDao extends Dao {
 		return p;
 	}
 	
-	public PuntoResiduo save(Transaction t,PuntoResiduo punto) throws PersistenceException {
+	public PuntoResiduo save(Transaction t,PuntoResiduo punto) throws PersistenceException, NotFoundException {
 		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setLong(1, punto.ciudadanoId);
 			insert.setDouble(2, punto.latitud);
@@ -231,15 +232,14 @@ public class PuntoResiduoDao extends Dao {
 			}
 		} catch (SQLException e) {
 			if ( e.getMessage().contains("PuntoResiduo_CiudadanoId_fkey") )
-				//TODO: cambiar por ForeingKeyException cuando se mergee
-				throw new PersistenceException("No existe el punto de residuo con ciudadano_id " + punto.ciudadanoId, e);
+				throw new NotFoundException("No existe el punto de residuo con ciudadano_id " + punto.ciudadanoId);
 			else
 				throw new PersistenceException("error inserting residuo", e);
 		} 
 		return punto;
 	}
 	
-	public PuntoResiduo put(Transaction t,PuntoResiduo punto) throws PersistenceException {
+	public PuntoResiduo put(Transaction t,PuntoResiduo punto) throws PersistenceException, NotFoundException {
 		try ( var put = t.prepareStatement(PUT) ) {			
 			put.setDouble(1, punto.latitud);
 			put.setDouble(2, punto.longitud);
@@ -250,8 +250,8 @@ public class PuntoResiduoDao extends Dao {
 				throw new SQLException("Updating the punto residuo failed, no affected rows");
 		} catch (SQLException e) {
 			if ( e.getMessage().contains("no affected rows") )				
-				throw new PersistenceException("No existe el punto de residuo con id "
-						+ punto.id + " o ciudadano_id " + punto.ciudadanoId, e);
+				throw new NotFoundException("No existe el punto de residuo con id "
+						+ punto.id + " o ciudadano_id " + punto.ciudadanoId);
 			else
 				throw new PersistenceException("error inserting residuo", e);
 		} 

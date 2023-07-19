@@ -2,9 +2,8 @@ package org.circle8.controller;
 
 import java.util.List;
 
-import org.circle8.controller.request.punto_residuo.PostPuntoResiduoRequest;
+import org.circle8.controller.request.punto_residuo.PostPutPuntoResiduoRequest;
 import org.circle8.controller.request.punto_residuo.PuntosResiduosRequest;
-import org.circle8.controller.request.punto_residuo.PutPuntoResiduoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -86,19 +85,28 @@ public class PuntoResiduoController {
 	 * /ciudadano/{ciudadano_id}/punto_residuo
 	 * Requiere: latitud, longitud
 	 */
-	public ApiResponse post(Context ctx) {
-		val req = new PostPuntoResiduoRequest(ctx);
+	public ApiResponse post(Context ctx) {		
+		final Long ciudadanoId;		
+		try {
+			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));			
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del ciudadano debe ser numérico", "");
+		}
+		
+		val req = new PostPutPuntoResiduoRequest(ctx.queryParamMap(), 0L, ciudadanoId);
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(valid);
 		
-		var dto = PuntoResiduoDto.from(req);		
+		var dto = PuntoResiduoDto.from(req);
 		try {
 			dto = this.service.save(dto);
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error saving new residuo", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
-		}		
+		} catch (ServiceException e) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}			
 		return dto.toResponse();
 	}
 	
@@ -107,17 +115,28 @@ public class PuntoResiduoController {
 	 * Requiere: latitud, longitud
 	 */
 	public ApiResponse put(Context ctx) {
-		val req = new PutPuntoResiduoRequest(ctx);
+		final Long id;
+		final Long ciudadanoId;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));			
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+		
+		val req = new PostPutPuntoResiduoRequest(ctx.queryParamMap(), id, ciudadanoId);
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(valid);
 		
-		var dto = PuntoResiduoDto.from(req);		
+		var dto = PuntoResiduoDto.from(req);
 		try {
 			this.service.put(dto);
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error updating new residuo", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch (ServiceException e) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}		
 		return dto.toResponse();
 	}

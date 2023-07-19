@@ -20,7 +20,7 @@ public class PuntoResiduoService {
 		this.dao = puntoResiduoDao;
 	}
 	
-	public PuntoResiduoDto save(PuntoResiduoDto dto) throws ServiceError {
+	public PuntoResiduoDto save(PuntoResiduoDto dto) throws ServiceError, NotFoundException {
 		var punto = dto.toEntity();		
 		try( var t = dao.open(true)) {
 			punto = dao.save(t, punto);
@@ -31,7 +31,7 @@ public class PuntoResiduoService {
 		return dto;
 	}
 	
-	public void put(PuntoResiduoDto dto) throws ServiceError {
+	public void put(PuntoResiduoDto dto) throws ServiceError, NotFoundException {
 		var punto = dto.toEntity();		
 		try( var t = dao.open(true)) {
 			punto = dao.put(t, punto);

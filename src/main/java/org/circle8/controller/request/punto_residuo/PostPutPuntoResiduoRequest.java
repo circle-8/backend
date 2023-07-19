@@ -7,9 +7,7 @@ import javax.annotation.Nullable;
 
 import org.circle8.controller.request.IRequest;
 
-import io.javalin.http.Context;
-
-public class PutPuntoResiduoRequest implements IRequest {
+public class PostPutPuntoResiduoRequest implements IRequest {
 	private final Validation validation = new Validation();
 	
 	public Long id;
@@ -17,16 +15,23 @@ public class PutPuntoResiduoRequest implements IRequest {
 	public Double latitud;
 	public Double longitud;
 	
-	public PutPuntoResiduoRequest(Context ctx) {
-		var queryParams = ctx.queryParamMap();
-		try {
-			id = Long.parseLong(ctx.pathParam("id"));
-			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));
-		} catch ( NumberFormatException e) {
-			validation.add("los ids deben ser numéricos");
-		}		
+	public PostPutPuntoResiduoRequest(Map<String, List<String>> queryParams, Long id, Long ciudadanoId ) {
+		this.id = id;
+		this.ciudadanoId = ciudadanoId;
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
+	}
+	
+	//TODO: usar el parser de utils cuando se mergee
+	@Nullable
+	private Long parseLong(Map<String, List<String>> queryParams, String paramName) {
+		try {
+			var param = queryParams.getOrDefault(paramName, List.of());
+			return !param.isEmpty() ? Long.parseLong(param.get(0)) : null;
+		} catch ( NumberFormatException e ) {
+			validation.add(String.format("%s debe ser un numero", paramName));
+			return null;
+		}
 	}
 	
 	//TODO: usar el parser de utils cuando se mergee

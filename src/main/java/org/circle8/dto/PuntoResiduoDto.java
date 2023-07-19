@@ -1,13 +1,12 @@
 package org.circle8.dto;
 
-import lombok.val;
+import java.util.List;
 
-import org.circle8.controller.request.punto_residuo.PostPuntoResiduoRequest;
-import org.circle8.controller.request.punto_residuo.PutPuntoResiduoRequest;
+import org.circle8.controller.request.punto_residuo.PostPutPuntoResiduoRequest;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.entity.PuntoResiduo;
 
-import java.util.List;
+import lombok.val;
 
 public class PuntoResiduoDto {
 	public long id;
@@ -17,19 +16,7 @@ public class PuntoResiduoDto {
 	public UserDto ciudadano;
 	public List<ResiduoDto> residuos;
 	
-	public static PuntoResiduoDto from(PostPuntoResiduoRequest request) {
-		var pr = new PuntoResiduoDto();
-		var user = new UserDto();
-		user.id = request.ciudadanoId;
-		pr.latitud = request.latitud;
-		pr.longitud = request.longitud;
-		pr.ciudadanoId = request.ciudadanoId;
-		pr.ciudadano = user;
-		pr.residuos = List.of();
-		return pr;
-	}
-	
-	public static PuntoResiduoDto from(PutPuntoResiduoRequest request) {
+	public static PuntoResiduoDto from(PostPutPuntoResiduoRequest request) {
 		var pr = new PuntoResiduoDto();
 		var user = new UserDto();
 		user.id = request.ciudadanoId;
