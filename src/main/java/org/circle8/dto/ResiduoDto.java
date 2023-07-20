@@ -25,18 +25,18 @@ public class ResiduoDto {
 	
 	public static ResiduoDto from(PostResiduoRequest req) {
 		var r = new ResiduoDto();
-		r.fechaLimiteRetiro = req.fechaLimite;
+		r.fechaLimiteRetiro = req.fecha_limite_retiro;
 		r.descripcion = req.descripcion;
-		r.ciudadanoId = req.ciudadanoId;
-		r.puntoResiduoId = req.puntoResiduoId;
+		r.ciudadanoId = req.ciudadano_id;
+		r.puntoResiduoId = req.punto_residuo_id;
 		r.puntoResiduo = PuntoResiduoDto.builder()
-				.id(req.puntoResiduoId)
-				.ciudadanoId(req.ciudadanoId)
-				.ciudadano(UserDto.builder().id(req.ciudadanoId).build())
+				.id(req.punto_residuo_id)
+				.ciudadanoId(req.ciudadano_id)
+				.ciudadano(UserDto.builder().id(req.ciudadano_id).build())
 				.residuos(List.of())
 				.build();
-		r.tipoResiduoId = req.tipoResiduoId;
-		r.tipoResiduo = TipoResiduoDto.builder().id(req.tipoResiduoId).build();
+		r.tipoResiduoId = req.tipo_residuo_id;
+		r.tipoResiduo = TipoResiduoDto.builder().id(req.tipo_residuo_id).build();
 		return r;
 	}
 	

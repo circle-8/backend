@@ -1,6 +1,5 @@
 package org.circle8.controller;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -38,7 +37,7 @@ public class ResiduoController {
 	
 	private final ResiduoResponse mock = ResiduoResponse.builder()
 		.id(1)
-		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30).atZone(Dates.UTC))
+		.fechaCreacion(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
 		.puntoResiduo(new PuntoResiduoResponse(1, -34.6701907d, -58.5656422d, 1L, "/user/1", null, List.of()))
 		.tipoResiduo(new TipoResiduoResponse(1, "ORGANICO"))
 		.recorridoUri("/recorrido/1").recorridoId(1L)
@@ -68,10 +67,10 @@ public class ResiduoController {
 	 * Descripcion
 	 */
 	public ApiResponse post(Context ctx) {
-		val req = new PostResiduoRequest(ctx.queryParamMap());
+		val req = ctx.bodyAsClass(PostResiduoRequest.class);
 		val valid = req.valid();
 		if ( !valid.valid() )
-			return new ErrorResponse(valid);
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 		
 		var dto = ResiduoDto.from(req);		
 		try {

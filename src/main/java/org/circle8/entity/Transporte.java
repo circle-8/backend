@@ -1,13 +1,13 @@
 package org.circle8.entity;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 public class Transporte {
 	public Long id;
-	public LocalDateTime fechaAcordada;
-	public LocalDateTime fechaInicio;
-	public LocalDateTime fechaFin;
+	public ZonedDateTime fechaAcordada;
+	public ZonedDateTime fechaInicio;
+	public ZonedDateTime fechaFin;
 	public BigDecimal precioAcordado;
 	public Long transportistaId;
 	public Transportista transportista;

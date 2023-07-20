@@ -1,15 +1,15 @@
 package org.circle8.dto;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.circle8.entity.Transporte;
 
 public class TransporteDto {
 	public Long id;
-	public LocalDateTime fechaAcordada;
-	public LocalDateTime fechaInicio;
-	public LocalDateTime fechaFin;
+	public ZonedDateTime fechaAcordada;
+	public ZonedDateTime fechaInicio;
+	public ZonedDateTime fechaFin;
 	public BigDecimal precioAcordado;
 	public Long transportistaId;
 	public TransportistaDto transportista;

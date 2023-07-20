@@ -1,15 +1,18 @@
 package org.circle8.controller;
 
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import java.time.ZonedDateTime;
+import java.util.List;
+
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TransaccionResponse;
+import org.circle8.utils.Dates;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 
 @Singleton
 public class TransaccionController {
@@ -18,7 +21,7 @@ public class TransaccionController {
 
 	private final TransaccionResponse mock = TransaccionResponse.builder()
 		.id(1)
-		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30))
+		.fechaCreacion(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
 		.puntoReciclajeUri("/reciclador/1/punto_reciclaje/1")
 		.puntoReciclajeId(1)
 		.build();

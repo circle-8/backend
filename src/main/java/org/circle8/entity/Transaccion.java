@@ -1,12 +1,12 @@
 package org.circle8.entity;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public class Transaccion {
 	public long id;
-	public LocalDateTime fechaCreacion;
-	public LocalDateTime fechaRetiro;
+	public ZonedDateTime fechaCreacion;
+	public ZonedDateTime fechaRetiro;
 	public Long transporteId;
 	public Transporte transporte;
 	public Long puntoReciclajeId;
