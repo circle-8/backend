@@ -14,28 +14,18 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import lombok.val;
-import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
-import org.circle8.controller.response.DiaResponse;
+import org.circle8.controller.request.punto_reciclaje.PuntoReciclajePostRequest;
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.User;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.PuntoReciclajeFilter;
 
 import com.google.inject.Inject;
 
 public class PuntoReciclajeDao extends Dao {
-
-	private static final String SELECT_TIPOS = """
-		   SELECT tr."ID", tr."Nombre"
-		     FROM public."TipoResiduo" AS tr
-		    WHERE 1=1
-		""";
-
-	private static final String WHERE_NOMBRE_TIPOS = """
-			AND tr."Nombre" IN (%s)
-		""";
 
 	private static final String INSERT_SQL = """
 		INSERT INTO public."PuntoReciclaje"("CiudadanoId", "Latitud", "Longitud", "DiasAbierto", "Titulo")
@@ -66,11 +56,11 @@ public class PuntoReciclajeDao extends Dao {
 		   AND pr."CiudadanoId" = ?
 		""";
 
-	private static final String WHERE_CIUDADADO_NULL = """
+	private static final String WHERE_CIUDADANO_NULL = """
 		AND pr."CiudadanoId" IS NULL
 		""";
 
-	private static final String WHERE_CIUDADADO_NOT_NULL = """
+	private static final String WHERE_CIUDADANO_NOT_NULL = """
 		AND pr."CiudadanoId" IS NOT NULL
 		""";
 
@@ -174,16 +164,14 @@ public class PuntoReciclajeDao extends Dao {
 	 * @return
 	 * @throws PersistenceException
 	 */
-	public boolean put(Transaction t, Long id, Long recicladorId, PuntoReciclajeRequest req) throws SQLException, PersistenceException {
+	public void put(Transaction t, Long id, Long recicladorId, PuntoReciclajePostRequest req) throws PersistenceException, NotFoundException {
 
-		try (var update = createSelectForPut(t, id, recicladorId, req)) {
+		try (var update = createUpdateForPut(t, id, recicladorId, req)) {
 
 			if (update.executeUpdate() <= 0)
-				return false;
+				throw new NotFoundException("No se encontro el punto a actualizar.");
 
-			return true;
-
-		} catch (SQLException | PersistenceException e) {
+		} catch (SQLException e) {
 			throw new PersistenceException("error updating PuntoReciclaje", e);
 		}
 	}
@@ -225,19 +213,24 @@ public class PuntoReciclajeDao extends Dao {
 	 */
 	private PuntoReciclaje getPunto(ResultSet rs) throws SQLException {
 		PuntoReciclaje punto = null;
-		if (rs.next()) {
-			punto = new PuntoReciclaje(
-				rs.getLong("ID"),
-				rs.getString("Titulo"),
-				rs.getDouble("Latitud"),
-				rs.getDouble("Longitud"),
-				Dia.getDia(rs.getString("DiasAbierto")),
-				new ArrayList<>(),
-				rs.getLong("CiudadanoId"),
-				User.builder().id(rs.getLong("UsuarioId")).build()
-			);
-			if (rs.getInt("TipoResiduoId") != 0)
-				punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
+		boolean puntoCreado = false;
+		while (rs.next()) {
+			if (!puntoCreado) {
+				punto = new PuntoReciclaje(
+					rs.getLong("ID"),
+					rs.getString("Titulo"),
+					rs.getDouble("Latitud"),
+					rs.getDouble("Longitud"),
+					Dia.getDia(rs.getString("DiasAbierto")),
+					new ArrayList<>(),
+					rs.getLong("CiudadanoId"),
+					User.builder().id(rs.getLong("UsuarioId")).build()
+				);
+				puntoCreado = true;
+			}
+				if (rs.getInt("TipoResiduoId") != 0)
+					punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
+
 		}
 		return punto;
 	}
@@ -249,7 +242,7 @@ public class PuntoReciclajeDao extends Dao {
 		var b = new StringBuilder(SELECT);
 		List<Object> parameters = new ArrayList<>();
 
-		b.append(f.isPuntoVerde() ? WHERE_CIUDADADO_NULL : WHERE_CIUDADADO_NOT_NULL);
+		b.append(f.isPuntoVerde() ? WHERE_CIUDADANO_NULL : WHERE_CIUDADANO_NOT_NULL);
 
 		if (f.hasTipo()) {
 			String marks = f.tiposResiduos.stream()
@@ -294,7 +287,7 @@ public class PuntoReciclajeDao extends Dao {
 		return p;
 	}
 
-	public void saveRelacion(Transaction t, long trId, long prId) throws PersistenceException {
+	public void saveTipos(Transaction t, long trId, long prId) throws PersistenceException {
 		try ( var insert = t.prepareStatement(INSERT_PUNTO_RECICLAJE_TIPO_RESIDUO, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setLong(1, prId);
 			insert.setLong(2, trId);
@@ -304,43 +297,39 @@ public class PuntoReciclajeDao extends Dao {
 				throw new SQLException("Creating the relation between puntoReciclaje and tipoResiduo failed," +
 					" no affected rows");
 
-		} catch (SQLException | PersistenceException e ) {
+		} catch (SQLException e ) {
 			throw new PersistenceException("error creating the relation between puntoReciclaje and tipoResiduo", e);
 		}
 	}
 
-	public boolean delete(Transaction t, Long id, Long recicladorId) throws PersistenceException, SQLException {
+	public void delete(Transaction t, Long id, Long recicladorId) throws PersistenceException, NotFoundException {
 
 		try (var delete = t.prepareStatement(DELETE, Statement.RETURN_GENERATED_KEYS)) {
 			delete.setLong(1, id);
 			delete.setLong(2, recicladorId);
 
 			if (delete.executeUpdate() <= 0 )
-				return false;
+				throw new NotFoundException("No se encontro el punto a eliminar.");
 
-			return true;
-
-		} catch (SQLException | PersistenceException e) {
+		} catch (SQLException e) {
 			throw new PersistenceException("error deleting puntoReciclaje", e);
 		}
 	}
 
-	public boolean deleteRelacion(Transaction t, Long id) throws PersistenceException, SQLException {
+	public void deleteTipos(Transaction t, Long id) throws PersistenceException, NotFoundException {
 
 		try (var delete = t.prepareStatement(DELETE_RELACION, Statement.RETURN_GENERATED_KEYS)) {
 			delete.setLong(1, id);
 
 			if (delete.executeUpdate() <= 0)
-				return false;
+				throw new NotFoundException("No se encontro la relacion punto-tipo a eliminar.");
 
-			return true;
-
-		} catch (SQLException | PersistenceException e) {
+		} catch (SQLException e) {
 			throw new PersistenceException("error deleting the relation between puntoReciclaje and tipoResiduo", e);
 		}
 	}
 
-	private PreparedStatement createSelectForPut(Transaction t, Long id, Long recicladorId, PuntoReciclajeRequest req) throws PersistenceException, SQLException {
+	private PreparedStatement createUpdateForPut(Transaction t, Long id, Long recicladorId, PuntoReciclajePostRequest req) throws PersistenceException, SQLException {
 
 		var b = new StringBuilder(UPDATE);
 		List<Object> parameters = new ArrayList<>();
@@ -367,7 +356,7 @@ public class PuntoReciclajeDao extends Dao {
 		}
 
 		b.append(String.join(", ", setFragments))
-			.append(System.lineSeparator())
+			.append("\n")
 			.append(WHERE_ID_AND_CIUDADANO);
 
 		parameters.add(id);

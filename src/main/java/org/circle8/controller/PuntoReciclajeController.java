@@ -6,6 +6,7 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.circle8.controller.request.punto_reciclaje.PuntoReciclajePostRequest;
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
 import org.circle8.controller.response.*;
 import org.circle8.dto.Dia;
@@ -58,7 +59,7 @@ public class PuntoReciclajeController {
 			}
 
 			return puntoReciclajeDto;
-		} catch (ServiceError e) {
+		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( NotFoundException e ) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
@@ -79,17 +80,15 @@ public class PuntoReciclajeController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
 		}
 
-		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
+		val req = new PuntoReciclajePostRequest(ctx.queryParamMap());
 
 		try {
-			boolean update = this.service.put(id, recicladorId, req);
-			if(update) {
-				return new SuccessResponse("El punto se actualizo con exito.");
-			}
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El punto no se actualizo.", "");
-		} catch (ServiceError e) {
+			return this.service.put(id, recicladorId, req).toResponse();
+		} catch ( ServiceError e ) {
 			log.error("[Request:{}] error list puntos reciclaje", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}
 
 	}
@@ -108,16 +107,15 @@ public class PuntoReciclajeController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
 		}
 		try{
-			boolean delete = this.service.delete(id, recicladorId);
+			this.service.delete(id, recicladorId);
 
-			if(delete){
-				return new SuccessResponse("El punto se elimino con exito");
-			}
+			return new SuccessResponse();
 
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, "No se encontro el punto a eliminar", "");
-
-		} catch (ServiceError e) {
-			throw new RuntimeException(e);
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error delete puntos reciclaje: ", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}
 	}
 
@@ -126,21 +124,21 @@ public class PuntoReciclajeController {
 	 */
 	public ApiResponse post(Context ctx) {
 
-		val req = new PuntoReciclajeRequest(ctx.queryParamMap());
+		val req = new PuntoReciclajePostRequest(ctx.queryParamMap());
 		req.recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
-		val valid = req.validForPost();
+		val valid = req.valid();
 		if ( !valid.valid()) {
 			return new ErrorResponse(valid);
 		}
 		val dto = PuntoReciclajeDto.from(req);
 		try {
-			service.save(dto);
+			return service.save(dto).toResponse();
 		} catch ( ServiceError e ) {
 			log.error("[Request:{}] error saving new PuntoReciclaje", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}
-		return dto.toResponse();
-
 	}
 
 	/**

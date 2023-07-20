@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 
 public enum Dia {
@@ -38,18 +39,12 @@ public enum Dia {
 	}
 
 	public static String getDias(List<Dia> list) {
-		StringBuilder respuesta = new StringBuilder("[");
-		String[] array = new String[7];
-		for(int i = 0; i < 7; i ++) {
-			if(list.contains(get(i))) {
-				array[i] = "1";
-			}
-			else {
-				array[i] = "0";
-			}
-		}
-		respuesta.append(String.join(", ", array)).append("]");
-		return respuesta.toString();
+		int[] diasArray = new int[7];
+
+		list.forEach(dia -> diasArray[dia.ordinal()] = 1);
+
+		Gson gson = new GsonBuilder().create();
+		return gson.toJson(diasArray);
 	}
 
 	/**

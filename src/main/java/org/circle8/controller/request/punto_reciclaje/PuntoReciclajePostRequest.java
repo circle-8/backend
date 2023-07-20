@@ -1,12 +1,12 @@
 package org.circle8.controller.request.punto_reciclaje;
 
-import java.util.List;
-import java.util.Map;
+import jakarta.annotation.Nullable;
 import org.circle8.controller.request.IRequest;
 
-import jakarta.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
-public class PuntoReciclajeRequest implements IRequest {
+public class PuntoReciclajePostRequest implements IRequest {
 	private final Validation validation = new Validation();
 
 	public List<Integer> dias;
@@ -14,10 +14,9 @@ public class PuntoReciclajeRequest implements IRequest {
 	public Long recicladorId;
 	public Double latitud;
 	public Double longitud;
-	public Double radio;
 	public String titulo;
 
-	public PuntoReciclajeRequest(Map<String, List<String>> queryParams) {
+	public PuntoReciclajePostRequest(Map<String, List<String>> queryParams) {
 		try {
 			this.dias = queryParams.getOrDefault("dias", List.of())
 				.stream()
@@ -26,7 +25,6 @@ public class PuntoReciclajeRequest implements IRequest {
 		} catch (NumberFormatException e) {
 			validation.add("'dias' deben ser números del 0 al 6. Comenzando por LUNES.");
 		}
-
 		try {
 			this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of())
 				.stream()
@@ -38,7 +36,6 @@ public class PuntoReciclajeRequest implements IRequest {
 		this.recicladorId = parseLong(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
-		this.radio = parseDouble(queryParams, "radio");
 		this.titulo = parseString(queryParams, "titulo");
 	}
 
@@ -72,17 +69,6 @@ public class PuntoReciclajeRequest implements IRequest {
 
 	@Override
 	public Validation valid() {
-		if ( latitud != null && (longitud == null || radio == null) )
-			validation.add("Si se especifica latitud, se debe enviar longitud y radio");
-		if ( longitud != null && (latitud == null || radio == null) )
-			validation.add("Si se especifica longitud, se debe enviar latitud y radio");
-		if ( radio != null && (latitud == null || longitud == null) )
-			validation.add("Si se especifica radio, se debe enviar latitud y longitud");
-
-		return validation;
-	}
-
-	public Validation validForPost() {
 		if( latitud == null || longitud == null) {
 			validation.add("Se debe especificar tanto latitud como longitud");
 		}

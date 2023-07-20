@@ -1,9 +1,8 @@
 package org.circle8.service;
 
-import java.sql.SQLException;
 import java.util.List;
 
-import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
+import org.circle8.controller.request.punto_reciclaje.PuntoReciclajePostRequest;
 import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.dto.TipoResiduoDto;
@@ -43,19 +42,20 @@ public class PuntoReciclajeService {
 	 * @return
 	 * @throws ServiceError
 	 */
-	public PuntoReciclajeDto save(PuntoReciclajeDto dto) throws ServiceError {
+	public PuntoReciclajeDto save(PuntoReciclajeDto dto) throws ServiceError, NotFoundException {
 		var entity = dto.toEntity();
 		try (var t = dao.open()) {
 			entity = dao.save(t, entity);
 			dto.id = entity.id;
 			for(TipoResiduoDto tr : dto.tipoResiduo){
-				dao.saveRelacion(t, tr.id, dto.id);
+				dao.saveTipos(t, tr.id, dto.id);
 			}
 			t.commit();
+			return PuntoReciclajeDto.from(this.dao.get(dto.id, dto.recicladorId).
+				orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje")));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar el punto de reciclaje", e);
 		}
-		return dto;
 	}
 
 	/**
@@ -78,14 +78,12 @@ public class PuntoReciclajeService {
 	 * @return
 	 * @throws ServiceError
 	 */
-	public boolean delete(Long id, Long recicladorId) throws ServiceError {
-		boolean delete = false;
+	public void delete(Long id, Long recicladorId) throws ServiceError, NotFoundException {
 		try (var t = dao.open()) {
-			dao.deleteRelacion(t, id);
-			delete = dao.delete(t, id, recicladorId);
+			dao.deleteTipos(t, id);
+			dao.delete(t, id, recicladorId);
 			t.commit();
-			return delete;
-		} catch (PersistenceException | SQLException e) {
+		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al eliminar el punto de reciclaje", e);
 		}
 	}
@@ -98,20 +96,20 @@ public class PuntoReciclajeService {
 	 * @return
 	 * @throws ServiceError
 	 */
-	public boolean put(Long id, Long recicladorId, PuntoReciclajeRequest req) throws ServiceError{
-		boolean update = false;
+	public PuntoReciclajeDto put(Long id, Long recicladorId, PuntoReciclajePostRequest req) throws ServiceError, NotFoundException {
 		try (var t = dao.open()){
 
 			if(!req.tiposResiduo.isEmpty()){
-				dao.deleteRelacion(t, id);
+				dao.deleteTipos(t, id);
 				for(Integer tr : req.tiposResiduo){
-					dao.saveRelacion(t, tr, id);
+					dao.saveTipos(t, tr, id);
 				}
 			}
-			update = this.dao.put(t, id, recicladorId, req);
+			this.dao.put(t, id, recicladorId, req);
 			t.commit();
-			return update;
-		} catch (PersistenceException | SQLException e) {
+			return PuntoReciclajeDto.from(this.dao.get(id, recicladorId).
+				orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje")));
+		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el listado de puntos de reciclaje", e);
 		}
 	}

@@ -4,6 +4,5 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class SuccessResponse  implements ApiResponse {
-		public String message;
 
 }
