@@ -4,6 +4,7 @@ import lombok.val;
 import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.TipoUsuarioResponse;
 import org.circle8.controller.response.UserResponse;
+import org.circle8.entity.Ciudadano;
 import org.circle8.entity.User;
 
 public class UserDto {
@@ -13,6 +14,7 @@ public class UserDto {
 	public String email;
 	public TipoUsuario tipo;
 	public SuscripcionDto suscripcion;
+	public Long ciudadanoId; // TODO: se puede cambiar por CiudadanoDto (nullable)
 
 	public static UserDto from(UserRequest request) {
 		val u = new UserDto();
@@ -31,6 +33,7 @@ public class UserDto {
 		u.nombre = entity.nombre;
 		u.email = entity.email;
 		u.tipo = entity.tipo;
+		u.ciudadanoId = entity.ciudadanoId;
 		return u;
 	}
 
@@ -41,7 +44,8 @@ public class UserDto {
 			nombre,
 			email,
 			TipoUsuarioResponse.from(tipo),
-			suscripcion != null ? suscripcion.toResponse() : null
+			suscripcion != null ? suscripcion.toResponse() : null,
+			ciudadanoId
 		);
 	}
 
