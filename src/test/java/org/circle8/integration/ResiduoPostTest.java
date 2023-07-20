@@ -17,9 +17,9 @@ public class ResiduoPostTest {
 	void testInsertOkWithoutFechalimite() {
 		var request = """
 				{
-			     "tipo_residuo_id": 1,
-			     "punto_residuo_id": 1,
-			     "ciudadano_id": 1,
+			     "tipoResiduoId": 1,
+			     "puntoResiduoId": 1,
+			     "ciudadanoId": 1,
 			     "descripcion": "prueba"
 			   }""";
 		
@@ -45,11 +45,11 @@ public class ResiduoPostTest {
 	void testInsertOkWithFechalimite() {
 		var request = """
 				{
-			     "tipo_residuo_id": 1,
-			     "punto_residuo_id": 1,
-			     "ciudadano_id": 1,
+			     "tipoResiduoId": 1,
+			     "puntoResiduoId": 1,
+			     "ciudadanoId": 1,
 			     "descripcion": "prueba",
-			     "fecha_limite_retiro": '2023-07-25T14:14:14.445Z'
+			     "fechaLimite": '2023-07-25T14:14:14.445Z'
 			   }""";
 		RestAssured.given()
 			.body(request)
@@ -74,8 +74,8 @@ public class ResiduoPostTest {
 	void testTipoResiduoIdNotSend() {
 		var request = """
 				{
-			     "punto_residuo_id": 1,
-			     "ciudadano_id": 1,
+			     "tipoResiduoId": 1,
+			     "ciudadanoId": 1,
 			     "descripcion": "prueba",
 			   }""";
 		RestAssured.given()
@@ -90,8 +90,8 @@ public class ResiduoPostTest {
 	void testPuntoResiduoIdNotSend() {
 		var request = """
 				{
-			     "tipo_residuo_id": 1,
-			     "ciudadano_id": 1,
+			     "tipoResiduoId": 1,
+			     "ciudadanoId": 1,
 			     "descripcion": "prueba",
 			   }""";
 		RestAssured.given()
@@ -106,8 +106,8 @@ public class ResiduoPostTest {
 	void testciudadanoIdNotSend() {
 		var request = """
 				{
-			     "tipo_residuo_id": 1,
-			     "punto_residuo_id": 1,
+			     "tipoResiduoId": 1,
+			     "puntoResiduoId": 1,
 			     "descripcion": "prueba",
 			   }""";
 		RestAssured.given()
@@ -122,9 +122,9 @@ public class ResiduoPostTest {
 	void testDescipcionNotSend() {
 		var request = """
 				{
-			     "tipo_residuo_id": 1,
-			     "punto_residuo_id": 1,
-			     "ciudadano_id": 1,
+			     "tipoResiduoId": 1,
+			     "puntoResiduoId": 1,
+			     "ciudadanoId": 1,
 			   }""";
 		RestAssured.given()
 			.body(request)
@@ -138,11 +138,11 @@ public class ResiduoPostTest {
 	void testInvalidFechaLimiteFormat() {
 		var request = """
 				{
-			     "tipo_residuo_id": 1,
-			     "punto_residuo_id": 1,
-			     "ciudadano_id": 1,
+			     "tipoResiduoId": 1,
+			     "puntoResiduoId": 1,
+			     "ciudadanoId": 1,
 			     "descripcion": "prueba",
-			     "fecha_limite_retiro": '2023-07-25'
+			     "fechaLimite": '2023-07-25'
 			   }""";
 		RestAssured.given()
 			.body(request)
@@ -156,11 +156,11 @@ public class ResiduoPostTest {
 	void testFechaLimiteBeforeToday() {
 		var request = """
 				{
-			     "tipo_residuo_id": 1,
-			     "punto_residuo_id": 1,
-			     "ciudadano_id": 1,
+			     "tipoResiduoId": 1,
+			     "puntoResiduoId": 1,
+			     "ciudadanoId": 1,
 			     "descripcion": "prueba",
-			     "fecha_limite_retiro": '2022-07-25T14:14:14.445Z'
+			     "fechaLimite": '2022-07-25T14:14:14.445Z'
 			   }""";
 		RestAssured.given()
 			.body(request)
@@ -174,9 +174,9 @@ public class ResiduoPostTest {
 	void testInvalidTipoResiduoID() {
 		var request = """
 				{
-			     "tipo_residuo_id": 0,
-			     "punto_residuo_id": 1,
-			     "ciudadano_id": 1,
+			     "tipoResiduoId": 0,
+			     "puntoResiduoId": 1,
+			     "ciudadanoId": 1,
 			     "descripcion": "prueba"
 			   }""";
 		RestAssured.given()
@@ -191,9 +191,9 @@ public class ResiduoPostTest {
 	void testInvalidPuntoResiduoID() {
 		var request = """
 				{
-			     "tipo_residuo_id": 1,
-			     "punto_residuo_id": 0,
-			     "ciudadano_id": 1,
+			     "tipoResiduoId": 1,
+			     "puntoResiduoId": 0,
+			     "ciudadanoId": 1,
 			     "descripcion": "prueba"
 			   }""";
 		RestAssured.given()
