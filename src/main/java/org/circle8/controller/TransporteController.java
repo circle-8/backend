@@ -1,20 +1,23 @@
 package org.circle8.controller;
 
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.List;
+
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.TransporteResponse;
+import org.circle8.utils.Dates;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
 
 @Singleton
 public class TransporteController {
 	private final static TransporteResponse mock = TransporteResponse.builder()
 		.id(1)
-		.fechaAcordada(LocalDateTime.of(2023, 1, 1, 16, 30))
+		.fechaAcordada(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
 		.transaccionId(1)
 		.transportistaUri("/transportista/1")
 		.build();
@@ -54,7 +57,7 @@ public class TransporteController {
 	public ApiResponse inicio(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaInicio(LocalDateTime.now())
+			.fechaInicio(ZonedDateTime.now(Dates.UTC))
 			.build();
 	}
 
@@ -64,8 +67,8 @@ public class TransporteController {
 	public ApiResponse fin(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaInicio(LocalDateTime.now().minusHours(1))
-			.fechaFin(LocalDateTime.now())
+			.fechaInicio(ZonedDateTime.now(Dates.UTC).minusHours(1))
+			.fechaFin(ZonedDateTime.now(Dates.UTC))
 			.build();
 	}
 

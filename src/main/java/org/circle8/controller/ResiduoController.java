@@ -1,24 +1,43 @@
 package org.circle8.controller;
 
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+import org.circle8.controller.request.residuo.PostResiduoRequest;
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
+import org.circle8.dto.ResiduoDto;
+import org.circle8.exception.ServiceError;
+import org.circle8.service.ResiduoService;
 import org.circle8.utils.Dates;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.List;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Slf4j
 public class ResiduoController {
+	
+	private final ResiduoService service;
+	
+	@Inject
+	public ResiduoController(ResiduoService service) {
+		this.service = service;
+	}
+	
 	private final ResiduoResponse mock = ResiduoResponse.builder()
 		.id(1)
-		.fechaCreacion(LocalDateTime.of(2023, 1, 1, 16, 30).atZone(Dates.UTC))
+		.fechaCreacion(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
 		.puntoResiduo(new PuntoResiduoResponse(1, -34.6701907d, -58.5656422d, 1L, "/user/1", null, List.of()))
 		.tipoResiduo(new TipoResiduoResponse(1, "ORGANICO"))
 		.recorridoUri("/recorrido/1").recorridoId(1L)
@@ -41,10 +60,26 @@ public class ResiduoController {
 
 	/**
 	 * POST /residuo
-	 * Requiere de Tipo de Residuo y Punto de Residuo
+	 * Requiere de :
+	 * Tipo de Residuo
+	 * Punto de Residuo
+	 * Fecha limite retiro (opcional)
+	 * Descripcion
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock;
+		val req = ctx.bodyAsClass(PostResiduoRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+		
+		var dto = ResiduoDto.from(req);		
+		try {
+			dto = service.save(dto);
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error saving new residuo", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}		
+		return dto.toResponse();
 	}
 
 	public ApiResponse delete(Context ctx) {

@@ -1,17 +1,20 @@
 package org.circle8.controller;
 
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import java.time.ZonedDateTime;
+import java.util.List;
+
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResponse;
 import org.circle8.controller.response.RecorridoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.RetiroResponse;
+import org.circle8.utils.Dates;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 
 @Singleton
 public class RecorridoController {
@@ -19,7 +22,7 @@ public class RecorridoController {
 	private static final String ID_ORGANIZACION_PARAM = "id_organizacion";
 
 	private final RecorridoResponse mock = RecorridoResponse.builder()
-		.fechaRetiro(LocalDateTime.of(2023, 1, 1, 16, 30))
+		.fechaRetiro(ZonedDateTime.of (2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
 		.recicladorId(1).recicladorUri("/reciclador/1")
 		.zonaId(1).zonaUri("/organizacion/1/zona/1")
 		.puntoInicio(new PuntoResponse(-34.6347176f,-58.5587959f))
@@ -77,7 +80,7 @@ public class RecorridoController {
 	public ApiResponse inicio(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaInicio(LocalDateTime.now())
+			.fechaInicio(ZonedDateTime.now(Dates.UTC))
 			.build();
 	}
 
@@ -87,8 +90,8 @@ public class RecorridoController {
 	public ApiResponse fin(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaInicio(LocalDateTime.now().minusHours(1))
-			.fechaFin(LocalDateTime.now())
+			.fechaInicio(ZonedDateTime.now(Dates.UTC).minusHours(1))
+			.fechaFin(ZonedDateTime.now(Dates.UTC))
 			.build();
 	}
 

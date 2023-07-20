@@ -1,13 +1,14 @@
 package org.circle8.integration;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
+import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
 class PuntoReciclajeListTest {
