@@ -57,13 +57,13 @@ public class PuntoReciclajeDao extends Dao {
 		""";
 
 	private static final String SELECT_GET = """
-		   SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."CiudadanoId" , prtr."TipoResiduoId", tr."Nombre", ciu."UsuarioId"
-		   	FROM "PuntoReciclaje" AS pr
-		   		LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
-				LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
-				LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
-		    WHERE pr."ID" = ?
-		    	AND pr."CiudadanoId" = ?
+		SELECT pr."ID", pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."CiudadanoId" , prtr."TipoResiduoId", tr."Nombre", ciu."UsuarioId"
+		  FROM "PuntoReciclaje" AS pr
+		  LEFT JOIN "PuntoReciclaje_TipoResiduo" AS prtr ON prtr."PuntoReciclajeId" = pr."ID"
+		  LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
+		  LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
+		 WHERE pr."ID" = ?
+		   AND pr."CiudadanoId" = ?
 		""";
 
 	private static final String WHERE_CIUDADADO_NULL = """
