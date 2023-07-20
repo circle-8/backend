@@ -38,9 +38,9 @@ public class PuntoReciclajeDao extends Dao {
 		""";
 
 	private static final String INSERT_SQL = """
-      INSERT INTO public."PuntoReciclaje"("CiudadanoId", "Latitud", "Longitud", "DiasAbierto", "Titulo")
-  		VALUES (?, ?, ?, ?, ?)
-  		""";
+		INSERT INTO public."PuntoReciclaje"("CiudadanoId", "Latitud", "Longitud", "DiasAbierto", "Titulo")
+		VALUES (?, ?, ?, ?, ?)
+		""";
 
 	private static final String WHERE_AREA = """
 		AND pr."Latitud" BETWEEN ? AND ?
