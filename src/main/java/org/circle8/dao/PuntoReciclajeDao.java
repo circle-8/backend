@@ -90,9 +90,9 @@ public class PuntoReciclajeDao extends Dao {
 		""";
 
 	private static final String DELETE = """
-		    DELETE FROM public."PuntoReciclaje" AS pr
-		    	WHERE pr."ID" = ?
-		    	AND pr."CiudadanoId" = ?
+		DELETE FROM public."PuntoReciclaje" AS pr
+		 WHERE pr."ID" = ?
+		   AND pr."CiudadanoId" = ?
 		""";
 
 	private static final String DELETE_RELACION = """
