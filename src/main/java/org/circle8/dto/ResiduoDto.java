@@ -2,14 +2,11 @@ package org.circle8.dto;
 
 
 import java.time.ZonedDateTime;
-import java.util.Collections;
+import java.util.List;
 
 import org.circle8.controller.request.residuo.PostResiduoRequest;
 import org.circle8.controller.response.ResiduoResponse;
-import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
-import org.circle8.entity.TipoResiduo;
-import org.circle8.entity.User;
 
 public class ResiduoDto {
 	public long id;
@@ -23,7 +20,6 @@ public class ResiduoDto {
 	public Long tipoResiduoId;
 	public TipoResiduoDto tipoResiduo;
 	public Long recorridoId;
-	public RecorridoDto recorrido;
 	public Long transaccionId;
 	public TransaccionDto transaccion;
 	
@@ -33,14 +29,14 @@ public class ResiduoDto {
 		r.descripcion = req.descripcion;
 		r.ciudadanoId = req.ciudadanoId;
 		r.puntoResiduoId = req.puntoResiduoId;
-		var pr = PuntoResiduo.builder()
+		r.puntoResiduo = PuntoResiduoDto.builder()
 				.id(req.puntoResiduoId)
-				.ciudadano(User.builder().id(req.ciudadanoId).build())
-				.residuos(Collections.emptyList())
+				.ciudadanoId(req.ciudadanoId)
+				.ciudadano(UserDto.builder().id(req.ciudadanoId).build())
+				.residuos(List.of())
 				.build();
-		r.puntoResiduo = PuntoResiduoDto.from(pr);
 		r.tipoResiduoId = req.tipoResiduoId;
-		r.tipoResiduo = TipoResiduoDto.from(TipoResiduo.builder().id(req.tipoResiduoId).build());
+		r.tipoResiduo = TipoResiduoDto.builder().id(req.tipoResiduoId).build();
 		return r;
 	}
 	
@@ -53,9 +49,7 @@ public class ResiduoDto {
 		r.fechaLimiteRetiro = entity.fechaLimiteRetiro;
 		r.descripcion = entity.descripcion;
 		r.puntoResiduo = PuntoResiduoDto.from(entity.puntoResiduo);
-		r.tipoResiduoId = r.tipoResiduoId;
 		r.tipoResiduo = TipoResiduoDto.from(entity.tipoResiduo);
-		r.recorrido = RecorridoDto.from(entity.recorrido);
 		r.transaccion = TransaccionDto.from(entity.transaccion);
 		return r;
 	}
@@ -71,9 +65,8 @@ public class ResiduoDto {
 				this.puntoResiduo.id,
 				this.puntoResiduo.toResponse(),
 				this.tipoResiduo.toResponse(),
-				this.recorrido != null ? "/recorrido/"+this.recorrido.id : null,
-				this.recorridoId != null ? this.recorrido.id : null,
-				this.recorrido != null ? this.recorrido.toResponse() : null,
+				this.recorridoId != null ? "/recorrido/"+this.recorridoId : null,
+				this.recorridoId ,
 				this.transaccion != null ? "/transaccion/"+this.transaccion.id : null,
 				this.transaccion != null ? this.transaccion.id : null,
 				this.transaccion != null ? this.transaccion.toResponse() : null);

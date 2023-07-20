@@ -1,6 +1,5 @@
 package org.circle8.utils;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -44,9 +43,9 @@ public class Parser {
 	public static ZonedDateTime parseLocalZonedDateTime(Validation validation,Map<String, List<String>> queryParams, String paramName) {
 		try {
 			var param = queryParams.getOrDefault(paramName, List.of());
-			return !param.isEmpty() ? LocalDate.parse(param.get(0),DateTimeFormatter.ISO_LOCAL_DATE).atStartOfDay(Dates.UTC) : null;
+			return !param.isEmpty() ? ZonedDateTime.parse(param.get(0),DateTimeFormatter.ISO_OFFSET_DATE_TIME) : null;
 		} catch ( DateTimeParseException e ) {
-			validation.add(String.format("%s debe ser en formato ISO (2023-07-25)", paramName));
+			validation.add(String.format("%s debe ser en formato ISO_OFFSET_DATE_TIME (2023-07-19T23:13:14.445Z)", paramName));
 			return null;
 		}		
 	}

@@ -21,7 +21,6 @@ public class ResiduoResponse implements ApiResponse {
 	public TipoResiduoResponse tipoResiduo;
 	public String recorridoUri;
 	public Long recorridoId;
-	public RecorridoResponse recorrido;
 	public String transaccionUri;
 	public Long transaccionId;
 	public TransaccionResponse transaccion;

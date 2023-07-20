@@ -19,6 +19,5 @@ public class Residuo {
 	public String descripcion;
 	public PuntoResiduo puntoResiduo;
 	public TipoResiduo tipoResiduo;
-	public Recorrido recorrido;
 	public Transaccion transaccion; 
 }

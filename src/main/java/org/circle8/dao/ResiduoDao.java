@@ -3,7 +3,7 @@ package org.circle8.dao;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import javax.sql.DataSource;
 
@@ -29,7 +29,7 @@ public class ResiduoDao extends Dao {
 	
 	public Residuo save(Transaction t,Residuo residuo) throws PersistenceException {
 		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
-			insert.setTimestamp(1, Timestamp.from(LocalDateTime.now().atZone(Dates.UTC).toInstant()));
+			insert.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
 			insert.setLong(2, residuo.puntoResiduo.id);
 			insert.setLong(3, residuo.tipoResiduo.id);			
 			insert.setString(4, residuo.descripcion);

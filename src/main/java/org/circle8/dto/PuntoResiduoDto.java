@@ -1,11 +1,18 @@
 package org.circle8.dto;
 
-import lombok.val;
+import java.util.List;
+
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.entity.PuntoResiduo;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.val;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class PuntoResiduoDto {
 	public long id;
 	public Double latitud;
@@ -44,7 +51,6 @@ public class PuntoResiduoDto {
 				.latitud(this.latitud)
 				.longitud(this.longitud)
 				.ciudadanoId(this.ciudadanoId)
-				.ciudadano(this.ciudadano.toEntity())
 				.build();
 	}
 }
