@@ -86,17 +86,20 @@ public class PuntoResiduoController {
 	 * Requiere: latitud, longitud
 	 */
 	public ApiResponse post(Context ctx) {		
-		final Long ciudadanoId;		
+		final Long ciudadano_id;		
 		try {
-			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));			
+			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));			
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del ciudadano debe ser numérico", "");
 		}
 		
-		val req = new PostPutPuntoResiduoRequest(ctx.queryParamMap(), 0L, ciudadanoId);
+		val req = ctx.bodyAsClass(PostPutPuntoResiduoRequest.class);
 		val valid = req.valid();
 		if ( !valid.valid() )
-			return new ErrorResponse(valid);
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+		
+		req.id = 0L;
+		req.ciudadano_id = ciudadano_id;
 		
 		var dto = PuntoResiduoDto.from(req);
 		try {
@@ -104,7 +107,7 @@ public class PuntoResiduoController {
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error saving new residuo", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
-		} catch (ServiceException e) {
+		} catch (NotFoundException e) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}			
 		return dto.toResponse();
@@ -116,18 +119,21 @@ public class PuntoResiduoController {
 	 */
 	public ApiResponse put(Context ctx) {
 		final Long id;
-		final Long ciudadanoId;
+		final Long ciudadano_id;
 		try {
 			id = Long.parseLong(ctx.pathParam("id"));
-			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));			
+			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));			
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
 		}
 		
-		val req = new PostPutPuntoResiduoRequest(ctx.queryParamMap(), id, ciudadanoId);
+		val req = ctx.bodyAsClass(PostPutPuntoResiduoRequest.class);
 		val valid = req.valid();
 		if ( !valid.valid() )
-			return new ErrorResponse(valid);
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+		
+		req.id = id;
+		req.ciudadano_id = ciudadano_id;
 		
 		var dto = PuntoResiduoDto.from(req);
 		try {
@@ -135,7 +141,7 @@ public class PuntoResiduoController {
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error updating new residuo", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
-		} catch (ServiceException e) {
+		} catch (NotFoundException e) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}		
 		return dto.toResponse();

@@ -1,11 +1,11 @@
 package org.circle8.dto;
 
-import lombok.val;
 import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.TipoUsuarioResponse;
 import org.circle8.controller.response.UserResponse;
-import org.circle8.entity.Ciudadano;
 import org.circle8.entity.User;
+
+import lombok.val;
 
 public class UserDto {
 	public long id;

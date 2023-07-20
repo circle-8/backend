@@ -247,13 +247,10 @@ public class PuntoResiduoDao extends Dao {
 			put.setLong(4, punto.ciudadanoId);			
 			int puts = put.executeUpdate();
 			if ( puts == 0 )
-				throw new SQLException("Updating the punto residuo failed, no affected rows");
-		} catch (SQLException e) {
-			if ( e.getMessage().contains("no affected rows") )				
 				throw new NotFoundException("No existe el punto de residuo con id "
 						+ punto.id + " o ciudadano_id " + punto.ciudadanoId);
-			else
-				throw new PersistenceException("error inserting residuo", e);
+		} catch (SQLException e) {
+			throw new PersistenceException("error inserting residuo", e);
 		} 
 
 		return punto;
