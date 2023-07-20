@@ -8,6 +8,7 @@ import org.circle8.entity.PuntoReciclaje;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
 import org.circle8.filter.PuntoReciclajeFilter;
 
 import com.google.inject.Inject;
