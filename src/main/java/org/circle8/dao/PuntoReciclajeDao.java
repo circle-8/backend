@@ -101,8 +101,8 @@ public class PuntoReciclajeDao extends Dao {
 		""";
 
 	private static final String UPDATE = """
-		   UPDATE public."PuntoReciclaje"
-		   	SET 
+		UPDATE public."PuntoReciclaje"
+		SET
 		""";
 
 	private static final String WHERE_ID_AND_CIUDADANO = """
