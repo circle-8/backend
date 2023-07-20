@@ -39,8 +39,9 @@ public class PuntoReciclajeService {
 	 */
 	public PuntoReciclajeDto get(Long id, Long recicladorId) throws ServiceException {
 		try {
-			return PuntoReciclajeDto.from(this.dao.get(id, recicladorId).
-				orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje")));
+			return this.dao.get(id, recicladorId)
+				.map(PuntoReciclajeDto::from)
+				.orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje"));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el listado de puntos de reciclaje", e);
 		}
