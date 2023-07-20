@@ -37,7 +37,7 @@ public class PuntoReciclajeService {
 	/**
 	 * Obtiene un punto de reciclaje por medio de su id
 	 */
-	public PuntoReciclajeDto get(Long id, Long recicladorId) throws ServiceError, NotFoundException {
+	public PuntoReciclajeDto get(Long id, Long recicladorId) throws ServiceException {
 		try {
 			return PuntoReciclajeDto.from(this.dao.get(id, recicladorId).
 				orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje")));
