@@ -106,8 +106,8 @@ public class PuntoReciclajeDao extends Dao {
 		""";
 
 	private static final String WHERE_ID_AND_CIUDADANO = """
-		   WHERE "ID" = ?
-		    	AND "CiudadanoId" = ?
+		WHERE "ID" = ?
+		  AND "CiudadanoId" = ?
 		""";
 
 	@Inject
