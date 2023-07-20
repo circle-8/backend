@@ -29,6 +29,7 @@ public class PuntoReciclajeRequest implements IRequest {
 		}
 
 		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
+		//TODO cuando mergeemos el PR de Ger deberiamos usar Parser
 		this.recicladorId = parseLong(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");

@@ -86,7 +86,7 @@ public class PuntoReciclajeDao extends Dao {
 	public Optional<PuntoReciclaje> get(Long id, Long recicladorId) throws PersistenceException {
 		try (var t = open(true); var select = createSelectForGet(t, id, recicladorId);
 			 var rs = select.executeQuery()) {
-			return Optional.of(getPunto(rs));
+			return Optional.ofNullable(getPunto(rs));
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting punto reciclaje", e);
 		}
@@ -185,15 +185,11 @@ public class PuntoReciclajeDao extends Dao {
 	}
 
 	private PreparedStatement createSelectForGet(Transaction t, Long id, Long recicladorId) throws PersistenceException, SQLException {
-		var b = new StringBuilder(SELECT_GET);
-		List<Object> parameters = new ArrayList<>();
-
-		parameters.add(id);
-		parameters.add(recicladorId);
+		var b = SELECT_GET;
 
 		var p = t.prepareStatement(b.toString());
-		for (int i = 0; i < parameters.size(); i++)
-			p.setObject(i + 1, parameters.get(i));
+		p.setLong(1, id);
+		p.setLong(2, recicladorId);
 
 		return p;
 	}
