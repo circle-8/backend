@@ -85,9 +85,8 @@ public class PuntoReciclajeDao extends Dao {
 		""";
 
 	private static final String INSERT_PUNTO_RECICLAJE_TIPO_RESIDUO = """
-		    INSERT INTO public."PuntoReciclaje_TipoResiduo"(
-		    		"PuntoReciclajeId", "TipoResiduoId")
-		    	VALUES (?, ?);
+		INSERT INTO public."PuntoReciclaje_TipoResiduo"("PuntoReciclajeId", "TipoResiduoId")
+		VALUES (?, ?);
 		""";
 
 	private static final String DELETE = """
