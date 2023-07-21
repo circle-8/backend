@@ -308,6 +308,8 @@ public class PuntoReciclajeDao extends Dao {
 			delete.setLong(1, id);
 			delete.setLong(2, recicladorId);
 
+			//TODO Ger quiere probar cositas :)
+
 			if (delete.executeUpdate() <= 0 )
 				throw new NotFoundException("No se encontro el punto a eliminar.");
 

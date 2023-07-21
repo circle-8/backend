@@ -43,8 +43,7 @@ public enum Dia {
 
 		list.forEach(dia -> diasArray[dia.ordinal()] = 1);
 
-		Gson gson = new GsonBuilder().create();
-		return gson.toJson(diasArray);
+		return GSON.toJson(diasArray);
 	}
 
 	/**

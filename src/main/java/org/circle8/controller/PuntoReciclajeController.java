@@ -126,10 +126,12 @@ public class PuntoReciclajeController {
 
 		val req = new PuntoReciclajePostRequest(ctx.queryParamMap());
 		req.recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
+
 		val valid = req.valid();
 		if ( !valid.valid()) {
 			return new ErrorResponse(valid);
 		}
+
 		val dto = PuntoReciclajeDto.from(req);
 		try {
 			return service.save(dto).toResponse();
