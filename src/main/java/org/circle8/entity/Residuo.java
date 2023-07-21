@@ -1,17 +1,23 @@
 package org.circle8.entity;
 
-import lombok.Builder;
 
 import java.time.ZonedDateTime;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Residuo {
 	public long id;
 	public long ciudadanoId;
-	public ZonedDateTime fechaRetiro;
 	public ZonedDateTime fechaCreacion;
-	public PuntoResiduo punto;
-	public TipoResiduo tipo;
-	public Recorrido recorrido;
-	public Transaccion transaccion;
+	public ZonedDateTime fechaRetiro;	
+	public ZonedDateTime fechaLimiteRetiro;
+	public String descripcion;
+	public PuntoResiduo puntoResiduo;
+	public TipoResiduo tipoResiduo;
+	public Transaccion transaccion; 
 }

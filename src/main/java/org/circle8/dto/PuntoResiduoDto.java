@@ -6,8 +6,14 @@ import org.circle8.controller.request.punto_residuo.PostPutPuntoResiduoRequest;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.entity.PuntoResiduo;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.val;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class PuntoResiduoDto {
 	public long id;
 	public Double latitud;
@@ -54,10 +60,11 @@ public class PuntoResiduoDto {
 	}
 	
 	public PuntoResiduo toEntity() {
-		var pr = new PuntoResiduo(this.id);
-		pr.latitud = this.latitud;
-		pr.longitud = this.longitud;
-		pr.ciudadanoId = this.ciudadanoId;		
-		return pr;
+		return PuntoResiduo.builder()
+				.id(this.id)
+				.latitud(this.latitud)
+				.longitud(this.longitud)
+				.ciudadanoId(this.ciudadanoId)
+				.build();
 	}
 }

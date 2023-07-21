@@ -5,8 +5,14 @@ import org.circle8.controller.response.TipoUsuarioResponse;
 import org.circle8.controller.response.UserResponse;
 import org.circle8.entity.User;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.val;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class UserDto {
 	public long id;
 	public String username;

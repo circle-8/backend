@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class CiudadanoResponse implements ApiResponse {
-	public int id;
+	public long id;
 	public String username;
 	public String nombre;
 }
