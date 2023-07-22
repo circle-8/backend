@@ -1,7 +1,16 @@
 package org.circle8.dao;
 
-import com.google.inject.Inject;
-import lombok.val;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.sql.DataSource;
+
 import org.circle8.dto.TipoUsuario;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
@@ -12,15 +21,9 @@ import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
 import org.circle8.utils.Dates;
 
-import javax.sql.DataSource;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.google.inject.Inject;
+
+import lombok.val;
 
 public class PuntoResiduoDao extends Dao {
 	private static final String SELECT_FMT = """
@@ -39,6 +42,9 @@ public class PuntoResiduoDao extends Dao {
 		LEFT JOIN "TipoResiduo" AS tr on tr."ID" = r."TipoResiduoId"
 		""";
 	private static final String JOIN_CIUDADANO = "JOIN \"Usuario\" AS u ON u.\"ID\" = c.\"UsuarioId\"\n";
+	private static final String WHERE_CIUDADANO = """
+		AND pr."CiudadanoId" = ?
+		""";
 	private static final String WHERE_AREA = """
 		AND pr."Latitud" BETWEEN ? AND ?
 		AND pr."Longitud" BETWEEN ? AND ?
@@ -113,6 +119,11 @@ public class PuntoResiduoDao extends Dao {
 			parameters.add(f.longitud + f.radio);
 		}
 
+		if ( f.ciudadanoId != null ) {
+			conditions.append(WHERE_CIUDADANO);
+			parameters.add(f.ciudadanoId);
+		}
+
 		if ( f.hasTipo() ) {
 			val marks = f.tipoResiduos.stream()
 				.map(tr -> "?")
@@ -167,8 +178,8 @@ public class PuntoResiduoDao extends Dao {
 						.id(rs.getLong("ResiduoId"))
 						.ciudadanoId(ciudadanoId)
 						.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
-						.tipo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
-						.punto(new PuntoResiduo(p.id)) // para evitar recursividad dentro de residuo
+						.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
+						.puntoResiduo(new PuntoResiduo(p.id)) // para evitar recursividad dentro de residuo
 						.build();
 					residuos.add(r);
 				} while ( rs.next() );
