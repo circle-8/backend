@@ -1,6 +1,7 @@
 package org.circle8.controller.request.punto_residuo;
 
 import org.circle8.controller.request.IRequest;
+import org.circle8.utils.Parser;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -12,29 +13,20 @@ public class PuntosResiduosRequest implements IRequest {
 	public Double latitud;
 	public Double longitud;
 	public Double radio;
+	public Long ciudadanoId;
 
 	public List<String> tipoResiduo;
 
 	public List<String> expands;
 
 	public PuntosResiduosRequest(Map<String, List<String>> queryParams) {
-		this.latitud = parse(queryParams, "latitud");
-		this.longitud = parse(queryParams, "longitud");
-		this.radio = parse(queryParams, "radio");
+		this.latitud = Parser.parseDouble(validation, queryParams, "latitud");
+		this.longitud = Parser.parseDouble(validation, queryParams, "longitud");
+		this.radio = Parser.parseDouble(validation, queryParams, "radio");
+		this.ciudadanoId = Parser.parseLong(validation, queryParams, "ciudadano_id");
 
 		this.tipoResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
 		this.expands = queryParams.getOrDefault("expand", List.of());
-	}
-
-	@Nullable
-	private Double parse(Map<String, List<String>> queryParams, String paramName) {
-		try {
-			var param = queryParams.getOrDefault(paramName, List.of());
-			return !param.isEmpty() ? Double.parseDouble(param.get(0)) : null;
-		} catch ( NumberFormatException e ) {
-			validation.add(String.format("%s debe ser un numero", paramName));
-			return null;
-		}
 	}
 
 	@Override

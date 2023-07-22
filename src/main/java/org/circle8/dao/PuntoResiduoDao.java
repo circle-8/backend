@@ -42,6 +42,9 @@ public class PuntoResiduoDao extends Dao {
 		LEFT JOIN "TipoResiduo" AS tr on tr."ID" = r."TipoResiduoId"
 		""";
 	private static final String JOIN_CIUDADANO = "JOIN \"Usuario\" AS u ON u.\"ID\" = c.\"UsuarioId\"\n";
+	private static final String WHERE_CIUDADANO = """
+		AND pr."CiudadanoId" = ?
+		""";
 	private static final String WHERE_AREA = """
 		AND pr."Latitud" BETWEEN ? AND ?
 		AND pr."Longitud" BETWEEN ? AND ?
@@ -114,6 +117,11 @@ public class PuntoResiduoDao extends Dao {
 			parameters.add(f.latitud + f.radio);
 			parameters.add(f.longitud - f.radio);
 			parameters.add(f.longitud + f.radio);
+		}
+
+		if ( f.ciudadanoId != null ) {
+			conditions.append(WHERE_CIUDADANO);
+			parameters.add(f.ciudadanoId);
 		}
 
 		if ( f.hasTipo() ) {
