@@ -153,6 +153,7 @@ public class Routes {
 			.post("/user", noAuthRequired(userController::post))
 			.put("/user/password", noAuthRequired(userController::restorePassword))
 			// PUNTOS RESIDUO
+			.get("/ciudadano/{ciudadano_id}/punto_residuo/{id}", result(puntoResiduoController::get))
 			.get("/puntos_residuo", result(puntoResiduoController::list))
 			// PLAN
 			.get("/planes", result(planController::list))

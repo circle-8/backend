@@ -6,7 +6,9 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.circle8.controller.request.punto_reciclaje.PuntoReciclajePostRequest;
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
+import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.*;
 import org.circle8.dto.Dia;
 import org.circle8.dto.PuntoReciclajeDto;
@@ -21,6 +23,7 @@ import java.util.List;
 @Singleton
 @Slf4j
 public class PuntoReciclajeController {
+
 	private static final String RECICLADOR_ID_PARAM = "reciclador_id";
 
 	private PuntoReciclajeService service;
@@ -65,32 +68,84 @@ public class PuntoReciclajeController {
 	}
 
 	/**
-	 * PUT /reciclador/{id_reciclador}/punto_reciclaje/{id}
+	 * PUT /reciclador/{reciclador_id}/punto_reciclaje/{id}
 	 */
 	public ApiResponse put(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recicladorId(Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM)))
-			.build();
+		final Long id;
+		final Long recicladorId;
+
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+
+		val req = ctx.bodyAsClass(PuntoReciclajePostRequest.class);
+
+		try {
+			return this.service.put(id, recicladorId, req).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error list puntos reciclaje", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
+
 	}
 
 	/**
-	 * DELETE /reciclador/{id_reciclador}/punto_reciclaje/{id}
+	 * DELETE /reciclador/{reciclador_id}/punto_reciclaje/{id}
 	 */
 	public ApiResponse delete(Context ctx) {
-		return new ApiResponse() {
-			@Override
-			public HttpStatus status() {
-				return HttpStatus.ACCEPTED;
-			}
-		};
+		final Long id;
+		final Long recicladorId;
+
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+		try{
+			this.service.delete(id, recicladorId);
+
+			return new SuccessResponse();
+
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error delete puntos reciclaje: ", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
-	 * POST /reciclador/{id_reciclador}/punto_reciclaje
+	 * POST /reciclador/{reciclador_id}/punto_reciclaje
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock.toBuilder().recicladorId(Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM))).build();
+
+		val req = ctx.bodyAsClass(PuntoReciclajePostRequest.class);
+		try {
+			req.recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del reciclador debe ser numérico", "");
+		}
+
+		val valid = req.valid();
+		if ( !valid.valid()) {
+			return new ErrorResponse(valid);
+		}
+
+		val dto = PuntoReciclajeDto.from(req);
+		try {
+			return service.save(dto).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error saving new PuntoReciclaje", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**

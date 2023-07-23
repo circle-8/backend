@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder(toBuilder = true)
 public class TipoResiduoResponse implements ApiResponse {
-	public int id;
+	public long id;
 	public String nombre;
 }
