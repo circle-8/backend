@@ -287,18 +287,20 @@ public class PuntoReciclajeDao extends Dao {
 		return p;
 	}
 
-	public void saveTipos(Transaction t, long trId, long prId) throws PersistenceException {
+	public void saveTipos(Transaction t, long trId, long prId) throws PersistenceException, NotFoundException {
 		try ( var insert = t.prepareStatement(INSERT_PUNTO_RECICLAJE_TIPO_RESIDUO, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setLong(1, prId);
 			insert.setLong(2, trId);
 
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
-				throw new SQLException("Creating the relation between puntoReciclaje and tipoResiduo failed," +
-					" no affected rows");
+				throw new NotFoundException("No existe el TipoResiduo a actualizar.");
 
 		} catch (SQLException e ) {
-			throw new PersistenceException("error creating the relation between puntoReciclaje and tipoResiduo", e);
+			if ( "23506".equals(e.getSQLState()) ) {
+				throw new NotFoundException("No existe el TipoResiduo a actualizar.");
+			}
+			throw new PersistenceException("error creating the relation between puntoReciclaje and tipoResiduo.", e);
 		}
 	}
 
@@ -347,7 +349,7 @@ public class PuntoReciclajeDao extends Dao {
 			parameters.add(req.longitud);
 		}
 
-		if (!req.dias.isEmpty()) {
+		if (req.dias != null && !req.dias.isEmpty()) {
 			setFragments.add("\"DiasAbierto\"=? ");
 			parameters.add(Dia.getDias(Dia.getDia(req.dias)));
 		}

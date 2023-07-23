@@ -126,7 +126,11 @@ public class PuntoReciclajeController {
 	public ApiResponse post(Context ctx) {
 
 		val req = ctx.bodyAsClass(PuntoReciclajePostRequest.class);
-		req.recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
+		try {
+			req.recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del reciclador debe ser numérico", "");
+		}
 
 		val valid = req.valid();
 		if ( !valid.valid()) {

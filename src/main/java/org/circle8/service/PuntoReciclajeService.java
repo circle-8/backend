@@ -99,13 +99,15 @@ public class PuntoReciclajeService {
 	public PuntoReciclajeDto put(Long id, Long recicladorId, PuntoReciclajePostRequest req) throws ServiceError, NotFoundException {
 		try (var t = dao.open()){
 
-			if(!req.tiposResiduo.isEmpty()){
+			if(req.tiposResiduo != null && !req.tiposResiduo.isEmpty()){
 				dao.deleteTipos(t, id);
 				for(Integer tr : req.tiposResiduo){
 					dao.saveTipos(t, tr, id);
 				}
 			}
-			this.dao.put(t, id, recicladorId, req);
+			if(req.dias != null || req.titulo != null || req.latitud != null || req.longitud != null)
+				this.dao.put(t, id, recicladorId, req);
+
 			t.commit();
 			return PuntoReciclajeDto.from(this.dao.get(id, recicladorId).
 				orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje")));
