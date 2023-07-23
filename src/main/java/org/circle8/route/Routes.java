@@ -155,6 +155,8 @@ public class Routes {
 			// PUNTOS RESIDUO
 			.get("/ciudadano/{ciudadano_id}/punto_residuo/{id}", result(puntoResiduoController::get))
 			.get("/puntos_residuo", result(puntoResiduoController::list))
+			.post("/ciudadano/{ciudadano_id}/punto_residuo/", result(puntoResiduoController::post))
+			.put("/ciudadano/{ciudadano_id}/punto_residuo/{id}", result(puntoResiduoController::put))
 			// PLAN
 			.get("/planes", result(planController::list))
 			.get("/plan/{id}", result(planController::get))

@@ -2,6 +2,7 @@ package org.circle8.dto;
 
 import java.util.List;
 
+import org.circle8.controller.request.punto_residuo.PostPutPuntoResiduoRequest;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.entity.PuntoResiduo;
 
@@ -20,6 +21,19 @@ public class PuntoResiduoDto {
 	public Long ciudadanoId;
 	public UserDto ciudadano;
 	public List<ResiduoDto> residuos;
+	
+	public static PuntoResiduoDto from(PostPutPuntoResiduoRequest request) {
+		var pr = new PuntoResiduoDto();
+		var user = new UserDto();
+		user.id = request.ciudadano_id;
+		pr.id = request.id;
+		pr.latitud = request.latitud;
+		pr.longitud = request.longitud;
+		pr.ciudadanoId = request.ciudadano_id;
+		pr.ciudadano = user;
+		pr.residuos = List.of();
+		return pr;
+	}
 
 	public static PuntoResiduoDto from(PuntoResiduo entity) {
 		if ( entity == null ) return null;
