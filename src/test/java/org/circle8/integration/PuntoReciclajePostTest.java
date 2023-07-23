@@ -10,11 +10,11 @@ public class PuntoReciclajePostTest {
 
 	private static final String BODY =  """
 		{
-		 	"latitud": -35.651840,
-		    "longitud": -57.580990,
+		 	"latitud": -99.651840,
+		    "longitud": -99.580990,
 			"titulo": "MadePoints",
-		   	"dias": [ 1,2,3],
-			"tiposResiduo": [2,4]
+		   	"dias": [1,2],
+			"tiposResiduo": [1]
 		}""";
 
 	@Test
