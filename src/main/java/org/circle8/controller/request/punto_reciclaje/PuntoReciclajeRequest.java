@@ -27,8 +27,6 @@ public class PuntoReciclajeRequest implements IRequest {
 			validation.add("'dias' deben ser números del 0 al 6. Comenzando por LUNES.");
 		}
 
-		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
-
 		try {
 			this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of())
 				.stream()

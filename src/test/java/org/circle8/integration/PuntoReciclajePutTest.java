@@ -18,6 +18,7 @@ public class PuntoReciclajePutTest {
 		}""";
 
 	@Test
+
 	void testPutOk() {
 		RestAssured.given()
 			.body(BODY)
