@@ -14,6 +14,7 @@ import org.circle8.dto.Dia;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
 import org.circle8.filter.PuntoReciclajeFilter;
 import org.circle8.service.PuntoReciclajeService;
 
@@ -55,15 +56,14 @@ public class PuntoReciclajeController {
 
 		try {
 			var puntoReciclajeDto = this.service.get(id, recicladorId).toResponse();
-			if (puntoReciclajeDto == null) {
-				return new ErrorResponse(ErrorCode.NOT_FOUND, "El punto de reciclaje no existe", "");
-			}
 
 			return puntoReciclajeDto;
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( NotFoundException e ) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}
 	}
 

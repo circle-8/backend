@@ -27,6 +27,8 @@ public class PuntoReciclajeRequest implements IRequest {
 			validation.add("'dias' deben ser números del 0 al 6. Comenzando por LUNES.");
 		}
 
+		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
+
 		try {
 			this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of())
 				.stream()
@@ -35,6 +37,7 @@ public class PuntoReciclajeRequest implements IRequest {
 		} catch (NumberFormatException e) {
 			validation.add("'tipos_residuo' deben ser números representando al id del tipo.");
 		}
+
 		this.recicladorId = parseLong(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");

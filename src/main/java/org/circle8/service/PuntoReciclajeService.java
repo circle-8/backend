@@ -10,6 +10,7 @@ import org.circle8.exception.NotFoundException;
 
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
 import org.circle8.filter.PuntoReciclajeFilter;
 
 import com.google.inject.Inject;
@@ -61,10 +62,11 @@ public class PuntoReciclajeService {
 	/**
 	 * Obtiene un punto de reciclaje por medio de su id
 	 */
-	public PuntoReciclajeDto get(Long id, Long recicladorId) throws ServiceError, NotFoundException {
+	public PuntoReciclajeDto get(Long id, Long recicladorId) throws ServiceException {
 		try {
-			return PuntoReciclajeDto.from(this.dao.get(id, recicladorId).
-				orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje")));
+			return this.dao.get(id, recicladorId)
+				.map(PuntoReciclajeDto::from)
+				.orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje"));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el punto de reciclaje", e);
 		}
