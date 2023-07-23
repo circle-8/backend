@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(ApiTestExtension.class)
-public class PuntoResiduoPostTest {
+public class PuntoReciclajePostTest {
 
 	private static final String BODY =  """
 		{
