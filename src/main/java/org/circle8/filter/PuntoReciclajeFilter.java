@@ -35,5 +35,4 @@ public class PuntoReciclajeFilter {
 	public boolean isPuntoVerde() {
 		return isPuntoVerde;
 	}
-
 }

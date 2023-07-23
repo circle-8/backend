@@ -105,11 +105,11 @@ public class Routes {
 			.post("/residuo/{id}/unfulfilled", result(residuoController::unfulfilled))
 			// PUNTO RECICLAJE
 			.get("/puntos_reciclaje", result(puntoReciclajeController::list))
-			.get("/reciclador/{reciclador_id}/punto_reciclaje/{id}", result(puntoReciclajeController::get))
-			.put("/reciclador/{reciclador_id}/punto_reciclaje/{id}", result(puntoReciclajeController::put))
-			.delete("/reciclador/{reciclador_id}/punto_reciclaje/{id}", result(puntoReciclajeController::delete))
-			.post("/reciclador/{reciclador_id}/punto_reciclaje", result(puntoReciclajeController::post))
-			.post("/reciclador/{reciclador_id}/punto_reciclaje/{id}/notificacion/{id_residuo}", result(puntoReciclajeController::notificacion))
+			.get("/reciclador/{id_reciclador}/punto_reciclaje/{id}", result(puntoReciclajeController::get))
+			.put("/reciclador/{id_reciclador}/punto_reciclaje/{id}", result(puntoReciclajeController::put))
+			.delete("/reciclador/{id_reciclador}/punto_reciclaje/{id}", result(puntoReciclajeController::delete))
+			.post("/reciclador/{id_reciclador}/punto_reciclaje", result(puntoReciclajeController::post))
+			.post("/reciclador/{id_reciclador}/punto_reciclaje/{id}/notificacion/{id_residuo}", result(puntoReciclajeController::notificacion))
 			// TRANSACCION
 			.get("/transacciones", result(transaccionController::list))
 			.get("/transaccion/{id}", result(transaccionController::get))

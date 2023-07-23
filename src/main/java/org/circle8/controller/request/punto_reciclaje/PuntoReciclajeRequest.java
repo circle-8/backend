@@ -3,7 +3,6 @@ package org.circle8.controller.request.punto_reciclaje;
 import java.util.List;
 import java.util.Map;
 
-import io.javalin.http.Context;
 import org.circle8.controller.request.IRequest;
 
 import jakarta.annotation.Nullable;
@@ -29,29 +28,17 @@ public class PuntoReciclajeRequest implements IRequest {
 		}
 
 		this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
-		//TODO cuando mergeemos el PR de Ger deberiamos usar Parser
-		this.recicladorId = parseLong(queryParams, "reciclador_id");
+		this.recicladorId = parseInt(queryParams, "reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
 		this.radio = parseDouble(queryParams, "radio");
 	}
 
 	@Nullable
-	private Long parseLong(Map<String, List<String>> queryParams, String paramName) {
+	private Long parseInt(Map<String, List<String>> queryParams, String paramName) {
 		try {
 			var param = queryParams.getOrDefault(paramName, List.of());
 			return !param.isEmpty() ? Long.parseLong(param.get(0)) : null;
-		} catch ( NumberFormatException e ) {
-			validation.add(String.format("%s debe ser un numero", paramName));
-			return null;
-		}
-	}
-
-	@Nullable
-	private Integer parseInt(Map<String, List<String>> queryParams, String paramName) {
-		try {
-			var param = queryParams.getOrDefault(paramName, List.of());
-			return !param.isEmpty() ? Integer.parseInt(param.get(0)) : null;
 		} catch ( NumberFormatException e ) {
 			validation.add(String.format("%s debe ser un numero", paramName));
 			return null;
