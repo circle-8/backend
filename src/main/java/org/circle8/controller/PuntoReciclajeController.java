@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajePostRequest;
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
+import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.*;
 import org.circle8.dto.Dia;
 import org.circle8.dto.PuntoReciclajeDto;
@@ -80,7 +81,7 @@ public class PuntoReciclajeController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
 		}
 
-		val req = new PuntoReciclajePostRequest(ctx.queryParamMap());
+		val req = ctx.bodyAsClass(PuntoReciclajePostRequest.class);
 
 		try {
 			return this.service.put(id, recicladorId, req).toResponse();
@@ -124,7 +125,7 @@ public class PuntoReciclajeController {
 	 */
 	public ApiResponse post(Context ctx) {
 
-		val req = new PuntoReciclajePostRequest(ctx.queryParamMap());
+		val req = ctx.bodyAsClass(PuntoReciclajePostRequest.class);
 		req.recicladorId = Long.parseLong(ctx.pathParam(RECICLADOR_ID_PARAM));
 
 		val valid = req.valid();
