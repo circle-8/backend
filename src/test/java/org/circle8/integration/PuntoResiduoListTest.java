@@ -55,6 +55,19 @@ class PuntoResiduoListTest {
 	}
 
 	@Test
+	void testListWithCiudadanoFilter() {
+		RestAssured.given()
+			.get("/puntos_residuo?ciudadano_id=1")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(1))
+			.body("data[0].id", equalTo(1))
+			.body("data[0].latitud", equalTo(-34.66112f))
+			.body("data[0].longitud", equalTo(-58.54225f))
+		;
+	}
+
+	@Test
 	void testListWithNonMatchingFilter() {
 		RestAssured.given()
 			.get("/puntos_residuo?latitud=-34.6610&longitud=-58.5420&radio=0.000001")
