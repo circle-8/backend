@@ -21,6 +21,12 @@ public class TipoResiduoDto {
 		return tr;
 	}
 
+	public static TipoResiduoDto from(Integer tipoResiduo) {
+		var tr = new TipoResiduoDto();
+		tr.id = tipoResiduo;
+		return tr;
+	}
+	
 	public TipoResiduoResponse toResponse() {
 		return new TipoResiduoResponse(id, nombre);
 	}

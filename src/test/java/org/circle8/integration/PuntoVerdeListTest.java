@@ -53,7 +53,7 @@ class PuntoVerdeListTest {
 	@Test
 	void testListWithTiposFilter() {
 		RestAssured.given()
-			.get("/puntos_verdes?tipos_residuo=Pilas&tipos_residuo=Orgánico")
+			.get("/puntos_verdes?tipos_residuo=3&tipos_residuo=5")
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(1))
@@ -79,7 +79,7 @@ class PuntoVerdeListTest {
 	@Test
 	void testListWithAllFilters() {
 		RestAssured.given()
-			.get("/puntos_verdes?latitud=-34.65&longitud=-58.58&radio=1&tipos_residuo=Pilas&tipos_residuo=Orgánico&dias=3")
+			.get("/puntos_verdes?latitud=-34.65&longitud=-58.58&radio=1&tipos_residuo=3&tipos_residuo=5&dias=3")
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(1))
