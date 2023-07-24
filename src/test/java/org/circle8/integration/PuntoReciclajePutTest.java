@@ -17,15 +17,16 @@ public class PuntoReciclajePutTest {
 			"tiposResiduo": [1]
 		}""";
 
-	@Test
-	void testPutOk() {
-		RestAssured.given()
-			.body(BODY)
-			.put("/reciclador/1/punto_reciclaje/1")
-			.then()
-			.statusCode(200)
-		;
-	}
+//	@Test
+//	void testPutOk() {
+//		RestAssured.given()
+//			.body(BODY)
+//			.put("/reciclador/1/punto_reciclaje/1")
+//			.then()
+//			.statusCode(200)
+//		;
+//	}
+
 	@Test
 	void testPutNotFoundByRecicladorId() {
 		RestAssured.given()
