@@ -18,6 +18,7 @@ import org.circle8.controller.PuntoResiduoController;
 import org.circle8.controller.PuntoVerdeController;
 import org.circle8.controller.RecorridoController;
 import org.circle8.controller.ResiduoController;
+import org.circle8.controller.SolicitudController;
 import org.circle8.controller.SuscripcionController;
 import org.circle8.controller.TipoResiduoController;
 import org.circle8.controller.TransaccionController;
@@ -49,6 +50,7 @@ public class Routes {
 	private final SuscripcionController suscripcionController;
 	private final TipoResiduoController tipoResiduoController;
 	private final PuntoVerdeController puntoVerdeController;
+	private final SolicitudController solicitudController;
 
 	private final JwtService jwtService;
 
@@ -71,7 +73,8 @@ public class Routes {
 		PlanController planController,
 		SuscripcionController suscripcionController,
 		TipoResiduoController tipoResiduoController,
-		PuntoVerdeController puntoVerdeController
+		PuntoVerdeController puntoVerdeController,
+		SolicitudController solicitudController
 	) {
 		this.gson = gson;
 		this.cfg = cfg;
@@ -88,6 +91,7 @@ public class Routes {
 		this.suscripcionController = suscripcionController;
 		this.tipoResiduoController = tipoResiduoController;
 		this.puntoVerdeController = puntoVerdeController;
+		this.solicitudController = solicitudController;
 	}
 
 	public Javalin initRoutes() {
@@ -180,6 +184,11 @@ public class Routes {
 			.put("/punto_verde/{id}", result(puntoVerdeController::put))
 			.delete("/punto_verde/{id}", result(puntoVerdeController::delete))
 			.post("/punto_verde", result(puntoVerdeController::post))
+			// SOLICITUD
+			.get("/solicitudes", result(solicitudController::list))
+			.get("/solicitud/{id}", result(solicitudController::get))
+			.put("/solicitud/{id}/aprobar", result(solicitudController::approve))
+			.put("/solicitud/{id}/cancelar", result(solicitudController::cancel))
 			// Exceptions
 			.error(HttpStatus.NOT_FOUND, ctx -> {
 				if ( Strings.isNullOrEmpty(ctx.result()) || "Not Found".equalsIgnoreCase(ctx.result()) ) {
