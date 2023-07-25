@@ -34,6 +34,14 @@ public class SolicitudService {
 			throw new ServiceError("Ha ocurrido un error al guardar la solicitud", e);
 		}
 	}
+	
+	public SolicitudDto get(long id) throws ServiceException {
+		try ( val t = dao.open(true) ) {			
+			return SolicitudDto.from(get(t, id));
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al guardar la solicitud", e);
+		}
+	}
 
 	private Solicitud get(Transaction t, long id) throws ServiceException {
 		try {

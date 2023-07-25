@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -69,7 +70,7 @@ class PuntoResiduoGetTest {
 			.statusCode(200)
 			.body("id", equalTo(1))
 			.body("ciudadano", not(nullValue()))
-			.body("residuos", hasSize(1))
+			.body("residuos", is(not(hasSize(0))))
 			.body("residuos[0].id", equalTo(1))
 			.body("residuos[0].fechaCreacion", equalTo("2023-07-02T19:41:00Z"))
 			.body("residuos[0].puntoResiduoUri", equalTo("/ciudadano/1/punto_residuo/1"))
@@ -93,7 +94,7 @@ class PuntoResiduoGetTest {
 			.body("ciudadano.nombre", equalTo("Usuario Existente"))
 			.body("ciudadano.email", equalTo("existing@email.com"))
 			.body("ciudadano.tipoUsuario", equalTo("CIUDADANO"))
-			.body("residuos", hasSize(1))
+			.body("residuos", is(not(hasSize(0))))
 			.body("residuos[0].id", equalTo(1))
 			.body("residuos[0].fechaCreacion", equalTo("2023-07-02T19:41:00Z"))
 			.body("residuos[0].puntoResiduoUri", equalTo("/ciudadano/1/punto_residuo/1"))

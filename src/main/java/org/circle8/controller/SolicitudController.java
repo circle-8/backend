@@ -2,13 +2,29 @@ package org.circle8.controller;
 
 import io.javalin.http.Context;
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.SolicitudResponse;
 import org.circle8.entity.EstadoSolicitud;
+import org.circle8.exception.NotFoundException;
+import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
+import org.circle8.service.SolicitudService;
+
+import com.google.inject.Inject;
 
 import java.util.List;
 
 public class SolicitudController {
+	
+	private SolicitudService service;
+	
+	@Inject
+	private SolicitudController(SolicitudService solicitudService) {
+		this.service = solicitudService;
+	}
+	
 	private final SolicitudResponse mock = SolicitudResponse.builder()
 		.id(1)
 		.solicitadoId(20L)
@@ -22,9 +38,24 @@ public class SolicitudController {
 	 * GET /solicitud/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.build();
+		final Long id;
+		
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la solicitud debe ser numérico", "");
+		}	
+		
+		try {
+			var solicitudDto = this.service.get(id);
+			return solicitudDto.toResponse();
+		} catch ( ServiceError e ) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**

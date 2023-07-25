@@ -1,24 +1,26 @@
 package org.circle8.dao;
 
-import com.google.inject.Inject;
-import lombok.val;
-import org.circle8.entity.Ciudadano;
-import org.circle8.entity.EstadoSolicitud;
-import org.circle8.entity.Residuo;
-import org.circle8.entity.Solicitud;
-import org.circle8.entity.Transportista;
-import org.circle8.exception.PersistenceException;
-import org.circle8.service.SolicitudService;
-import org.circle8.utils.Dates;
-
-import javax.sql.DataSource;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Optional;
+
+import javax.sql.DataSource;
+
+import org.circle8.entity.Ciudadano;
+import org.circle8.entity.EstadoSolicitud;
+import org.circle8.entity.Residuo;
+import org.circle8.entity.Solicitud;
+import org.circle8.exception.PersistenceException;
+import org.circle8.service.SolicitudService;
+import org.circle8.utils.Dates;
+
+import com.google.inject.Inject;
+
+import lombok.val;
 
 public class SolicitudDao extends Dao {
 	private static final String INSERT_INTO_FMT = """
@@ -44,10 +46,11 @@ public class SolicitudDao extends Dao {
 		SELECT s."ID", s."FechaCreacion", "FechaModificacion", "Estado",
 		       "CiudadanoSolicitanteId", c1."UsuarioId" as SolicitanteUsuarioId,
 		       "CiudadanoSolicitadoId", c2."UsuarioId" as SolicitadoUsuarioId,
-		       "ResiduoId", "CiudadanoCancelaId"
+		       "ResiduoId", "CiudadanoCancelaId", res."FechaLimiteRetiro"
 		  FROM "Solicitud" AS s
 		  JOIN "Ciudadano" AS c1 ON c1."ID" = s."CiudadanoSolicitanteId"
 		  JOIN "Ciudadano" AS c2 ON c2."ID" = s."CiudadanoSolicitadoId"
+		  JOIN "Residuo" AS res ON res."ID" = s."ResiduoId"
 		 WHERE s."ID" = ?
 		""";
 
@@ -108,12 +111,13 @@ public class SolicitudDao extends Dao {
 			try ( var rs = select.executeQuery() ) {
 				if ( !rs.next() )
 					return Optional.empty();
+				
 
 				return Optional.of(new Solicitud(
 					rs.getLong("ID"),
 					rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC),
 					rs.getTimestamp("FechaModificacion").toInstant().atZone(Dates.UTC),
-					EstadoSolicitud.valueOf(rs.getString("Estado")),
+					getEstado(rs),
 					new Ciudadano(rs.getLong("CiudadanoSolicitanteId"), rs.getLong("SolicitanteUsuarioId")),
 					new Ciudadano(rs.getLong("CiudadanoSolicitadoId"), rs.getLong("SolicitadoUsuarioId")),
 					Residuo.builder().id(rs.getLong("ResiduoId")).build(),
@@ -121,7 +125,25 @@ public class SolicitudDao extends Dao {
 				));
 			}
 		} catch ( SQLException e ) {
-			throw new PersistenceException("error getting user", e);
+			throw new PersistenceException("error getting solicitud", e);
 		}
+	}
+	
+	/**
+	 * Devuelve el estado de la solicitud
+	 * valida que la fecha de limite de retiro 
+	 * del residuo sea menor a la fecha actual.
+	 * @param rs
+	 * @return
+	 * @throws SQLException
+	 */
+	private EstadoSolicitud getEstado(ResultSet rs) throws SQLException {
+		val estado = EstadoSolicitud.valueOf(rs.getString("Estado"));
+		val fechaLimite = rs.getTimestamp("FechaLimiteRetiro");
+		if(estado.equals(EstadoSolicitud.PENDIENTE) && fechaLimite != null &&
+				fechaLimite.toInstant().atZone(Dates.UTC).isBefore(ZonedDateTime.now(Dates.UTC))) {
+			return EstadoSolicitud.EXPIRADA;
+		}
+		return estado;
 	}
 }

@@ -49,7 +49,7 @@ class ResiduoPostTest {
 					"puntoResiduoId": 1,
 					"ciudadanoId": 1,
 					"descripcion": "prueba",
-					"fechaLimite": '2023-07-25T14:14:14.445Z'
+					"fechaLimite": '2024-07-25T14:14:14.445Z'
 				}""";
 		RestAssured.given()
 			.body(request)
@@ -57,7 +57,7 @@ class ResiduoPostTest {
 			.then()
 			.statusCode(200)
 			.body("fechaLimiteRetiro", not(nullValue()))
-			.body("fechaLimiteRetiro", equalTo("2023-07-25T14:14:14.445Z"))
+			.body("fechaLimiteRetiro", equalTo("2024-07-25T14:14:14.445Z"))
 			.body("puntoResiduoUri", equalTo("/ciudadano/1/punto_residuo/1"))
 			.body("puntoResiduo", not(nullValue()))
 			.body("puntoResiduo.id", equalTo(1))
