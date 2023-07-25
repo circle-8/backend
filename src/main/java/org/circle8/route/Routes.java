@@ -104,7 +104,8 @@ public class Routes {
 			.delete("/residuo/{id}", result(residuoController::delete))
 			.post("/residuo/{id}/reciclaje", result(residuoController::reciclaje))
 			.delete("/residuo/{id}/reciclaje", result(residuoController::deleteReciclaje))
-			.post("/residuo/{id}/notificacion/{id_punto_reciclaje}", result(residuoController::notificacion))
+			.post("/residuo/{id}/notificacion/{punto_reciclaje_id}", result(residuoController::notificacion))
+			.post("/residuo/{id}/notificacion/deposito/{punto_reciclaje_id}", result(residuoController::notificacionDeposito))
 			.post("/residuo/{id}/fulfill", result(residuoController::fulfill))
 			.post("/residuo/{id}/unfulfilled", result(residuoController::unfulfilled))
 			// PUNTO RECICLAJE

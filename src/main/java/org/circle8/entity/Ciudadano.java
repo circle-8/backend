@@ -8,4 +8,9 @@ public class Ciudadano {
 	public String username;
 	public String nombre;
 	public final long usuarioId;
+
+	public Ciudadano(long id, long usuarioId) {
+		this.id = id;
+		this.usuarioId = usuarioId;
+	}
 }

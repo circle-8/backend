@@ -40,7 +40,7 @@ public class PuntoResiduoController {
 			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", e.getMessage());
 		}
 
 		val expand = new PuntoResiduoExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
@@ -81,27 +81,27 @@ public class PuntoResiduoController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}
 	}
-	
+
 	/**
 	 * /ciudadano/{ciudadano_id}/punto_residuo
 	 * Requiere: latitud, longitud
 	 */
-	public ApiResponse post(Context ctx) {		
-		final Long ciudadano_id;		
+	public ApiResponse post(Context ctx) {
+		final Long ciudadano_id;
 		try {
-			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));			
+			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del ciudadano debe ser numérico", "");
 		}
-		
+
 		val req = ctx.bodyAsClass(PostPutPuntoResiduoRequest.class);
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
-		
+
 		req.id = 0L;
 		req.ciudadano_id = ciudadano_id;
-		
+
 		var dto = PuntoResiduoDto.from(req);
 		try {
 			dto = this.service.save(dto);
@@ -110,10 +110,10 @@ public class PuntoResiduoController {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch (NotFoundException e) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
-		}			
+		}
 		return dto.toResponse();
 	}
-	
+
 	/**
 	 * /ciudadano/{ciudadano_id}/punto_residuo/{id}
 	 * Requiere: latitud, longitud
@@ -123,19 +123,19 @@ public class PuntoResiduoController {
 		final Long ciudadano_id;
 		try {
 			id = Long.parseLong(ctx.pathParam("id"));
-			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));			
+			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
 		}
-		
+
 		val req = ctx.bodyAsClass(PostPutPuntoResiduoRequest.class);
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
-		
+
 		req.id = id;
 		req.ciudadano_id = ciudadano_id;
-		
+
 		var dto = PuntoResiduoDto.from(req);
 		try {
 			this.service.put(dto);
@@ -144,7 +144,7 @@ public class PuntoResiduoController {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch (NotFoundException e) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
-		}		
+		}
 		return dto.toResponse();
 	}
 }

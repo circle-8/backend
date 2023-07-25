@@ -15,7 +15,7 @@ import org.circle8.utils.Dates;
 import com.google.inject.Inject;
 
 public class ResiduoDao extends Dao {
-	
+
 	private static final String INSERT = """
 			INSERT INTO "Residuo"(
 			"FechaCreacion", "PuntoResiduoId", "TipoResiduoId", "Descripcion", "FechaLimiteRetiro")
@@ -26,15 +26,15 @@ public class ResiduoDao extends Dao {
 	public ResiduoDao(DataSource ds) {
 		super(ds);
 	}
-	
+
 	public Residuo save(Transaction t,Residuo residuo) throws PersistenceException {
 		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
 			insert.setLong(2, residuo.puntoResiduo.id);
-			insert.setLong(3, residuo.tipoResiduo.id);			
+			insert.setLong(3, residuo.tipoResiduo.id);
 			insert.setString(4, residuo.descripcion);
 			insert.setTimestamp(5, residuo.fechaLimiteRetiro != null? Timestamp.from(residuo.fechaLimiteRetiro.toInstant()) : null);
-			
+
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
 				throw new SQLException("Creating the residuo failed, no affected rows");
@@ -52,8 +52,8 @@ public class ResiduoDao extends Dao {
 				throw new ForeingKeyException("No existe el punto residuo con id " + residuo.puntoResiduo.id, e);
 			else
 				throw new PersistenceException("error inserting residuo", e);
-		} 
-		
+		}
+
 		return residuo;
 	}
 }
