@@ -38,7 +38,7 @@ public class PuntoResiduoDao extends Dao {
 		""";
 	private static final String SELECT_SIMPLE = "pr.\"ID\", \"Latitud\", \"Longitud\", \"CiudadanoId\", c.\"UsuarioId\"";
 	private static final String SELECT_CIUDADANO = ", u.\"Username\", u.\"NombreApellido\", u.\"Email\", u.\"TipoUsuario\"";
-	private static final String SELECT_RESIDUOS = ", r.\"ID\" AS ResiduoId, r.\"FechaCreacion\", tr.\"ID\" AS TipoResiduoId," +
+	private static final String SELECT_RESIDUOS = ", r.\"ID\" AS ResiduoId, r.\"FechaCreacion\", r.\"FechaLimiteRetiro\", r.\"Descripcion\", tr.\"ID\" AS TipoResiduoId," +
 		"tr.\"Nombre\" AS TipoResiduoNombre";
 	private static final String JOIN_TIPO = """
 		LEFT JOIN "Residuo" AS r ON r."PuntoResiduoId" = pr."ID"
@@ -187,12 +187,16 @@ public class PuntoResiduoDao extends Dao {
 
 			if ( x.residuos ) {
 				do {
+					val limit = rs.getTimestamp("FechaLimiteRetiro");
+					val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
 					val r = Residuo.builder()
 						.id(rs.getLong("ResiduoId"))
 						.ciudadanoId(ciudadanoId)
 						.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
+						.fechaLimiteRetiro(limitDate)
 						.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
 						.puntoResiduo(new PuntoResiduo(p.id)) // para evitar recursividad dentro de residuo
+						.descripcion(rs.getString("Descripcion"))
 						.build();
 					residuos.add(r);
 				} while ( rs.next() );
@@ -225,7 +229,7 @@ public class PuntoResiduoDao extends Dao {
 
 		return p;
 	}
-	
+
 	public PuntoResiduo save(Transaction t,PuntoResiduo punto) throws PersistenceException, NotFoundException {
 		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setLong(1, punto.ciudadanoId);
@@ -247,23 +251,23 @@ public class PuntoResiduoDao extends Dao {
 				throw new NotFoundException("No existe el punto de residuo con ciudadano_id " + punto.ciudadanoId);
 			else
 				throw new PersistenceException("error inserting residuo", e);
-		} 
+		}
 		return punto;
 	}
-	
+
 	public PuntoResiduo put(Transaction t,PuntoResiduo punto) throws PersistenceException, NotFoundException {
-		try ( var put = t.prepareStatement(PUT) ) {			
+		try ( var put = t.prepareStatement(PUT) ) {
 			put.setDouble(1, punto.latitud);
 			put.setDouble(2, punto.longitud);
 			put.setLong(3, punto.id);
-			put.setLong(4, punto.ciudadanoId);			
+			put.setLong(4, punto.ciudadanoId);
 			int puts = put.executeUpdate();
 			if ( puts == 0 )
 				throw new NotFoundException("No existe el punto de residuo con id "
 						+ punto.id + " o ciudadano_id " + punto.ciudadanoId);
 		} catch (SQLException e) {
 			throw new PersistenceException("error inserting residuo", e);
-		} 
+		}
 
 		return punto;
 	}
