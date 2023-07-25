@@ -11,6 +11,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import lombok.val;
 import org.apache.commons.configuration2.Configuration;
 import org.circle8.route.Routes;
+import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
@@ -19,7 +20,7 @@ import java.io.InputStreamReader;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ApiTestExtension implements BeforeAllCallback {
+public class ApiTestExtension implements BeforeAllCallback, AfterAllCallback {
 	private static final AtomicBoolean FIRST_TIME = new AtomicBoolean(true);
 
 	@Singleton
@@ -47,29 +48,41 @@ public class ApiTestExtension implements BeforeAllCallback {
 
 	@Override
 	public void beforeAll(ExtensionContext extensionContext) throws Exception {
+		final Injector inj = Guice.createInjector(new Dep());
 		if ( FIRST_TIME.getAndSet(false) ) {
-			final Injector inj = Guice.createInjector(new Dep());
-
 			/* Start H2 database */
 			org.h2.tools.Server.createWebServer("-webPort", "8082", "-tcpAllowOthers").start();
-			var ds = inj.getInstance(DataSource.class);
-
-			var createSchema = Objects.requireNonNull(getClass().getResourceAsStream("/sql/create_schema.sql"));
-			var initSchemaSQL = CharStreams.toString(new InputStreamReader(createSchema));
-
-			var initialData = Objects.requireNonNull(getClass().getResourceAsStream("/sql/initial_data.sql"));
-			var initialDataSQL = CharStreams.toString(new InputStreamReader(initialData));
-
-			try ( var conn = ds.getConnection() ) {
-				var ps = conn.prepareStatement(initSchemaSQL);
-				ps.execute();
-
-				ps = conn.prepareStatement(initialDataSQL);
-				ps.execute();
-			}
-
 			/* Start Javalin Server */
 			inj.getInstance(Routes.class).initRoutes().start(8080);
+		}
+
+		/* Create DB */
+		var ds = inj.getInstance(DataSource.class);
+
+		var createSchema = Objects.requireNonNull(getClass().getResourceAsStream("/sql/create_schema.sql"));
+		var initSchemaSQL = CharStreams.toString(new InputStreamReader(createSchema));
+
+		var initialData = Objects.requireNonNull(getClass().getResourceAsStream("/sql/initial_data.sql"));
+		var initialDataSQL = CharStreams.toString(new InputStreamReader(initialData));
+
+		try ( var conn = ds.getConnection() ) {
+			var ps = conn.prepareStatement(initSchemaSQL);
+			ps.execute();
+
+			ps = conn.prepareStatement(initialDataSQL);
+			ps.execute();
+		}
+	}
+
+	@Override
+	public void afterAll(ExtensionContext extensionContext) throws Exception {
+		final Injector inj = Guice.createInjector(new Dep());
+		var ds = inj.getInstance(DataSource.class);
+		var deleteData = Objects.requireNonNull(getClass().getResourceAsStream("/sql/delete_data.sql"));
+		var deleteDataSQL = CharStreams.toString(new InputStreamReader(deleteData));
+		try ( var conn = ds.getConnection() ) {
+			var ps = conn.prepareStatement(deleteDataSQL);
+			ps.execute();
 		}
 	}
 }
