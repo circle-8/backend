@@ -14,10 +14,10 @@ public class Residuo {
 	public long id;
 	public long ciudadanoId;
 	public ZonedDateTime fechaCreacion;
-	public ZonedDateTime fechaRetiro;	
+	public ZonedDateTime fechaRetiro;
 	public ZonedDateTime fechaLimiteRetiro;
 	public String descripcion;
 	public PuntoResiduo puntoResiduo;
 	public TipoResiduo tipoResiduo;
-	public Transaccion transaccion; 
+	public Transaccion transaccion;
 }

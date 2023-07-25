@@ -2,6 +2,7 @@ package org.circle8.dao;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.User;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
@@ -24,6 +26,7 @@ import org.circle8.utils.Dates;
 import com.google.inject.Inject;
 
 import lombok.val;
+
 
 public class PuntoResiduoDao extends Dao {
 	private static final String SELECT_FMT = """
@@ -35,7 +38,7 @@ public class PuntoResiduoDao extends Dao {
 		""";
 	private static final String SELECT_SIMPLE = "pr.\"ID\", \"Latitud\", \"Longitud\", \"CiudadanoId\", c.\"UsuarioId\"";
 	private static final String SELECT_CIUDADANO = ", u.\"Username\", u.\"NombreApellido\", u.\"Email\", u.\"TipoUsuario\"";
-	private static final String SELECT_RESIDUOS = ", r.\"ID\" AS ResiduoId, r.\"FechaCreacion\", tr.\"ID\" AS TipoResiduoId," +
+	private static final String SELECT_RESIDUOS = ", r.\"ID\" AS ResiduoId, r.\"FechaCreacion\", r.\"FechaLimiteRetiro\", r.\"Descripcion\", tr.\"ID\" AS TipoResiduoId," +
 		"tr.\"Nombre\" AS TipoResiduoNombre";
 	private static final String JOIN_TIPO = """
 		LEFT JOIN "Residuo" AS r ON r."PuntoResiduoId" = pr."ID"
@@ -62,6 +65,16 @@ public class PuntoResiduoDao extends Dao {
 		AND "CiudadanoId" = ?
 		AND pr."ID" = ?
 		""";
+	private static final String INSERT = """
+			INSERT INTO public."PuntoResiduo"(
+			"CiudadanoId", "Latitud", "Longitud")
+			VALUES (?, ?, ?);
+			  """;
+	private static final String PUT = """
+			UPDATE public."PuntoResiduo"
+			SET "Latitud"=?, "Longitud"=?
+			WHERE "ID"=? AND "CiudadanoId"=?;
+			  """;
 
 	@Inject
 	public PuntoResiduoDao(DataSource ds) { super(ds); }
@@ -174,12 +187,16 @@ public class PuntoResiduoDao extends Dao {
 
 			if ( x.residuos ) {
 				do {
+					val limit = rs.getTimestamp("FechaLimiteRetiro");
+					val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
 					val r = Residuo.builder()
 						.id(rs.getLong("ResiduoId"))
 						.ciudadanoId(ciudadanoId)
 						.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
+						.fechaLimiteRetiro(limitDate)
 						.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
 						.puntoResiduo(new PuntoResiduo(p.id)) // para evitar recursividad dentro de residuo
+						.descripcion(rs.getString("Descripcion"))
 						.build();
 					residuos.add(r);
 				} while ( rs.next() );
@@ -211,5 +228,47 @@ public class PuntoResiduoDao extends Dao {
 		p.setTimestamp(3, Timestamp.from(ZonedDateTime.now().toInstant()));
 
 		return p;
+	}
+
+	public PuntoResiduo save(Transaction t,PuntoResiduo punto) throws PersistenceException, NotFoundException {
+		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setLong(1, punto.ciudadanoId);
+			insert.setDouble(2, punto.latitud);
+			insert.setDouble(3, punto.longitud);
+
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new SQLException("Creating the punto residuo failed, no affected rows");
+
+			try ( var rs = insert.getGeneratedKeys() ) {
+				if (rs.next())
+					punto.id = rs.getLong(1);
+				else
+					throw new SQLException("Creating the residuo failed, no ID obtained");
+			}
+		} catch (SQLException e) {
+			if ( e.getMessage().contains("PuntoResiduo_CiudadanoId_fkey") )
+				throw new NotFoundException("No existe el punto de residuo con ciudadano_id " + punto.ciudadanoId);
+			else
+				throw new PersistenceException("error inserting residuo", e);
+		}
+		return punto;
+	}
+
+	public PuntoResiduo put(Transaction t,PuntoResiduo punto) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(PUT) ) {
+			put.setDouble(1, punto.latitud);
+			put.setDouble(2, punto.longitud);
+			put.setLong(3, punto.id);
+			put.setLong(4, punto.ciudadanoId);
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe el punto de residuo con id "
+						+ punto.id + " o ciudadano_id " + punto.ciudadanoId);
+		} catch (SQLException e) {
+			throw new PersistenceException("error inserting residuo", e);
+		}
+
+		return punto;
 	}
 }

@@ -51,7 +51,7 @@ class PuntoReciclajeListTest {
 	@Test
 	void testListWithTiposFilter() {
 		RestAssured.given()
-			.get("/puntos_reciclaje?tipos_residuo=Pilas&tipos_residuo=Orgánico")
+			.get("/puntos_reciclaje?tipos_residuo=3&tipos_residuo=5")
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(1))
@@ -77,11 +77,11 @@ class PuntoReciclajeListTest {
 	@Test
 	void testListWithAllFilters() {
 		RestAssured.given()
-			.get("/puntos_reciclaje?latitud=-34.65&longitud=-58.58&radio=1&tipos_residuo=Pilas&tipos_residuo=Orgánico&dias=3&reciclador_id=1")
+			.get("/puntos_reciclaje?latitud=-34.65&longitud=-58.58&radio=1&tipos_residuo=2&tipos_residuo=4&dias=3&reciclador_id=1")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(1))
-			.body("data[0].id", equalTo(2))
+			.body("data", hasSize(2))
+			.body("data[0].id", equalTo(1))
 		;
 	}
 }

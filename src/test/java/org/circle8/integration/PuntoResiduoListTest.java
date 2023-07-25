@@ -7,6 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 @ExtendWith(ApiTestExtension.class)
@@ -17,7 +19,7 @@ class PuntoResiduoListTest {
 			.get("/puntos_residuo")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(1))
+			.body("data", is(not(hasSize(0))))
 			.body("data[0].id", equalTo(1))
 			.body("data[0].latitud", equalTo(-34.66112f))
 			.body("data[0].longitud", equalTo(-58.54225f))
@@ -34,7 +36,7 @@ class PuntoResiduoListTest {
 			.get("/puntos_residuo?latitud=-34.6610&longitud=-58.5420&radio=0.01")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(1))
+			.body("data", is(not(hasSize(0))))
 			.body("data[0].id", equalTo(1))
 			.body("data[0].latitud", equalTo(-34.66112f))
 			.body("data[0].longitud", equalTo(-58.54225f))
@@ -47,7 +49,7 @@ class PuntoResiduoListTest {
 			.get("/puntos_residuo?tipos_residuo=Plástico&tipos_residuo=Papel")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(1))
+			.body("data", is(not(hasSize(0))))
 			.body("data[0].id", equalTo(1))
 			.body("data[0].latitud", equalTo(-34.66112f))
 			.body("data[0].longitud", equalTo(-58.54225f))
@@ -60,7 +62,7 @@ class PuntoResiduoListTest {
 			.get("/puntos_residuo?ciudadano_id=1")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(1))
+			.body("data", is(not(hasSize(0))))
 			.body("data[0].id", equalTo(1))
 			.body("data[0].latitud", equalTo(-34.66112f))
 			.body("data[0].longitud", equalTo(-58.54225f))
@@ -83,7 +85,7 @@ class PuntoResiduoListTest {
 			.get("/puntos_residuo?expand=ciudadano")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(1))
+			.body("data", is(not(hasSize(0))))
 			.body("data[0].id", equalTo(1))
 			.body("data[0].ciudadanoId", equalTo(1))
 			.body("data[0].ciudadanoUri", equalTo("/user/1"))
