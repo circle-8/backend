@@ -4,10 +4,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import lombok.val;
+import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
+import org.circle8.entity.TipoResiduo;
+import org.circle8.entity.Transaccion;
 import org.circle8.exception.ForeingKeyException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.utils.Dates;
@@ -21,6 +26,16 @@ public class ResiduoDao extends Dao {
 			"FechaCreacion", "PuntoResiduoId", "TipoResiduoId", "Descripcion", "FechaLimiteRetiro")
 			VALUES (?, ?, ?, ?, ?);
 			  """;
+	private static final String SELECT = """
+		SELECT r."ID", "FechaCreacion", "FechaRetiro", "FechaLimiteRetiro", "Descripcion",
+		       "TipoResiduoId", tr."Nombre" AS TipoResiduoNombre,
+		       "PuntoResiduoId", pr."CiudadanoId",
+		       "TransaccionId"
+		  FROM "Residuo" AS r
+		  JOIN "PuntoResiduo" AS pr ON pr."ID" = r."PuntoResiduoId"
+		  JOIN "TipoResiduo" AS tr ON tr."ID" = r."TipoResiduoId"
+		 WHERE r."ID" = ?
+		""";
 
 	@Inject
 	public ResiduoDao(DataSource ds) {
@@ -55,5 +70,31 @@ public class ResiduoDao extends Dao {
 		}
 
 		return residuo;
+	}
+
+	public Optional<Residuo> get(Transaction t, long residuoId) throws PersistenceException {
+		try ( val ps = t.prepareStatement(SELECT) ) {
+			ps.setLong(1, residuoId);
+
+			try ( val rs = ps.executeQuery() ) {
+				if ( !rs.next() ) return Optional.empty();
+
+				val retiroTimestamp = rs.getTimestamp("FechaRetiro");
+				val limiteTimestamp = rs.getTimestamp("FechaLimiteRetiro");
+				return Optional.of(new Residuo(
+					rs.getLong("ID"),
+					rs.getLong("CiudadanoId"),
+					rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC),
+					retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null,
+					limiteTimestamp != null ? limiteTimestamp.toInstant().atZone(Dates.UTC) : null,
+					rs.getString("Descripcion"),
+					new PuntoResiduo(rs.getLong("PuntoResiduoId")),
+					new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")),
+					new Transaccion(rs.getLong("TransaccionId"))
+				));
+			}
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error selecting residuo", e);
+		}
 	}
 }

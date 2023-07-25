@@ -7,6 +7,7 @@ import org.circle8.entity.EstadoSolicitud;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.Solicitud;
 import org.circle8.entity.Transportista;
+import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
 import org.circle8.service.SolicitudService;
 import org.circle8.utils.Dates;
@@ -72,7 +73,9 @@ public class SolicitudDao extends Dao {
 				return rs.getLong(1);
 			}
 		} catch ( SQLException e ) {
-			// TODO: handle el caso de solicitud duplicada: Solicitud_Estado_CiudadanoSolicitanteId_CiudadanoSolicitado_key
+			if ( e.getMessage().contains("Solicitud_Estado_CiudadanoSolicitanteId_CiudadanoSolicitado_key") )
+				throw new DuplicatedEntry("solicitud already saved", e);
+
 			throw new PersistenceException("error inserting solicitud", e);
 		}
 	}
