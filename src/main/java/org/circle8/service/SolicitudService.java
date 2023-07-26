@@ -41,10 +41,14 @@ public class SolicitudService {
 		try ( val t = dao.open(true) ) {
 			// TODO: validacion extra (nice to have): que no se pueda crear una solicitud de DEPOSITO cuando hay una de RETIRO igual
 
-			val punto = puntoDao.get(t, puntoReciclajeId)
-				.orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje"));
 			val residuo = residuoDao.get(t, residuoId)
 				.orElseThrow(() -> new NotFoundException("No existe el residuo"));
+
+			if ( residuo.fechaRetiro != null )
+				throw new ServiceException("El residuo ya se ha retirado");
+
+			val punto = puntoDao.get(t, puntoReciclajeId)
+				.orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje"));
 
 			/* Validar que el punto de reciclaje acepte el tipo de residuo */
 			val acceptsTipo = punto.tipoResiduo.stream().anyMatch(tr -> tr.id == residuo.tipoResiduo.id);

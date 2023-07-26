@@ -36,6 +36,18 @@ public class ResiduoDao extends Dao {
 		  JOIN "TipoResiduo" AS tr ON tr."ID" = r."TipoResiduoId"
 		 WHERE r."ID" = ?
 		""";
+	private static final String UPDATE = """
+		UPDATE "Residuo"
+		   SET "FechaCreacion" = ?,
+		       "FechaRetiro" = ?,
+		       "PuntoResiduoId" = ?,
+		       "TipoResiduoId" = ?,
+		       "TransaccionId" = ?,
+		       "RecorridoId" = ?,
+		       "Descripcion" = ?,
+		       "FechaLimiteRetiro" = ?
+		 WHERE "ID" = ?
+		""";
 
 	@Inject
 	public ResiduoDao(DataSource ds) {
@@ -95,6 +107,31 @@ public class ResiduoDao extends Dao {
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error selecting residuo", e);
+		}
+	}
+
+	public void update(Transaction t, Residuo r) throws PersistenceException {
+		try ( var ps = t.prepareStatement(UPDATE) ) {
+			ps.setTimestamp(1, Timestamp.from(r.fechaCreacion.toInstant()));
+			ps.setTimestamp(2, r.fechaRetiro != null ? Timestamp.from(r.fechaRetiro.toInstant()) : null);
+			ps.setLong(3, r.puntoResiduo.id);
+			ps.setLong(4, r.tipoResiduo.id);
+			ps.setObject(5, r.transaccion != null && r.transaccion.id != 0 ? r.transaccion.id : null);
+			ps.setObject(6, null); // TODO: cuando este recorrido, deberia ir aca
+			ps.setString(7, r.descripcion);
+			ps.setTimestamp(8, r.fechaLimiteRetiro != null ? Timestamp.from(r.fechaRetiro.toInstant()) : null);
+			ps.setLong(9, r.id);
+
+			int updates = ps.executeUpdate();
+			if ( updates == 0 )
+				throw new SQLException("Updating the residuo failed, no affected rows");
+		} catch (SQLException e) {
+			if ( e.getMessage().contains("Residuo_TipoResiduoId_fkey") )
+				throw new ForeingKeyException("No existe el tipo de residuo con id " + r.tipoResiduo.id, e);
+			else if(e.getMessage().contains("Residuo_PuntoResiduoId_fkey"))
+				throw new ForeingKeyException("No existe el punto residuo con id " + r.puntoResiduo.id, e);
+			else
+				throw new PersistenceException("error updating residuo", e);
 		}
 	}
 }

@@ -16,9 +16,9 @@ public class TransaccionDto {
 	public Long puntoReciclajeId;
 	public PuntoReciclajeDto puntoReciclaje;
 	public List<ResiduoDto> residuos;
-	
+
 	public static TransaccionDto from(Transaccion entity) {
-		if ( entity == null ) return null;
+		if ( entity == null || entity.id == 0 ) return null;
 		var t = new TransaccionDto();
 		t.id = entity.id;
 		t.fechaCreacion = entity.fechaCreacion;
@@ -30,7 +30,7 @@ public class TransaccionDto {
 		t.residuos = entity.residuos.stream().map(ResiduoDto::from).toList();
 		return t;
 	}
-	
+
 	public TransaccionResponse toResponse(){
 		//TODO: llenar cuando corresponda
 		return new TransaccionResponse();
