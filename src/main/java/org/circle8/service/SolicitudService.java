@@ -1,7 +1,7 @@
 package org.circle8.service;
 
-import com.google.inject.Inject;
-import lombok.val;
+import java.util.List;
+
 import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dao.ResiduoDao;
 import org.circle8.dao.SolicitudDao;
@@ -13,6 +13,11 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.filter.SolicitudFilter;
+
+import com.google.inject.Inject;
+
+import lombok.val;
 
 public class SolicitudService {
 	private final SolicitudDao dao;
@@ -68,11 +73,19 @@ public class SolicitudService {
 		}
 	}
 	
+	public List<SolicitudDto> list(SolicitudFilter filter) throws ServiceError{
+		try {
+			return this.dao.list(filter).stream().map(SolicitudDto::from).toList();
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al obtener el listado de solicitudes", e);
+		}
+	}
+	
 	public SolicitudDto get(long id) throws ServiceException {
 		try ( val t = dao.open(true) ) {			
 			return SolicitudDto.from(get(t, id));
 		} catch ( PersistenceException e ) {
-			throw new ServiceError("Ha ocurrido un error al guardar la solicitud", e);
+			throw new ServiceError("Ha ocurrido un error al buscar la solicitud", e);
 		}
 	}
 

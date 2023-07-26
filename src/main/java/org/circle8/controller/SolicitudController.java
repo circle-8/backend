@@ -1,21 +1,28 @@
 package org.circle8.controller;
 
-import io.javalin.http.Context;
+import org.circle8.controller.request.solicitud.SolicitudRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.SolicitudResponse;
+import org.circle8.dto.SolicitudDto;
 import org.circle8.entity.EstadoSolicitud;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.filter.SolicitudFilter;
 import org.circle8.service.SolicitudService;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
-import java.util.List;
+import io.javalin.http.Context;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Singleton
+@Slf4j
 public class SolicitudController {
 	
 	private SolicitudService service;
@@ -82,14 +89,22 @@ public class SolicitudController {
 	 * GET /solicitudes
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2).estado(EstadoSolicitud.APROBADA).build(),
-			mock.toBuilder().id(3).estado(EstadoSolicitud.CANCELADA).build(),
-			mock.toBuilder().id(4).estado(EstadoSolicitud.EXPIRADA).build(),
-			mock.toBuilder().id(4).estado(EstadoSolicitud.CANCELADA).canceladorId(40L).build()
-		);
-
-		return new ListResponse<>(l);
+		val req = new SolicitudRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if (!valid.valid())
+			return new ErrorResponse(valid);
+		
+		val filter = SolicitudFilter.builder()
+				.solicitadoId(req.solicitadoId)
+				.solicitanteId(req.solicitanteId)
+				.build();
+		
+		try {
+			val solicitudes = this.service.list(filter);
+			return new ListResponse<>(solicitudes.stream().map(SolicitudDto::toResponse).toList());
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error list solicitudes", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
 	}
 }

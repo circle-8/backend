@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -17,6 +19,7 @@ import org.circle8.entity.Residuo;
 import org.circle8.entity.Solicitud;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
+import org.circle8.filter.SolicitudFilter;
 import org.circle8.service.SolicitudService;
 import org.circle8.utils.Dates;
 
@@ -45,6 +48,26 @@ public class SolicitudDao extends Dao {
 		""";
 
 	private static final String SELECT = """
+			SELECT s."ID", s."FechaCreacion", "FechaModificacion", "Estado",
+			       "CiudadanoSolicitanteId", c1."UsuarioId" as SolicitanteUsuarioId,
+			       "CiudadanoSolicitadoId", c2."UsuarioId" as SolicitadoUsuarioId,
+			       "ResiduoId", "CiudadanoCancelaId", res."FechaLimiteRetiro"
+			  FROM "Solicitud" AS s
+			  JOIN "Ciudadano" AS c1 ON c1."ID" = s."CiudadanoSolicitanteId"
+			  JOIN "Ciudadano" AS c2 ON c2."ID" = s."CiudadanoSolicitadoId"
+			  JOIN "Residuo" AS res ON res."ID" = s."ResiduoId"
+			 WHERE 1=1
+			""";
+	
+	private static final String WHERE_SOLICITANTE = """
+			AND s."CiudadanoSolicitanteId" = ?
+		""";
+	
+	private static final String WHERE_SOLICITADO = """
+			AND s."CiudadanoSolicitadoId" = ?
+		""";
+	
+	private static final String SELECT_GET = """
 		SELECT s."ID", s."FechaCreacion", "FechaModificacion", "Estado",
 		       "CiudadanoSolicitanteId", c1."UsuarioId" as SolicitanteUsuarioId,
 		       "CiudadanoSolicitadoId", c2."UsuarioId" as SolicitadoUsuarioId,
@@ -107,9 +130,31 @@ public class SolicitudDao extends Dao {
 
 		return ps;
 	}
+	
+	public List<Solicitud> list(SolicitudFilter filter) throws PersistenceException{
+		try (var t = open(true); var select = createSelectForList(t,filter);var rs = select.executeQuery()) {
+			val l = new ArrayList<Solicitud>();
+			while ( rs.next() ) {
+				l.add(new Solicitud(
+						rs.getLong("ID"),
+						rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC),
+						rs.getTimestamp("FechaModificacion").toInstant().atZone(Dates.UTC),
+						getEstado(rs),
+						new Ciudadano(rs.getLong("CiudadanoSolicitanteId"), rs.getLong("SolicitanteUsuarioId")),
+						new Ciudadano(rs.getLong("CiudadanoSolicitadoId"), rs.getLong("SolicitadoUsuarioId")),
+						Residuo.builder().id(rs.getLong("ResiduoId")).build(),
+						rs.getLong("CiudadanoCancelaId")
+					));
+			}
+
+			return l;
+		} catch (SQLException e) {
+			throw new PersistenceException("error getting punto reciclaje", e);
+		}
+	}
 
 	public Optional<Solicitud> get(Transaction t, long id) throws PersistenceException {
-		try ( val select = t.prepareStatement(SELECT) ) {
+		try ( val select = t.prepareStatement(SELECT_GET) ) {
 			select.setLong(1, id);
 
 			try ( var rs = select.executeQuery() ) {
@@ -131,6 +176,27 @@ public class SolicitudDao extends Dao {
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting solicitud", e);
 		}
+	}
+	
+	private PreparedStatement createSelectForList(Transaction t,SolicitudFilter f) throws PersistenceException, SQLException {
+		var b = new StringBuilder(SELECT);
+		List<Object> parameters = new ArrayList<>();
+		
+		if(f.hasSolicitante()) {
+			b.append(WHERE_SOLICITANTE);
+			parameters.add(f.solicitanteId);
+		}
+		
+		if(f.hasSolicitado()) {
+			b.append(WHERE_SOLICITADO);
+			parameters.add(f.solicitadoId);
+		}	
+		
+		var p = t.prepareStatement(b.toString());
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+
+		return p;
 	}
 	
 	/**

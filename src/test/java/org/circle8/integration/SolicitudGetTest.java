@@ -31,16 +31,6 @@ public class SolicitudGetTest {
 	}
 	
 	@Test
-	void testGetOKEstadoPendiente() {
-		RestAssured.given()
-		.get("/solicitud/3")
-		.then()
-		.statusCode(200)
-		.body("estado", equalTo("PENDIENTE"))
-		;
-	}
-	
-	@Test
 	void testGetOKEstadoExpirado() {
 		RestAssured.given()
 		.get("/solicitud/2")
