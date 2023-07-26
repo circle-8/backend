@@ -5,7 +5,6 @@ import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
-import org.circle8.controller.response.SolicitudResponse;
 import org.circle8.dto.SolicitudDto;
 import org.circle8.entity.EstadoSolicitud;
 import org.circle8.exception.NotFoundException;
@@ -31,15 +30,6 @@ public class SolicitudController {
 	private SolicitudController(SolicitudService solicitudService) {
 		this.service = solicitudService;
 	}
-	
-	private final SolicitudResponse mock = SolicitudResponse.builder()
-		.id(1)
-		.solicitadoId(20L)
-		.solicitadoUri("/user/1")
-		.solicitanteId(40L)
-		.solicitanteUri("/user/2")
-		.estado(EstadoSolicitud.PENDIENTE)
-		.build();
 
 	/**
 	 * GET /solicitud/{id}
@@ -69,20 +59,44 @@ public class SolicitudController {
 	 * PUT /solicitud/{id}/aprobar
 	 */
 	public ApiResponse approve(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.estado(EstadoSolicitud.APROBADA)
-			.build();
+		final Long id;		
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la solicitud debe ser numérico", "");
+		}	
+		
+		try {
+			return this.service.put(id,EstadoSolicitud.APROBADA).toResponse();
+		} catch (ServiceError e) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch (NotFoundException e) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		} catch (ServiceException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
 	 * PUT /solicitud/{id}/cancelar
 	 */
 	public ApiResponse cancel(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.estado(EstadoSolicitud.CANCELADA)
-			.build();
+		final Long id;		
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la solicitud debe ser numérico", "");
+		}	
+		
+		try {
+			return this.service.put(id,EstadoSolicitud.CANCELADA).toResponse();
+		} catch (ServiceError e) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch (NotFoundException e) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		} catch (ServiceException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**

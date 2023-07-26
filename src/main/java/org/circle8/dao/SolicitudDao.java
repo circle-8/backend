@@ -18,6 +18,7 @@ import org.circle8.entity.EstadoSolicitud;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.Solicitud;
 import org.circle8.exception.DuplicatedEntry;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.SolicitudFilter;
 import org.circle8.service.SolicitudService;
@@ -77,6 +78,12 @@ public class SolicitudDao extends Dao {
 		  JOIN "Ciudadano" AS c2 ON c2."ID" = s."CiudadanoSolicitadoId"
 		  JOIN "Residuo" AS res ON res."ID" = s."ResiduoId"
 		 WHERE s."ID" = ?
+		""";
+	
+	private static final String PUT = """
+			UPDATE "Solicitud"
+			SET "FechaModificacion"=?, "Estado"=?
+			WHERE "ID"=?;
 		""";
 
 	@Inject
@@ -175,6 +182,19 @@ public class SolicitudDao extends Dao {
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting solicitud", e);
+		}
+	}
+	
+	public void put(Transaction t,Long id,EstadoSolicitud estado) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(PUT) ) {
+			put.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
+			put.setString(2, estado.name());
+			put.setLong(3, id);			
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe la solicitud con id "+id);
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating solicitud", e);
 		}
 	}
 	

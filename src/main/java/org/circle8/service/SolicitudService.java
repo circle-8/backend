@@ -7,6 +7,7 @@ import org.circle8.dao.ResiduoDao;
 import org.circle8.dao.SolicitudDao;
 import org.circle8.dao.Transaction;
 import org.circle8.dto.SolicitudDto;
+import org.circle8.entity.EstadoSolicitud;
 import org.circle8.entity.Solicitud;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
@@ -95,6 +96,15 @@ public class SolicitudService {
 				.orElseThrow(() -> new NotFoundException("No existe la solicitud"));
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al buscar la solicitud", e);
+		}
+	}
+	
+	public SolicitudDto put(Long id,EstadoSolicitud estado) throws ServiceException {
+		try( var t = dao.open(true)) {
+			dao.put(t,id,estado);
+			return SolicitudDto.from(get(t, id));
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al cambiar de estado la solicitud", e);
 		}
 	}
 }
