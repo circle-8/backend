@@ -99,9 +99,12 @@ public class SolicitudService {
 		}
 	}
 	
-	public SolicitudDto put(Long id,EstadoSolicitud estado) throws ServiceException {
+	public SolicitudDto put(Long id,Long ciudadanoID,EstadoSolicitud estado) throws ServiceException {
 		try( var t = dao.open(true)) {
-			dao.put(t,id,estado);
+			if(estado.equals(EstadoSolicitud.APROBADA))
+				dao.aprobar(t,id,estado);
+			else
+				dao.cancelar(t,id,ciudadanoID,estado);
 			return SolicitudDto.from(get(t, id));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al cambiar de estado la solicitud", e);

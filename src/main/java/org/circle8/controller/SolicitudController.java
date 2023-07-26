@@ -1,5 +1,7 @@
 package org.circle8.controller;
 
+import java.util.List;
+
 import org.circle8.controller.request.solicitud.SolicitudRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -67,7 +69,7 @@ public class SolicitudController {
 		}	
 		
 		try {
-			return this.service.put(id,EstadoSolicitud.APROBADA).toResponse();
+			return this.service.put(id,null,EstadoSolicitud.APROBADA).toResponse();
 		} catch (ServiceError e) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch (NotFoundException e) {
@@ -81,15 +83,18 @@ public class SolicitudController {
 	 * PUT /solicitud/{id}/cancelar
 	 */
 	public ApiResponse cancel(Context ctx) {
-		final Long id;		
+		final Long id;	
+		final Long ciudadanoCancelaId;
 		try {
 			id = Long.parseLong(ctx.pathParam("id"));
+			var param = ctx.queryParamMap().getOrDefault("ciudadanoCancelaId", List.of(""));		
+			ciudadanoCancelaId = Long.parseLong(param.get(0));
 		} catch ( NumberFormatException e) {
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la solicitud debe ser numérico", "");
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la solicitud o el id del ciudadano debe ser numérico", "");
 		}	
 		
 		try {
-			return this.service.put(id,EstadoSolicitud.CANCELADA).toResponse();
+			return this.service.put(id,ciudadanoCancelaId,EstadoSolicitud.CANCELADA).toResponse();
 		} catch (ServiceError e) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch (NotFoundException e) {

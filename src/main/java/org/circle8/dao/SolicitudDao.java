@@ -80,9 +80,15 @@ public class SolicitudDao extends Dao {
 		 WHERE s."ID" = ?
 		""";
 	
-	private static final String PUT = """
+	private static final String PUT_APROBAR = """
 			UPDATE "Solicitud"
 			SET "FechaModificacion"=?, "Estado"=?
+			WHERE "ID"=?;
+		""";
+	
+	private static final String PUT_CANCELAR = """
+			UPDATE "Solicitud"
+			SET "FechaModificacion"=?, "Estado"=?, "CiudadanoCancelaId"=?
 			WHERE "ID"=?;
 		""";
 
@@ -185,11 +191,25 @@ public class SolicitudDao extends Dao {
 		}
 	}
 	
-	public void put(Transaction t,Long id,EstadoSolicitud estado) throws PersistenceException, NotFoundException {
-		try ( var put = t.prepareStatement(PUT) ) {
+	public void aprobar(Transaction t,Long id,EstadoSolicitud estado) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(PUT_APROBAR) ) {
 			put.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
 			put.setString(2, estado.name());
 			put.setLong(3, id);			
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe la solicitud con id "+id);
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating solicitud", e);
+		}
+	}
+	
+	public void cancelar(Transaction t,Long id,Long ciudadanoID,EstadoSolicitud estado) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(PUT_CANCELAR) ) {
+			put.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
+			put.setString(2, estado.name());
+			put.setLong(3, ciudadanoID);
+			put.setLong(4, id);			
 			int puts = put.executeUpdate();
 			if ( puts == 0 )
 				throw new NotFoundException("No existe la solicitud con id "+id);
