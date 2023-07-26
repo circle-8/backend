@@ -2,10 +2,13 @@ package org.circle8.service;
 
 import com.google.inject.Inject;
 import lombok.val;
+import org.circle8.dao.PuntoReciclajeDao;
+import org.circle8.dao.ResiduoDao;
 import org.circle8.dao.SolicitudDao;
 import org.circle8.dao.Transaction;
 import org.circle8.dto.SolicitudDto;
 import org.circle8.entity.Solicitud;
+import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
@@ -13,6 +16,8 @@ import org.circle8.exception.ServiceException;
 
 public class SolicitudService {
 	private final SolicitudDao dao;
+	private final PuntoReciclajeDao puntoDao;
+	private final ResiduoDao residuoDao;
 
 	public enum TipoSolicitud {
 		DEPOSITO,
@@ -22,14 +27,42 @@ public class SolicitudService {
 	}
 
 	@Inject
-	public SolicitudService(SolicitudDao dao) { this.dao = dao; }
+	public SolicitudService(
+		SolicitudDao dao,
+		PuntoReciclajeDao puntoDao,
+		ResiduoDao residuoDao
+	) {
+		this.dao = dao;
+		this.puntoDao = puntoDao;
+		this.residuoDao = residuoDao;
+	}
 
-	public SolicitudDto save(long residuoId, long puntoReciclaje, TipoSolicitud tipo) throws ServiceException {
+	public SolicitudDto save(long residuoId, long puntoReciclajeId, TipoSolicitud tipo) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			val id = dao.save(t, residuoId, puntoReciclaje, tipo);
-			// TODO: validacion de que el punto de reciclaje acepte ese tipo de residuo
-			// TODO: validacion que el residuo y el punto de reciclaje no pertenezcan al mismo user
+			// TODO: validacion extra (nice to have): que no se pueda crear una solicitud de DEPOSITO cuando hay una de RETIRO igual
+
+			val residuo = residuoDao.get(t, residuoId)
+				.orElseThrow(() -> new NotFoundException("No existe el residuo"));
+
+			if ( residuo.fechaRetiro != null )
+				throw new ServiceException("El residuo ya se ha retirado");
+
+			val punto = puntoDao.get(t, puntoReciclajeId)
+				.orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje"));
+
+			/* Validar que el punto de reciclaje acepte el tipo de residuo */
+			val acceptsTipo = punto.tipoResiduo.stream().anyMatch(tr -> tr.id == residuo.tipoResiduo.id);
+			if ( !acceptsTipo )
+				throw new ServiceException("El Punto de Reciclaje no admite este tipo de residuo");
+
+			if ( punto.reciclador.ciudadanoId.equals(residuo.ciudadanoId) )
+				throw new ServiceException("El residuo no puede pertenecer al dueño del punto");
+
+			val id = dao.save(t, residuoId, puntoReciclajeId, tipo);
+
 			return SolicitudDto.from(get(t, id));
+		} catch ( DuplicatedEntry e ) {
+			throw new ServiceException("Solicitud ya existente", e);
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar la solicitud", e);
 		}

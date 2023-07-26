@@ -79,12 +79,13 @@ public class ResiduoController {
 
 		var dto = ResiduoDto.from(req);
 		try {
-			dto = service.save(dto);
+			return service.save(dto).toResponse();
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error saving new residuo", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
 		}
-		return dto.toResponse();
 	}
 
 	public ApiResponse delete(Context ctx) {
@@ -162,10 +163,8 @@ public class ResiduoController {
 				e
 			);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
-		} catch ( NotFoundException e ) {
-			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+			return new ErrorResponse(e);
 		}
 	}
 
@@ -173,10 +172,21 @@ public class ResiduoController {
 	 * POST /residuo/{id}/fulfill
 	 */
 	public ApiResponse fulfill(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaRetiro(ZonedDateTime.now(Dates.UTC))
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id deben ser numérico", e.getMessage());
+		}
+
+		try {
+			return service.fulfill(id).toResponse();
+		} catch (ServiceError e) {
+			log.error("[Request: id={}] error fulfill", id, e);
+			return new ErrorResponse(e);
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

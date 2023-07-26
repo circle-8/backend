@@ -21,7 +21,7 @@ public class PuntoResiduoDto {
 	public Long ciudadanoId;
 	public UserDto ciudadano;
 	public List<ResiduoDto> residuos;
-	
+
 	public static PuntoResiduoDto from(PostPutPuntoResiduoRequest request) {
 		var pr = new PuntoResiduoDto();
 		var user = new UserDto();
@@ -58,13 +58,14 @@ public class PuntoResiduoDto {
 		r.residuos = !residuos.isEmpty() ? residuos.stream().map(ResiduoDto::toResponse).toList() : null;
 		return r;
 	}
-	
+
 	public PuntoResiduo toEntity() {
 		return PuntoResiduo.builder()
 				.id(this.id)
 				.latitud(this.latitud)
 				.longitud(this.longitud)
 				.ciudadanoId(this.ciudadanoId)
+				.residuos(List.of())
 				.build();
 	}
 }

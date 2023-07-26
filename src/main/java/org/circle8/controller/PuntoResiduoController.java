@@ -119,8 +119,8 @@ public class PuntoResiduoController {
 	 * Requiere: latitud, longitud
 	 */
 	public ApiResponse put(Context ctx) {
-		final Long id;
-		final Long ciudadano_id;
+		final long id;
+		final long ciudadano_id;
 		try {
 			id = Long.parseLong(ctx.pathParam("id"));
 			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));
@@ -138,13 +138,12 @@ public class PuntoResiduoController {
 
 		var dto = PuntoResiduoDto.from(req);
 		try {
-			this.service.put(dto);
+			return this.service.put(dto).toResponse();
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error updating new residuo", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch (NotFoundException e) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}
-		return dto.toResponse();
 	}
 }

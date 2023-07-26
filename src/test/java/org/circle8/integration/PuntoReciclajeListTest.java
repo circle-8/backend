@@ -19,7 +19,7 @@ class PuntoReciclajeListTest {
 			.get("/puntos_reciclaje")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(2))
+			.body("data", hasSize(3))
 			.body("data[0].id", equalTo(1))
 			.body("data[0].latitud", equalTo(-34.6519877f))
 			.body("data[0].longitud", equalTo(-58.5850894f))
@@ -34,6 +34,7 @@ class PuntoReciclajeListTest {
 			.body("data[1].dias", hasItems("0", "1", "3"))
 			.body("data[1].recicladorId", equalTo(1))
 			.body("data[1].recicladorUri", equalTo("/user/1"))
+			.body("data[2].id", equalTo(5))
 		;
 	}
 
@@ -68,9 +69,10 @@ class PuntoReciclajeListTest {
 			.get("/puntos_reciclaje?latitud=-34.65&longitud=-58.58&radio=1")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(2))
+			.body("data", hasSize(3))
 			.body("data[0].id", equalTo(1))
 			.body("data[1].id", equalTo(2))
+			.body("data[2].id", equalTo(5))
 		;
 	}
 

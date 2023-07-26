@@ -6,6 +6,7 @@ import org.circle8.entity.EstadoSolicitud;
 import org.circle8.entity.Solicitud;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 public class SolicitudDto {
 	public long id;
@@ -41,7 +42,7 @@ public class SolicitudDto {
 			"/user/" + solicitado.usuarioId,
 			solicitado.toResponse(),
 			estado,
-			canceladorId
+			!Objects.equals(canceladorId, 0L) ? canceladorId : null
 		);
 	}
 }
