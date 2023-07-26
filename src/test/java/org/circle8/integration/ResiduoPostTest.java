@@ -183,7 +183,7 @@ class ResiduoPostTest {
 			.body(request)
 			.post("/residuo")
 			.then()
-			.statusCode(500)
+			.statusCode(400)
 		;
 	}
 
@@ -200,7 +200,7 @@ class ResiduoPostTest {
 			.body(request)
 			.post("/residuo")
 			.then()
-			.statusCode(500)
+			.statusCode(400)
 		;
 	}
 }

@@ -158,6 +158,41 @@ CREATE TABLE IF NOT EXISTS public."Zona"
     CONSTRAINT "Zona_pkey" PRIMARY KEY ("ID")
 );
 
+CREATE TABLE IF NOT EXISTS public."Solicitud"
+(
+    "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    "FechaCreacion" timestamp with time zone NOT NULL,
+    "FechaModificacion" timestamp with time zone NOT NULL,
+    "Estado" character varying NOT NULL,
+    "CiudadanoSolicitanteId" bigint NOT NULL,
+    "CiudadanoSolicitadoId" bigint NOT NULL,
+    "ResiduoId" bigint NOT NULL,
+    "TransaccionId" bigint,
+    "CiudadanoCancelaId" bigint,
+    CONSTRAINT "Solicitud_pkey" PRIMARY KEY ("ID"),
+    CONSTRAINT "Solicitud_Estado_CiudadanoSolicitanteId_CiudadanoSolicitado_key" UNIQUE ("Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId"),
+    CONSTRAINT "Solicitud_CiudadanoCancelaId_fkey" FOREIGN KEY ("CiudadanoCancelaId")
+        REFERENCES public."Ciudadano" ("ID")
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT "Solicitud_CiudadanoSolicitadoId_fkey" FOREIGN KEY ("CiudadanoSolicitadoId")
+        REFERENCES public."Ciudadano" ("ID")
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT "Solicitud_CiudadanoSolicitanteId_fkey" FOREIGN KEY ("CiudadanoSolicitanteId")
+        REFERENCES public."Ciudadano" ("ID")
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT "Solicitud_ResiduoId_fkey" FOREIGN KEY ("ResiduoId")
+        REFERENCES public."Residuo" ("ID")
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT "Solicitud_TransaccionId_fkey" FOREIGN KEY ("TransaccionId")
+        REFERENCES public."TransaccionResiduo" ("ID")
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+);
+
 ALTER TABLE IF EXISTS public."Ciudadano"
     ADD CONSTRAINT "Ciudadano_UsuarioId_fkey" FOREIGN KEY ("UsuarioId")
     REFERENCES public."Usuario" ("ID")

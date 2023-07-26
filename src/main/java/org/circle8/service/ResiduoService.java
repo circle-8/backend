@@ -28,7 +28,7 @@ public class ResiduoService {
 			dto.id = residuo.id;
 			return dto;
 		} catch ( ForeingKeyException e ) {
-			throw new NotFoundException(e.getMessage());
+			throw new ServiceException(e.getMessage());
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar el residuo", e);
 		}
