@@ -176,7 +176,7 @@ public class ResiduoController {
 		try {
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", e.getMessage());
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id deben ser numérico", e.getMessage());
 		}
 
 		try {
