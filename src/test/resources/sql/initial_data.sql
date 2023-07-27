@@ -18,6 +18,14 @@ INSERT INTO public."Usuario"( "NombreApellido", "Username", "Password", "Suscrip
 
 INSERT INTO public."Ciudadano" ("UsuarioId") VALUES (1),(2);
 
+INSERT INTO public."Organizacion"("RazonSocial", "UsuarioId") VALUES ("Usuario 1 SA", 1);
+
+INSERT INTO public."Zona"("OrganizacionId", "Polyline", "Nombre")
+	VALUES (
+		1,
+		[[-34.634716, -58.558796], [-34.651657, -58.535603], [-34.67316, -58.559628], [-34.663677, -58.568333], [-34.650585, -58.585228], [-34.649334, -58.58329], [-34.643433, -58.583534], [-34.641556, -58.57158], [-34.63838, -58.57357]] 
+		'Zona 1');
+
 
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Plástico');
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Papel');
@@ -49,7 +57,6 @@ INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", 
 INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, NULL, NULL, 'Residuo con limite', '2023-07-10 19:41:00-00');
 INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', '2023-07-22 19:41:00-00', 1, 1, NULL, NULL, 'Residuo Fulfilled', NULL);
 INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 4, NULL, NULL, 'Carton', NULL);
-
 
 INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'PENDIENTE', 2, 1, 1);
 INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'PENDIENTE', 1, 2, 2);

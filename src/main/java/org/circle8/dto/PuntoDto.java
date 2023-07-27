@@ -1,5 +1,6 @@
 package org.circle8.dto;
 
+import org.circle8.controller.response.PuntoResponse;
 import org.circle8.entity.Punto;
 
 public class PuntoDto {
@@ -11,5 +12,9 @@ public class PuntoDto {
 		p.latitud = entity.latitud;
 		p.longitud = entity.longitud;
 		return p;
+	}
+	
+	public PuntoResponse toResponse() {
+		return new PuntoResponse(latitud, longitud);
 	}
 }

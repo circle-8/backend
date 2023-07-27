@@ -155,6 +155,7 @@ CREATE TABLE IF NOT EXISTS public."Zona"
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY ,
     "OrganizacionId" bigint NOT NULL,
     "Polyline" character varying NOT NULL,
+    "Nombre" character varying(50) NOT NULL,
     CONSTRAINT "Zona_pkey" PRIMARY KEY ("ID")
 );
 
