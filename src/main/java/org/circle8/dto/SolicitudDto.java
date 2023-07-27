@@ -42,7 +42,8 @@ public class SolicitudDto {
 			"/user/" + solicitado.usuarioId,
 			solicitado.toResponse(),
 			estado,
-			!Objects.equals(canceladorId, 0L) ? canceladorId : null
+			!Objects.equals(canceladorId, 0L) ? canceladorId : null,
+			residuo.toResponse()
 		);
 	}
 }

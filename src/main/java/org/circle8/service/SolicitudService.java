@@ -14,6 +14,7 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.SolicitudExpand;
 import org.circle8.filter.SolicitudFilter;
 
 import com.google.inject.Inject;
@@ -66,46 +67,47 @@ public class SolicitudService {
 
 			val id = dao.save(t, residuoId, puntoReciclajeId, tipo);
 
-			return SolicitudDto.from(get(t, id));
+			return SolicitudDto.from(get(t, id, SolicitudExpand.EMPTY));
 		} catch ( DuplicatedEntry e ) {
 			throw new ServiceException("Solicitud ya existente", e);
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar la solicitud", e);
 		}
 	}
-	
-	public List<SolicitudDto> list(SolicitudFilter filter) throws ServiceError{
+
+	public List<SolicitudDto> list(SolicitudFilter f, SolicitudExpand x) throws ServiceError{
 		try {
-			return this.dao.list(filter).stream().map(SolicitudDto::from).toList();
+			return this.dao.list(f, x).stream().map(SolicitudDto::from).toList();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el listado de solicitudes", e);
 		}
 	}
-	
-	public SolicitudDto get(long id) throws ServiceException {
-		try ( val t = dao.open(true) ) {			
-			return SolicitudDto.from(get(t, id));
+
+	public SolicitudDto get(long id, SolicitudExpand x) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			return SolicitudDto.from(get(t, id, x));
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al buscar la solicitud", e);
 		}
 	}
 
-	private Solicitud get(Transaction t, long id) throws ServiceException {
+	private Solicitud get(Transaction t, long id, SolicitudExpand x) throws ServiceException {
 		try {
-			return this.dao.get(t, id)
+			return this.dao.get(t, id, x)
 				.orElseThrow(() -> new NotFoundException("No existe la solicitud"));
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al buscar la solicitud", e);
 		}
 	}
-	
-	public SolicitudDto put(Long id,Long ciudadanoID,EstadoSolicitud estado) throws ServiceException {
-		try( var t = dao.open(true)) {
-			if(estado.equals(EstadoSolicitud.APROBADA))
-				dao.aprobar(t,id,estado);
+
+	public SolicitudDto put(Long id, Long ciudadanoID, EstadoSolicitud estado) throws ServiceException {
+		try( var t = dao.open(true) ) {
+			if ( EstadoSolicitud.APROBADA.equals(estado) )
+				dao.aprobar(t, id, estado);
 			else
-				dao.cancelar(t,id,ciudadanoID,estado);
-			return SolicitudDto.from(get(t, id));
+				dao.cancelar(t, id, ciudadanoID, estado);
+
+			return SolicitudDto.from(get(t, id, SolicitudExpand.EMPTY));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al cambiar de estado la solicitud", e);
 		}

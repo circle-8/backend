@@ -2,12 +2,14 @@ package org.circle8.controller.request.residuo;
 
 import java.time.ZonedDateTime;
 
+import lombok.ToString;
 import org.circle8.controller.request.IRequest;
 import org.circle8.utils.Dates;
 
+@ToString
 public class PostResiduoRequest implements IRequest {
 	private final Validation validation = new Validation();
-	
+
 	public Long tipoResiduoId;
 	public Long puntoResiduoId;
 	public Long ciudadanoId;

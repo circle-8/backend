@@ -18,5 +18,5 @@ public class SolicitudResponse implements ApiResponse {
 	public CiudadanoResponse solicitado;
 	public EstadoSolicitud estado;
 	public Long canceladorId;
-	// TODO: aca hay que agregar Residuo
+	public ResiduoResponse residuo;
 }

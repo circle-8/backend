@@ -87,7 +87,7 @@ public class PuntoResiduoController {
 	 * Requiere: latitud, longitud
 	 */
 	public ApiResponse post(Context ctx) {
-		final Long ciudadano_id;
+		final long ciudadano_id;
 		try {
 			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));
 		} catch ( NumberFormatException e) {

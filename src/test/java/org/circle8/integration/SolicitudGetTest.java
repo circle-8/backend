@@ -11,7 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
-public class SolicitudGetTest {
+class SolicitudGetTest {
 
 	@Test
 	void testGetOK() {
@@ -29,7 +29,49 @@ public class SolicitudGetTest {
 		.body("estado", equalTo("PENDIENTE"))
 		;
 	}
-	
+
+	@Test
+	void testGetOKExpandCiudadanos() {
+		RestAssured.given()
+			.get("/solicitud/1?expand=ciudadanos")
+			.then()
+			.statusCode(200)
+			.body("id", equalTo(1))
+			.body("solicitante.id", equalTo(2))
+			.body("solicitante.nombre", not(nullValue()))
+			.body("solicitado.id", equalTo(1))
+			.body("solicitado.nombre", not(nullValue()))
+		;
+	}
+
+	@Test
+	void testGetOKExpandResiduo() {
+		RestAssured.given()
+			.get("/solicitud/1?expand=residuo")
+			.then()
+			.statusCode(200)
+			.body("id", equalTo(1))
+			.body("residuo.id", equalTo(1))
+			.body("residuo.descripcion", equalTo("Prueba 1"))
+		;
+	}
+
+	@Test
+	void testGetOKExpandResiduoAndCiudadanos() {
+		RestAssured.given()
+			.get("/solicitud/1?expand=residuo&expand=ciudadanos")
+			.then()
+			.statusCode(200)
+			.body("id", equalTo(1))
+			.body("residuo.id", equalTo(1))
+			.body("residuo.descripcion", equalTo("Prueba 1"))
+			.body("solicitante.id", equalTo(2))
+			.body("solicitante.nombre", not(nullValue()))
+			.body("solicitado.id", equalTo(1))
+			.body("solicitado.nombre", not(nullValue()))
+		;
+	}
+
 	@Test
 	void testGetOKEstadoExpirado() {
 		RestAssured.given()
@@ -38,8 +80,8 @@ public class SolicitudGetTest {
 		.statusCode(200)
 		.body("estado", equalTo("EXPIRADA"))
 		;
-	}	
-	
+	}
+
 	@Test
 	void testNotFound() {
 		RestAssured.given()
@@ -48,7 +90,7 @@ public class SolicitudGetTest {
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
 	void testWithOutSolicitudId() {
 		RestAssured.given()
@@ -57,7 +99,7 @@ public class SolicitudGetTest {
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
 	void testInvalidSolicitudId() {
 		RestAssured.given()
@@ -66,4 +108,5 @@ public class SolicitudGetTest {
 		.statusCode(400)
 		;
 	}
+
 }

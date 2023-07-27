@@ -12,7 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
-public class SolicitudListTest {
+class SolicitudListTest {
 
 	@Test
 	void testListWithoutFilter() {
@@ -33,7 +33,23 @@ public class SolicitudListTest {
 		.body("data[1].estado", equalTo("EXPIRADA"))
 		;
 	}
-	
+
+	@Test
+	void testListWithExpands() {
+		RestAssured.given()
+			.get("/solicitudes?expand=residuo&expand=ciudadanos")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(2))
+			.body("data[0].residuo.id", not(nullValue()))
+			.body("data[0].residuo.descripcion", not(nullValue()))
+			.body("data[0].solicitante.id", not(nullValue()))
+			.body("data[0].solicitante.nombre", not(nullValue()))
+			.body("data[0].solicitado.id", not(nullValue()))
+			.body("data[0].solicitado.nombre", not(nullValue()))
+		;
+	}
+
 	@Test
 	void testListWithSolicitanteIdFilter() {
 		RestAssured.given()
@@ -51,7 +67,7 @@ public class SolicitudListTest {
 		.body("data[0].estado", equalTo("PENDIENTE"))
 		;
 	}
-	
+
 	@Test
 	void testListWithInvalidSolicitanteIdFilter() {
 		RestAssured.given()
@@ -60,7 +76,7 @@ public class SolicitudListTest {
 		.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testListWithNotExistSolicitanteIdFilter() {
 		RestAssured.given()
@@ -70,7 +86,7 @@ public class SolicitudListTest {
 		.body("data", hasSize(0))
 		;
 	}
-	
+
 	@Test
 	void testListWithSolicitadoIdFilter() {
 		RestAssured.given()
@@ -88,7 +104,7 @@ public class SolicitudListTest {
 		.body("data[0].estado", equalTo("PENDIENTE"))
 		;
 	}
-	
+
 	@Test
 	void testListWithInvalidSolicitadoIdFilter() {
 		RestAssured.given()
@@ -97,7 +113,7 @@ public class SolicitudListTest {
 		.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testListWithotExistSolicitadoIdFilter() {
 		RestAssured.given()
@@ -107,7 +123,7 @@ public class SolicitudListTest {
 		.body("data", hasSize(0))
 		;
 	}
-	
+
 	@Test
 	void testListWithBothFilter() {
 		RestAssured.given()

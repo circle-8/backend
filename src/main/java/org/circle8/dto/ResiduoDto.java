@@ -11,7 +11,7 @@ import org.circle8.entity.Residuo;
 public class ResiduoDto {
 	public long id;
 	public ZonedDateTime fechaCreacion;
-	public ZonedDateTime fechaRetiro;	
+	public ZonedDateTime fechaRetiro;
 	public ZonedDateTime fechaLimiteRetiro;
 	public String descripcion;
 	public Long ciudadanoId;
@@ -22,7 +22,7 @@ public class ResiduoDto {
 	public Long recorridoId;
 	public Long transaccionId;
 	public TransaccionDto transaccion;
-	
+
 	public static ResiduoDto from(PostResiduoRequest req) {
 		var r = new ResiduoDto();
 		r.fechaLimiteRetiro = req.fechaLimite;
@@ -39,8 +39,9 @@ public class ResiduoDto {
 		r.tipoResiduo = TipoResiduoDto.builder().id(req.tipoResiduoId).build();
 		return r;
 	}
-	
+
 	public static ResiduoDto from(Residuo entity) {
+		if ( entity == null ) return null;
 		var r = new ResiduoDto();
 		r.id = entity.id;
 		r.ciudadanoId = entity.ciudadanoId;
@@ -53,7 +54,7 @@ public class ResiduoDto {
 		r.transaccion = TransaccionDto.from(entity.transaccion);
 		return r;
 	}
-	
+
 	public ResiduoResponse toResponse() {
 		return new ResiduoResponse(
 				this.id,
@@ -61,20 +62,20 @@ public class ResiduoDto {
 				this.fechaCreacion,
 				this.fechaLimiteRetiro,
 				this.descripcion,
-				"/ciudadano/"+this.ciudadanoId+"/punto_residuo/"+this.puntoResiduo.id,
-				this.puntoResiduo.id,
-				this.puntoResiduo.toResponse(),
-				this.tipoResiduo.toResponse(),
+				this.puntoResiduo != null ? "/ciudadano/"+this.ciudadanoId+"/punto_residuo/"+this.puntoResiduo.id : null,
+				this.puntoResiduo != null ? this.puntoResiduo.id: null,
+				this.puntoResiduo != null ? this.puntoResiduo.toResponse(): null,
+				this.tipoResiduo != null ? this.tipoResiduo.toResponse() : null,
 				this.recorridoId != null ? "/recorrido/"+this.recorridoId : null,
-				this.recorridoId ,
+				this.recorridoId,
 				this.transaccion != null ? "/transaccion/"+this.transaccion.id : null,
 				this.transaccion != null ? this.transaccion.id : null,
 				this.transaccion != null ? this.transaccion.toResponse() : null);
 	}
-	
-	public Residuo toEntity() {	
+
+	public Residuo toEntity() {
 		//Son los atributos necesarios para hacer el POST
-		return Residuo.builder()				
+		return Residuo.builder()
 				.fechaLimiteRetiro(this.fechaLimiteRetiro)
 				.descripcion(this.descripcion)
 				.puntoResiduo(this.puntoResiduo.toEntity())
