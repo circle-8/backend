@@ -1,8 +1,10 @@
 package org.circle8.exception;
 
 import lombok.Getter;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.IErrorResponse;
 
-public class ServiceException extends Exception {
+public class ServiceException extends Exception implements IErrorResponse {
 	@Getter
 	private final String devMessage;
 
@@ -20,4 +22,8 @@ public class ServiceException extends Exception {
 		super(message, cause);
 		this.devMessage = cause.getMessage();
 	}
+
+	@Override public ErrorCode code() { return ErrorCode.BAD_REQUEST; }
+	@Override public String message() { return this.getMessage(); }
+	@Override public String dev() { return this.devMessage; }
 }

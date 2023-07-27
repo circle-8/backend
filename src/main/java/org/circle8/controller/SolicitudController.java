@@ -1,64 +1,128 @@
 package org.circle8.controller;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.javalin.http.Context;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.circle8.controller.request.solicitud.SolicitudRequest;
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
-import org.circle8.controller.response.SolicitudResponse;
+import org.circle8.dto.SolicitudDto;
 import org.circle8.entity.EstadoSolicitud;
+import org.circle8.exception.NotFoundException;
+import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
+import org.circle8.expand.SolicitudExpand;
+import org.circle8.filter.SolicitudFilter;
+import org.circle8.service.SolicitudService;
 
 import java.util.List;
 
+@Singleton
+@Slf4j
 public class SolicitudController {
-	private final SolicitudResponse mock = SolicitudResponse.builder()
-		.id(1)
-		.solicitadoId(20L)
-		.solicitadoUri("/user/1")
-		.solicitanteId(40L)
-		.solicitanteUri("/user/2")
-		.estado(EstadoSolicitud.PENDIENTE)
-		.build();
+	private final SolicitudService service;
+
+	@Inject
+	private SolicitudController(SolicitudService solicitudService) {
+		this.service = solicitudService;
+	}
 
 	/**
 	 * GET /solicitud/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.build();
+		final long id;
+
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la solicitud debe ser numérico", "");
+		}
+
+		val expand = new SolicitudExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
+
+		try {
+			var solicitudDto = this.service.get(id, expand);
+			return solicitudDto.toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request: id={}, expand={}] error approve solicitud", id, expand, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
 	 * PUT /solicitud/{id}/aprobar
 	 */
 	public ApiResponse approve(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.estado(EstadoSolicitud.APROBADA)
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la solicitud debe ser numérico", "");
+		}
+
+		try {
+			return this.service.put(id,null,EstadoSolicitud.APROBADA).toResponse();
+		} catch (ServiceError e) {
+			log.error("[Request: id={}] error approve solicitud", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
 	 * PUT /solicitud/{id}/cancelar
 	 */
 	public ApiResponse cancel(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.estado(EstadoSolicitud.CANCELADA)
-			.build();
+		final long id;
+		final long ciudadanoCancelaId;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			var param = ctx.queryParam("ciudadanoCancelaId");
+			ciudadanoCancelaId = Long.parseLong(param);
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la solicitud o el id del ciudadano debe ser numérico", e.getMessage());
+		}
+
+		try {
+			return this.service.put(id, ciudadanoCancelaId, EstadoSolicitud.CANCELADA).toResponse();
+		} catch (ServiceError e) {
+			log.error("[Request: id={}, ciudadanoCancelaId={}] error cancel solicitud", id, ciudadanoCancelaId, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
 	 * GET /solicitudes
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2).estado(EstadoSolicitud.APROBADA).build(),
-			mock.toBuilder().id(3).estado(EstadoSolicitud.CANCELADA).build(),
-			mock.toBuilder().id(4).estado(EstadoSolicitud.EXPIRADA).build(),
-			mock.toBuilder().id(4).estado(EstadoSolicitud.CANCELADA).canceladorId(40L).build()
-		);
+		val req = new SolicitudRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if (!valid.valid())
+			return new ErrorResponse(valid);
 
-		return new ListResponse<>(l);
+		val filter = SolicitudFilter.builder()
+				.solicitadoId(req.solicitadoId)
+				.solicitanteId(req.solicitanteId)
+				.build();
+
+		val expand = new SolicitudExpand(req.expands);
+
+		try {
+			val solicitudes = this.service.list(filter, expand);
+			return new ListResponse<>(solicitudes.stream().map(SolicitudDto::toResponse).toList());
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error list solicitudes", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
 	}
 }
