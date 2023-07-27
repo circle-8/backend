@@ -13,7 +13,9 @@ import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.ResiduoDto;
 import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
 import org.circle8.service.ResiduoService;
+import org.circle8.service.SolicitudService;
 import org.circle8.utils.Dates;
 
 import com.google.inject.Inject;
@@ -27,14 +29,16 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 @Slf4j
 public class ResiduoController {
-	
+
 	private final ResiduoService service;
-	
+	private final SolicitudService solicitudService;
+
 	@Inject
-	public ResiduoController(ResiduoService service) {
+	public ResiduoController(ResiduoService service, SolicitudService solicitudService) {
 		this.service = service;
+		this.solicitudService = solicitudService;
 	}
-	
+
 	private final ResiduoResponse mock = ResiduoResponse.builder()
 		.id(1)
 		.fechaCreacion(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
@@ -71,15 +75,16 @@ public class ResiduoController {
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
-		
-		var dto = ResiduoDto.from(req);		
+
+		var dto = ResiduoDto.from(req);
 		try {
-			dto = service.save(dto);
+			return service.save(dto).toResponse();
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error saving new residuo", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
-		}		
-		return dto.toResponse();
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	public ApiResponse delete(Context ctx) {
@@ -121,20 +126,66 @@ public class ResiduoController {
 	}
 
 	/**
-	 * POST /residuo/{id}/notificacion/{id_punto_reciclaje}
+	 * POST /residuo/{id}/notificacion/{punto_reciclaje_id}
 	 */
 	public ApiResponse notificacion(Context ctx) {
-		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
+		return doNotificacion(ctx, SolicitudService.TipoSolicitud.RETIRO);
+	}
+
+	/**
+	 * POST /residuo/{id}/notificacion/deposito/{punto_reciclaje_id}
+	 */
+	public ApiResponse notificacionDeposito(Context ctx) {
+		return doNotificacion(ctx, SolicitudService.TipoSolicitud.DEPOSITO);
+	}
+
+	private ApiResponse doNotificacion(Context ctx, SolicitudService.TipoSolicitud tipoSolicitud) {
+		final long id;
+		final long puntoReciclajeId;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			puntoReciclajeId = Long.parseLong(ctx.pathParam("punto_reciclaje_id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", e.getMessage());
+		}
+
+		try {
+			return solicitudService
+				.save(id, puntoReciclajeId, tipoSolicitud)
+				.toResponse();
+		} catch (ServiceError e) {
+			log.error(
+				"[Request: puntoReciclajeId={}, id={}, tipo={}] error save notificacion",
+				puntoReciclajeId,
+				id,
+				tipoSolicitud,
+				e
+			);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
 	 * POST /residuo/{id}/fulfill
 	 */
 	public ApiResponse fulfill(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaRetiro(ZonedDateTime.now(Dates.UTC))
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id deben ser numérico", e.getMessage());
+		}
+
+		try {
+			return service.fulfill(id).toResponse();
+		} catch (ServiceError e) {
+			log.error("[Request: id={}] error fulfill", id, e);
+			return new ErrorResponse(e);
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

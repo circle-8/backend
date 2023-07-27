@@ -11,18 +11,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
-public class ResiduoPostTest {
-	
+class ResiduoPostTest {
+
 	@Test
 	void testInsertOkWithoutFechalimite() {
 		var request = """
 				{
-			     "tipoResiduoId": 1,
-			     "puntoResiduoId": 1,
-			     "ciudadanoId": 1,
-			     "descripcion": "prueba"
-			   }""";
-		
+					"tipoResiduoId": 1,
+					"puntoResiduoId": 1,
+					"ciudadanoId": 1,
+					"descripcion": "prueba"
+				}""";
+
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
@@ -40,24 +40,24 @@ public class ResiduoPostTest {
 			.body("tipoResiduo.id", equalTo(1))
 		;
 	}
-	
+
 	@Test
 	void testInsertOkWithFechalimite() {
 		var request = """
 				{
-			     "tipoResiduoId": 1,
-			     "puntoResiduoId": 1,
-			     "ciudadanoId": 1,
-			     "descripcion": "prueba",
-			     "fechaLimite": '2023-07-25T14:14:14.445Z'
-			   }""";
+					"tipoResiduoId": 1,
+					"puntoResiduoId": 1,
+					"ciudadanoId": 1,
+					"descripcion": "prueba",
+					"fechaLimite": '2024-07-25T14:14:14.445Z'
+				}""";
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
 			.then()
 			.statusCode(200)
 			.body("fechaLimiteRetiro", not(nullValue()))
-			.body("fechaLimiteRetiro", equalTo("2023-07-25T14:14:14.445Z"))
+			.body("fechaLimiteRetiro", equalTo("2024-07-25T14:14:14.445Z"))
 			.body("puntoResiduoUri", equalTo("/ciudadano/1/punto_residuo/1"))
 			.body("puntoResiduo", not(nullValue()))
 			.body("puntoResiduo.id", equalTo(1))
@@ -74,10 +74,10 @@ public class ResiduoPostTest {
 	void testTipoResiduoIdNotSend() {
 		var request = """
 				{
-			     "tipoResiduoId": 1,
-			     "ciudadanoId": 1,
-			     "descripcion": "prueba",
-			   }""";
+					"tipoResiduoId": 1,
+					"ciudadanoId": 1,
+					"descripcion": "prueba",
+				}""";
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
@@ -85,15 +85,15 @@ public class ResiduoPostTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testPuntoResiduoIdNotSend() {
 		var request = """
 				{
-			     "tipoResiduoId": 1,
-			     "ciudadanoId": 1,
-			     "descripcion": "prueba",
-			   }""";
+					"tipoResiduoId": 1,
+					"ciudadanoId": 1,
+					"descripcion": "prueba",
+				}""";
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
@@ -101,15 +101,15 @@ public class ResiduoPostTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testciudadanoIdNotSend() {
 		var request = """
 				{
-			     "tipoResiduoId": 1,
-			     "puntoResiduoId": 1,
-			     "descripcion": "prueba",
-			   }""";
+					"tipoResiduoId": 1,
+					"puntoResiduoId": 1,
+					"descripcion": "prueba",
+				}""";
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
@@ -117,15 +117,15 @@ public class ResiduoPostTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testDescipcionNotSend() {
 		var request = """
 				{
-			     "tipoResiduoId": 1,
-			     "puntoResiduoId": 1,
-			     "ciudadanoId": 1,
-			   }""";
+					"tipoResiduoId": 1,
+					"puntoResiduoId": 1,
+					"ciudadanoId": 1,
+				}""";
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
@@ -133,17 +133,17 @@ public class ResiduoPostTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testInvalidFechaLimiteFormat() {
 		var request = """
 				{
-			     "tipoResiduoId": 1,
-			     "puntoResiduoId": 1,
-			     "ciudadanoId": 1,
-			     "descripcion": "prueba",
-			     "fechaLimite": '2023-07-25'
-			   }""";
+					"tipoResiduoId": 1,
+					"puntoResiduoId": 1,
+					"ciudadanoId": 1,
+					"descripcion": "prueba",
+					"fechaLimite": '2023-07-25'
+				}""";
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
@@ -151,17 +151,17 @@ public class ResiduoPostTest {
 			.statusCode(500)
 		;
 	}
-	
+
 	@Test
 	void testFechaLimiteBeforeToday() {
 		var request = """
 				{
-			     "tipoResiduoId": 1,
-			     "puntoResiduoId": 1,
-			     "ciudadanoId": 1,
-			     "descripcion": "prueba",
-			     "fechaLimite": '2022-07-25T14:14:14.445Z'
-			   }""";
+					"tipoResiduoId": 1,
+					"puntoResiduoId": 1,
+					"ciudadanoId": 1,
+					"descripcion": "prueba",
+					"fechaLimite": '2022-07-25T14:14:14.445Z'
+				}""";
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
@@ -169,38 +169,38 @@ public class ResiduoPostTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testInvalidTipoResiduoID() {
 		var request = """
 				{
-			     "tipoResiduoId": 0,
-			     "puntoResiduoId": 1,
-			     "ciudadanoId": 1,
-			     "descripcion": "prueba"
-			   }""";
+					"tipoResiduoId": 0,
+					"puntoResiduoId": 1,
+					"ciudadanoId": 1,
+					"descripcion": "prueba"
+				}""";
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
 			.then()
-			.statusCode(500)
+			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testInvalidPuntoResiduoID() {
 		var request = """
 				{
-			     "tipoResiduoId": 1,
-			     "puntoResiduoId": 0,
-			     "ciudadanoId": 1,
-			     "descripcion": "prueba"
-			   }""";
+					"tipoResiduoId": 1,
+					"puntoResiduoId": 0,
+					"ciudadanoId": 1,
+					"descripcion": "prueba"
+				}""";
 		RestAssured.given()
 			.body(request)
 			.post("/residuo")
 			.then()
-			.statusCode(500)
+			.statusCode(400)
 		;
 	}
 }

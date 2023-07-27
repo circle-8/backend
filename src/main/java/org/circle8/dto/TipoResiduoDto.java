@@ -15,6 +15,7 @@ public class TipoResiduoDto {
 	public String nombre;
 
 	public static TipoResiduoDto from(TipoResiduo entity) {
+		if ( entity == null ) return null;
 		var tr = new TipoResiduoDto();
 		tr.id = entity.id;
 		tr.nombre = entity.nombre;
@@ -26,7 +27,7 @@ public class TipoResiduoDto {
 		tr.id = tipoResiduo;
 		return tr;
 	}
-	
+
 	public TipoResiduoResponse toResponse() {
 		return new TipoResiduoResponse(id, nombre);
 	}

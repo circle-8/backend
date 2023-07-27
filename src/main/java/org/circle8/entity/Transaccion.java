@@ -12,4 +12,6 @@ public class Transaccion {
 	public Long puntoReciclajeId;
 	public PuntoReciclaje puntoReciclaje;
 	public List<Residuo> residuos;
+
+	public Transaccion(long id) { this.id = id; }
 }

@@ -80,8 +80,8 @@ class RefreshTokenTest {
 
 		var req = String.format("""
    {
-   	"accessToken": %s,
-   	"refreshToken": %s
+     "accessToken": %s,
+     "refreshToken": %s
    }""", access, refresh);
 
 		RestAssured.given()

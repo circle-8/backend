@@ -1,14 +1,15 @@
 package org.circle8.integration;
 
-import io.restassured.RestAssured;
-import org.circle8.ApiTestExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+
+import org.circle8.ApiTestExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
 class PuntoResiduoGetTest {
@@ -69,7 +70,7 @@ class PuntoResiduoGetTest {
 			.statusCode(200)
 			.body("id", equalTo(1))
 			.body("ciudadano", not(nullValue()))
-			.body("residuos", hasSize(1))
+			.body("residuos", hasSize(2))
 			.body("residuos[0].id", equalTo(1))
 			.body("residuos[0].fechaCreacion", equalTo("2023-07-02T19:41:00Z"))
 			.body("residuos[0].puntoResiduoUri", equalTo("/ciudadano/1/punto_residuo/1"))
@@ -78,6 +79,7 @@ class PuntoResiduoGetTest {
 			.body("residuos[0].puntoResiduo.id", equalTo(1))
 			.body("residuos[0].tipoResiduo.id", equalTo(1))
 			.body("residuos[0].tipoResiduo.nombre", equalTo("Plástico"))
+			.body("residuos[1].id", equalTo(4))
 		;
 	}
 
@@ -93,7 +95,7 @@ class PuntoResiduoGetTest {
 			.body("ciudadano.nombre", equalTo("Usuario Existente"))
 			.body("ciudadano.email", equalTo("existing@email.com"))
 			.body("ciudadano.tipoUsuario", equalTo("CIUDADANO"))
-			.body("residuos", hasSize(1))
+			.body("residuos", hasSize(2))
 			.body("residuos[0].id", equalTo(1))
 			.body("residuos[0].fechaCreacion", equalTo("2023-07-02T19:41:00Z"))
 			.body("residuos[0].puntoResiduoUri", equalTo("/ciudadano/1/punto_residuo/1"))
@@ -102,6 +104,7 @@ class PuntoResiduoGetTest {
 			.body("residuos[0].puntoResiduo.id", equalTo(1))
 			.body("residuos[0].tipoResiduo.id", equalTo(1))
 			.body("residuos[0].tipoResiduo.nombre", equalTo("Plástico"))
+			.body("residuos[1].id", equalTo(4))
 		;
 	}
 }

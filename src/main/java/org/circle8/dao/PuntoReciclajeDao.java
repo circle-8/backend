@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nullable;
 import lombok.val;
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajePostRequest;
 import org.circle8.dto.Dia;
@@ -53,6 +54,8 @@ public class PuntoReciclajeDao extends Dao {
 		  LEFT JOIN "TipoResiduo" AS tr on tr."ID" = prtr."TipoResiduoId"
 		  LEFT JOIN "Ciudadano" AS ciu on pr."CiudadanoId" = ciu."ID"
 		 WHERE pr."ID" = ?
+		""";
+	private static final String WHERE_CIUDADANO = """
 		   AND pr."CiudadanoId" = ?
 		""";
 
@@ -145,12 +148,18 @@ public class PuntoReciclajeDao extends Dao {
 		}
 	}
 
-	/**
-	 * Obtiene un punto de reciclaje por medio de su id
-	 */
-	public Optional<PuntoReciclaje> get(Long id, Long recicladorId) throws PersistenceException {
-		try (var t = open(true); var select = createSelectForGet(t, id, recicladorId);
-			 var rs = select.executeQuery()) {
+	public Optional<PuntoReciclaje> get(long id, @Nullable Long recicladorId) throws PersistenceException {
+		try (var t = open(true)) {
+			return get(t, id, recicladorId);
+		}
+	}
+
+	public Optional<PuntoReciclaje> get(Transaction t, long id) throws PersistenceException {
+		return get(t, id, null);
+	}
+
+	public Optional<PuntoReciclaje> get(Transaction t, long id, @Nullable Long recicladorId) throws PersistenceException {
+		try ( var select = createSelectForGet(t, id, recicladorId); var rs = select.executeQuery() ) {
 			return Optional.ofNullable(getPunto(rs));
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting punto reciclaje", e);
@@ -224,12 +233,15 @@ public class PuntoReciclajeDao extends Dao {
 					Dia.getDia(rs.getString("DiasAbierto")),
 					new ArrayList<>(),
 					rs.getLong("CiudadanoId"),
-					User.builder().id(rs.getLong("UsuarioId")).build()
+					User.builder()
+						.id(rs.getLong("UsuarioId"))
+						.ciudadanoId(rs.getLong("CiudadanoId"))
+						.build()
 				);
 				puntoCreado = true;
 			}
-				if (rs.getInt("TipoResiduoId") != 0)
-					punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
+			if (rs.getInt("TipoResiduoId") != 0)
+				punto.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("Nombre")));
 
 		}
 		return punto;
@@ -273,12 +285,20 @@ public class PuntoReciclajeDao extends Dao {
 		return p;
 	}
 
-	private PreparedStatement createSelectForGet(Transaction t, Long id, Long recicladorId) throws PersistenceException, SQLException {
-		var b = SELECT_GET;
+	private PreparedStatement createSelectForGet(
+		Transaction t,
+		Long id,
+		@Nullable Long recicladorId
+	) throws PersistenceException, SQLException {
+		var b = new StringBuilder(SELECT_GET);
+		if ( recicladorId != null )
+			b.append(WHERE_CIUDADANO);
 
 		var p = t.prepareStatement(b.toString());
 		p.setLong(1, id);
-		p.setLong(2, recicladorId);
+
+		if ( recicladorId != null )
+			p.setLong(2, recicladorId);
 
 		return p;
 	}

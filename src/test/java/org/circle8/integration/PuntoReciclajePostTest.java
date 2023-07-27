@@ -17,24 +17,24 @@ public class PuntoReciclajePostTest {
 			"tiposResiduo": [1]
 		}""";
 
-//	@Test
-//	void testPutOk() {
-//		RestAssured.given()
-//			.body(BODY)
-//			.post("/reciclador/1/punto_reciclaje")
-//			.then()
-//			.statusCode(200)
-//		;
-//	}
+	@Test
+	void testPutOk() {
+		RestAssured.given()
+			.body(BODY)
+			.post("/reciclador/1/punto_reciclaje")
+			.then()
+			.statusCode(200)
+		;
+	}
 
 	@Test
 	void testPutNotFoundByTipoResiduo() {
 		String bodyNotFoundTipo =  """
-   		{
-   			"latitud": -35.651840,
-		    "longitud": -57.580990,
+		{
+			"latitud": -35.651840,
+			"longitud": -57.580990,
 			"titulo": "MadePoints",
-		   	"dias": [ 1,2,3],
+			"dias": [ 1,2,3],
 			"tiposResiduo": [2,400]
 		}""";
 

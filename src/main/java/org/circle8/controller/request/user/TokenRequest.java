@@ -1,8 +1,10 @@
 package org.circle8.controller.request.user;
 
 import com.google.common.base.Strings;
+import lombok.ToString;
 import org.circle8.controller.request.IRequest;
 
+@ToString
 public class TokenRequest implements IRequest {
 	public String username;
 	public String password;

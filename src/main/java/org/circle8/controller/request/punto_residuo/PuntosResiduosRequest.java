@@ -1,12 +1,13 @@
 package org.circle8.controller.request.punto_residuo;
 
+import lombok.ToString;
 import org.circle8.controller.request.IRequest;
 import org.circle8.utils.Parser;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
+@ToString
 public class PuntosResiduosRequest implements IRequest {
 	private final Validation validation = new Validation();
 

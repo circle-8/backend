@@ -12,10 +12,11 @@ public class SolicitudResponse implements ApiResponse {
 	public long id;
 	public Long solicitanteId; // ID de ciudadano, NO de user
 	public String solicitanteUri;
-	public UserResponse solicitante;
+	public CiudadanoResponse solicitante;
 	public Long solicitadoId; // ID de ciudadano, NO de user
 	public String solicitadoUri;
-	public UserResponse solicitado;
+	public CiudadanoResponse solicitado;
 	public EstadoSolicitud estado;
 	public Long canceladorId;
+	public ResiduoResponse residuo;
 }
