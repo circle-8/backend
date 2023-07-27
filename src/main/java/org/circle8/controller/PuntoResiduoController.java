@@ -87,9 +87,9 @@ public class PuntoResiduoController {
 	 * Requiere: latitud, longitud
 	 */
 	public ApiResponse post(Context ctx) {
-		final long ciudadano_id;
+		final long ciudadanoId;
 		try {
-			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));
+			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del ciudadano debe ser numérico", "");
 		}
@@ -100,7 +100,7 @@ public class PuntoResiduoController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
 		req.id = 0L;
-		req.ciudadano_id = ciudadano_id;
+		req.ciudadanoId = ciudadanoId;
 
 		var dto = PuntoResiduoDto.from(req);
 		try {
@@ -120,10 +120,10 @@ public class PuntoResiduoController {
 	 */
 	public ApiResponse put(Context ctx) {
 		final long id;
-		final long ciudadano_id;
+		final long ciudadanoId;
 		try {
 			id = Long.parseLong(ctx.pathParam("id"));
-			ciudadano_id = Long.parseLong(ctx.pathParam("ciudadano_id"));
+			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
 		}
@@ -134,7 +134,7 @@ public class PuntoResiduoController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
 		req.id = id;
-		req.ciudadano_id = ciudadano_id;
+		req.ciudadanoId = ciudadanoId;
 
 		var dto = PuntoResiduoDto.from(req);
 		try {

@@ -25,11 +25,11 @@ public class PuntoResiduoDto {
 	public static PuntoResiduoDto from(PostPutPuntoResiduoRequest request) {
 		var pr = new PuntoResiduoDto();
 		var user = new UserDto();
-		user.id = request.ciudadano_id;
+		user.id = request.ciudadanoId;
 		pr.id = request.id;
 		pr.latitud = request.latitud;
 		pr.longitud = request.longitud;
-		pr.ciudadanoId = request.ciudadano_id;
+		pr.ciudadanoId = request.ciudadanoId;
 		pr.ciudadano = user;
 		pr.residuos = List.of();
 		return pr;

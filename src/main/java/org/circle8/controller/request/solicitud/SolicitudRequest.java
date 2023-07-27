@@ -17,8 +17,8 @@ public class SolicitudRequest implements IRequest {
 	public List<String> expands;
 
 	public SolicitudRequest(Map<String, List<String>> queryParams) {
-		this.solicitanteId = Parser.parseLong(validation,queryParams, "solicitanteId");
-		this.solicitadoId = Parser.parseLong(validation,queryParams, "solicitadoId");
+		this.solicitanteId = Parser.parseLong(validation, queryParams, "solicitante_id");
+		this.solicitadoId = Parser.parseLong(validation, queryParams, "solicitado_id");
 		this.expands = queryParams.getOrDefault("expand", List.of());
 	}
 

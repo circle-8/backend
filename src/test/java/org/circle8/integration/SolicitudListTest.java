@@ -53,7 +53,7 @@ class SolicitudListTest {
 	@Test
 	void testListWithSolicitanteIdFilter() {
 		RestAssured.given()
-		.get("/solicitudes?solicitanteId=2")
+		.get("/solicitudes?solicitante_id=2")
 		.then()
 		.statusCode(200)
 		.body("data", hasSize(1))
@@ -71,7 +71,7 @@ class SolicitudListTest {
 	@Test
 	void testListWithInvalidSolicitanteIdFilter() {
 		RestAssured.given()
-		.get("/solicitudes?solicitanteId=aaa")
+		.get("/solicitudes?solicitante_id=aaa")
 		.then()
 		.statusCode(400)
 		;
@@ -80,7 +80,7 @@ class SolicitudListTest {
 	@Test
 	void testListWithNotExistSolicitanteIdFilter() {
 		RestAssured.given()
-		.get("/solicitudes?solicitanteId=0")
+		.get("/solicitudes?solicitante_id=0")
 		.then()
 		.statusCode(200)
 		.body("data", hasSize(0))
@@ -90,7 +90,7 @@ class SolicitudListTest {
 	@Test
 	void testListWithSolicitadoIdFilter() {
 		RestAssured.given()
-		.get("/solicitudes?solicitadoId=1")
+		.get("/solicitudes?solicitado_id=1")
 		.then()
 		.statusCode(200)
 		.body("data", hasSize(1))
@@ -108,7 +108,7 @@ class SolicitudListTest {
 	@Test
 	void testListWithInvalidSolicitadoIdFilter() {
 		RestAssured.given()
-		.get("/solicitudes?solicitadoId=aaa")
+		.get("/solicitudes?solicitado_id=aaa")
 		.then()
 		.statusCode(400)
 		;
@@ -117,7 +117,7 @@ class SolicitudListTest {
 	@Test
 	void testListWithotExistSolicitadoIdFilter() {
 		RestAssured.given()
-		.get("/solicitudes?solicitadoId=0")
+		.get("/solicitudes?solicitado_id=0")
 		.then()
 		.statusCode(200)
 		.body("data", hasSize(0))
@@ -127,7 +127,7 @@ class SolicitudListTest {
 	@Test
 	void testListWithBothFilter() {
 		RestAssured.given()
-		.get("/solicitudes?solicitanteId=2&solicitadoId=1")
+		.get("/solicitudes?solicitante_id=2&solicitado_id=1")
 		.then()
 		.statusCode(200)
 		.body("data", hasSize(1))

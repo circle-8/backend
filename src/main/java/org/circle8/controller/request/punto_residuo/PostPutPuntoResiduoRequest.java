@@ -8,7 +8,7 @@ public class PostPutPuntoResiduoRequest implements IRequest {
 	private final Validation validation = new Validation();
 
 	public Long id;
-	public Long ciudadano_id;
+	public Long ciudadanoId;
 	public Double latitud;
 	public Double longitud;
 
