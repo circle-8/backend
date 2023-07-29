@@ -159,6 +159,13 @@ CREATE TABLE IF NOT EXISTS public."Zona"
     CONSTRAINT "Zona_pkey" PRIMARY KEY ("ID")
 );
 
+CREATE TABLE IF NOT EXISTS public."Zona_TipoResiduo"
+(
+    "ZonaId" bigint NOT NULL,
+    "TipoResiduoId" bigint NOT NULL,
+    CONSTRAINT "Zona_TipoResiduo_pkey" PRIMARY KEY ("ZonaId", "TipoResiduoId")
+);
+
 CREATE TABLE IF NOT EXISTS public."Solicitud"
 (
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
