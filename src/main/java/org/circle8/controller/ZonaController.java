@@ -9,6 +9,7 @@ import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.controller.response.ZonaResponse;
+import org.circle8.dto.ZonaDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.filter.ZonaFilter;
@@ -72,14 +73,13 @@ public class ZonaController {
 		}
 		
 		//TODO: expand de recorridos y organizacion
-		val f = ZonaFilter.builder()
+		val filter = ZonaFilter.builder()
 				.id(id)
 				.organizacionId(organizacionId)
 				.build();
 		
 		try {
-			var zonaDto = this.service.get(f);
-			return zonaDto.toResponse();
+			return this.service.get(filter).toResponse();
 		} catch ( ServiceError e ) {
 			log.error("[Request: id={}, expand={}] error getting zona", id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -147,11 +147,15 @@ public class ZonaController {
 	 * GET /zonas
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2).build()
-		);
-
-		return new ListResponse<>(0, 1, 2, null, null, l);
+		//TODO: expand de recorridos y organizacion
+				val filter = ZonaFilter.builder()
+						.build();
+		
+		try {
+			val zonas = this.service.list(filter);
+			return new ListResponse<>(zonas.stream().map(ZonaDto::toResponse).toList());
+		} catch ( ServiceError e ) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
 	}
 }
