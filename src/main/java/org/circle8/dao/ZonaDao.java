@@ -18,6 +18,7 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.filter.ZonaFilter;
 import org.jetbrains.annotations.NotNull;
 
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 
 import lombok.val;
@@ -108,7 +109,7 @@ public class ZonaDao extends Dao {
 				z = new Zona();
 				z.id = rs.getLong("ID");
 				z.nombre = rs.getString("Nombre");
-				z.polyline = new ArrayList<Punto>();
+				z.polyline = getPolyline(rs.getString("Polyline"));
 				z.organizacionId = rs.getLong("OrganizacionId");
 				z.organizacion = Organizacion.builder()
 						.id(rs.getLong("OrganizacionId"))
@@ -132,7 +133,7 @@ public class ZonaDao extends Dao {
 				z = new Zona();
 				z.id = rs.getLong("ID");
 				z.nombre = rs.getString("Nombre");
-				z.polyline = new ArrayList<Punto>();
+				z.polyline = getPolyline(rs.getString("Polyline"));
 				z.organizacionId = rs.getLong("OrganizacionId");
 				z.organizacion = Organizacion.builder()
 						.id(rs.getLong("OrganizacionId"))
@@ -145,6 +146,16 @@ public class ZonaDao extends Dao {
 		}
 
 		return mapZonas.values().stream().toList();
+	}
+	
+	private  List<Punto> getPolyline(String poly){
+		val l = new ArrayList<Punto>();
+		Gson gson = new Gson();
+		float[][] list = gson.fromJson(poly, float[][].class);
+		for (float[] element : list) {
+            l.add(new Punto(element[0], element[1]));
+        }		
+		return l;
 	}
 
 }
