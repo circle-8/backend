@@ -1,19 +1,38 @@
 package org.circle8.controller;
 
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import java.util.List;
+
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.controller.response.ZonaResponse;
+import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
+import org.circle8.filter.ZonaFilter;
+import org.circle8.service.ZonaService;
 
-import java.util.List;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Slf4j
 public class ZonaController {
-	private  static final String ID_ORGANIZACION_PARAM = "id_organizacion";
+	private ZonaService service;
+	
+	@Inject
+	public ZonaController(ZonaService zonaService) {
+		this.service = zonaService;
+	}
+	
+	private  static final String ORGANIZACION_ID_PARAM = "organizacion_id";
 	public static final String ORGANIZACION_URI_BASE = "/organizacion/";
 
 	private final ZonaResponse mock = ZonaResponse.builder()
@@ -39,14 +58,34 @@ public class ZonaController {
 		.build();
 
 	/**
-	 * GET /organizacion/{id_organizacion}/zona/{id}
+	 * GET /organizacion/{organizacion_id}/zona/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-//			.organizacionId(Integer.parseInt(ctx.pathParam(ID_ORGANIZACION_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
-			.build();
+		final long organizacionId;
+		final long id;
+		
+		try {
+			organizacionId = Long.parseLong(ctx.pathParam("organizacion_id"));
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la organización y/o de la zona debe ser numérico", "");
+		}
+		
+		//TODO: expand de recorridos y organizacion
+		val f = ZonaFilter.builder()
+				.id(id)
+				.organizacionId(organizacionId)
+				.build();
+		
+		try {
+			var zonaDto = this.service.get(f);
+			return zonaDto.toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request: id={}, expand={}] error getting zona", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
@@ -55,8 +94,8 @@ public class ZonaController {
 	public ApiResponse put(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Long.parseLong(ctx.pathParam(ID_ORGANIZACION_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
+			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
+			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
 			.build();
 	}
 
@@ -77,8 +116,8 @@ public class ZonaController {
 	 */
 	public ApiResponse post(Context ctx) {
 		return mock.toBuilder()
-			.organizacionId(Long.parseLong(ctx.pathParam(ID_ORGANIZACION_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
+			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
+			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
 			.build();
 	}
 
@@ -88,8 +127,8 @@ public class ZonaController {
 	public ApiResponse includePuntoResiduo(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Long.parseLong(ctx.pathParam(ID_ORGANIZACION_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
+			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
+			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
 			.build();
 	}
 
@@ -99,8 +138,8 @@ public class ZonaController {
 	public ApiResponse excludePuntoResiduo(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Long.parseLong(ctx.pathParam(ID_ORGANIZACION_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ID_ORGANIZACION_PARAM))
+			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
+			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
 			.build();
 	}
 

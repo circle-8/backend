@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class Organizacion {
-	public int id;
+	public long id;
 	public String nombre;
 	public String razonSocial;
 }
