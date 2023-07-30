@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Organizacion {
 	public long id;
-	public String nombre;
 	public String razonSocial;
+	public Long usuarioId;
 }

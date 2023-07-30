@@ -2,6 +2,7 @@ package org.circle8.controller;
 
 import java.util.List;
 
+import org.circle8.controller.request.zona.ZonaRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -63,8 +64,7 @@ public class ZonaController {
 	 */
 	public ApiResponse get(Context ctx) {
 		final long organizacionId;
-		final long id;
-		
+		final long id;		
 		try {
 			organizacionId = Long.parseLong(ctx.pathParam("organizacion_id"));
 			id = Long.parseLong(ctx.pathParam("id"));
@@ -72,10 +72,16 @@ public class ZonaController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la organización y/o de la zona debe ser numérico", "");
 		}
 		
-		//TODO: expand de recorridos y organizacion
+		val req = new ZonaRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if (!valid.valid())
+			return new ErrorResponse(valid);
+		
 		val filter = ZonaFilter.builder()
 				.id(id)
 				.organizacionId(organizacionId)
+				.organizacion(req.organizacion)
+				.recorridos(req.recorridos)
 				.build();
 		
 		try {
@@ -147,9 +153,16 @@ public class ZonaController {
 	 * GET /zonas
 	 */
 	public ApiResponse list(Context ctx) {
-		//TODO: expand de recorridos y organizacion
-				val filter = ZonaFilter.builder()
-						.build();
+		val req = new ZonaRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if (!valid.valid())
+			return new ErrorResponse(valid);
+		
+		val filter = ZonaFilter.builder()
+				.organizacionId(req.organizacionId)
+				.organizacion(req.organizacion)
+				.recorridos(req.recorridos)
+				.build();
 		
 		try {
 			val zonas = this.service.list(filter);

@@ -26,12 +26,26 @@ public class ZonaGetTest {
 			.body("polyline",is(not(hasSize(0))))
 			.body("organizacionUri", equalTo("/organizacion/1"))
 			.body("organizacionId", equalTo(1))
-			.body("organizacionId", notNullValue())
+			.body("organizacion", notNullValue())
 			.body("tipoResiduo",hasSize(2))
 			.body("tipoResiduo[0].id", equalTo(1))
 			.body("tipoResiduo[0].nombre", equalTo("Plástico"))
 			.body("tipoResiduo[1].id", equalTo(2))
 			.body("tipoResiduo[1].nombre", equalTo("Papel"))
+		;
+	}
+	
+	@Test
+	void testGetOkWithExpandOrganizacion() {
+		RestAssured.given()
+			.get("/organizacion/1/zona/1?expand=organizacion")
+			.then()
+			.statusCode(200)
+			.body("organizacion", notNullValue())
+			.body("organizacion.id", equalTo(1))
+			.body("organizacion.razonSocial", equalTo("Usuario 1 SA"))
+			.body("organizacion.usuarioUri", equalTo("/user/1"))
+			.body("organizacion.usuarioId", equalTo(1))
 		;
 	}
 	

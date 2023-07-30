@@ -38,6 +38,14 @@ public class ZonaDao extends Dao {
 			z."ID", z."OrganizacionId", z."Polyline", z."Nombre", ztr."TipoResiduoId" , tr."Nombre" as tipoResiduoNombre
 			""";
 	
+	private static final String SELECT_ORGANIZACION = """
+			, org."RazonSocial", org."UsuarioId"
+			""";
+	
+	private static final String JOIN_ORGANIZACION = """
+			JOIN "Organizacion" AS org on org."ID" = z."OrganizacionId"
+			""";
+	
 	private static final String WHERE_ORGANIZACION = """
 			AND z."OrganizacionId" = ?
 			""";
@@ -55,7 +63,7 @@ public class ZonaDao extends Dao {
 	public Optional<Zona> get(Transaction t, ZonaFilter f) throws PersistenceException {		
 		try ( val select = createSelect(t, f) ) {
 			try ( var rs = select.executeQuery() ) {				
-				return Optional.ofNullable(getZona(rs));
+				return Optional.ofNullable(getZona(rs,f));
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting solicitud", e);
@@ -67,7 +75,7 @@ public class ZonaDao extends Dao {
 			var select = createSelect(t, f);
 			var rs = select.executeQuery()
 		) {
-			return getList(rs);
+			return getList(rs,f);
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting zonas", e);
 		}
@@ -78,7 +86,13 @@ public class ZonaDao extends Dao {
 		ZonaFilter f
 	) throws PersistenceException, SQLException {
 		var selectFields = SELECT_SIMPLE;
+		if(f.organizacion)
+			selectFields += SELECT_ORGANIZACION;
+		
 		var joinFields = "";
+		if(f.organizacion)
+			joinFields += JOIN_ORGANIZACION;
+		
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 		var b = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
@@ -101,7 +115,7 @@ public class ZonaDao extends Dao {
 	}
 	
 	@NotNull
-	private Zona getZona(ResultSet rs) throws SQLException {
+	private Zona getZona(ResultSet rs,ZonaFilter f) throws SQLException {
 		Zona z = null;
 		boolean zonaCreada = false;
 		while (rs.next()) {
@@ -111,9 +125,7 @@ public class ZonaDao extends Dao {
 				z.nombre = rs.getString("Nombre");
 				z.polyline = getPolyline(rs.getString("Polyline"));
 				z.organizacionId = rs.getLong("OrganizacionId");
-				z.organizacion = Organizacion.builder()
-						.id(rs.getLong("OrganizacionId"))
-						.build();
+				z.organizacion = buildOrganizacion(rs, f.organizacion);		
 				z.tipoResiduo = new ArrayList<TipoResiduo>();
 				zonaCreada = true;
 			}
@@ -124,7 +136,7 @@ public class ZonaDao extends Dao {
 		return z;
 	}
 	
-	private List<Zona> getList(ResultSet rs) throws SQLException {
+	private List<Zona> getList(ResultSet rs,ZonaFilter f) throws SQLException {
 		var mapZonas = new HashMap<Long, Zona>();
 		while (rs.next()) {
 			val id = rs.getLong("ID");
@@ -135,9 +147,7 @@ public class ZonaDao extends Dao {
 				z.nombre = rs.getString("Nombre");
 				z.polyline = getPolyline(rs.getString("Polyline"));
 				z.organizacionId = rs.getLong("OrganizacionId");
-				z.organizacion = Organizacion.builder()
-						.id(rs.getLong("OrganizacionId"))
-						.build();
+				z.organizacion = buildOrganizacion(rs, f.organizacion);
 				z.tipoResiduo = new ArrayList<TipoResiduo>();
 				mapZonas.put(id, z);
 			}
@@ -156,6 +166,19 @@ public class ZonaDao extends Dao {
             l.add(new Punto(element[0], element[1]));
         }		
 		return l;
+	}
+	
+	private Organizacion buildOrganizacion(ResultSet rs, boolean expand) throws SQLException {
+		if(!expand)
+			return Organizacion.builder()
+					.id(rs.getLong("OrganizacionId"))
+					.build();
+		
+		return Organizacion.builder()
+				.id(rs.getLong("OrganizacionId"))
+				.razonSocial(rs.getString("RazonSocial"))
+				.usuarioId(rs.getLong("UsuarioId"))
+				.build();
 	}
 
 }

@@ -11,4 +11,7 @@ public class OrganizacionResponse implements ApiResponse {
 	public long id;
 	public String nombre;
 	public String razonSocial;
+	public String usuarioUri;
+	public Long usuarioId;
+	
 }

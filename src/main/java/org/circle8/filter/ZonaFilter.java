@@ -6,4 +6,6 @@ import lombok.Builder;
 public class ZonaFilter {
 	public Long id;
 	public Long organizacionId;
+	public boolean organizacion;
+	public boolean recorridos;
 }
