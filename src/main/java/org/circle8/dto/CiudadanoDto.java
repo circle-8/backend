@@ -10,6 +10,7 @@ public class CiudadanoDto {
 	public long usuarioId;
 	
 	public static CiudadanoDto from(Ciudadano entity) {
+		if ( entity == null ) return null;
 		var c = new CiudadanoDto();
 		c.id = entity.id;
 		c.username = entity.username;

@@ -19,6 +19,7 @@ public class Recorrido {
 	public Long recicladorId;
 	public Ciudadano reciclador;
 	public Long zonaId;
+	public Long organizacionId; //requerido para la uri de zona
 	public Zona zona;
 	public Punto puntoInicio;
 	public Punto puntoFin;

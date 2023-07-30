@@ -11,15 +11,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class RecorridoResponse implements ApiResponse {
-	public int id;
+	public long id;
 	public ZonedDateTime fechaRetiro;
 	public ZonedDateTime fechaInicio;
 	public ZonedDateTime fechaFin;
 	public String recicladorUri;
-	public Integer recicladorId;
+	public Long recicladorId;
 	public CiudadanoResponse reciclador;
 	public String zonaUri;
-	public Integer zonaId;
+	public Long zonaId;
 	public ZonaResponse zona;
 	public PuntoResponse puntoInicio;
 	public PuntoResponse puntoFin;

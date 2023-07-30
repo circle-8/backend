@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 
 import org.circle8.entity.Organizacion;
 import org.circle8.entity.Punto;
+import org.circle8.entity.Recorrido;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
 import org.circle8.exception.PersistenceException;
@@ -127,6 +128,7 @@ public class ZonaDao extends Dao {
 				z.organizacionId = rs.getLong("OrganizacionId");
 				z.organizacion = buildOrganizacion(rs, f.organizacion);		
 				z.tipoResiduo = new ArrayList<TipoResiduo>();
+				z.recorridos = new ArrayList<Recorrido>();
 				zonaCreada = true;
 			}
 			if (rs.getInt("TipoResiduoId") != 0)
@@ -149,6 +151,7 @@ public class ZonaDao extends Dao {
 				z.organizacionId = rs.getLong("OrganizacionId");
 				z.organizacion = buildOrganizacion(rs, f.organizacion);
 				z.tipoResiduo = new ArrayList<TipoResiduo>();
+				z.recorridos = new ArrayList<Recorrido>();
 				mapZonas.put(id, z);
 			}
 			if (rs.getInt("TipoResiduoId") != 0)

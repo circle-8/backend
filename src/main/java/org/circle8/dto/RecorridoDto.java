@@ -15,6 +15,7 @@ public class RecorridoDto {
 	public Long recicladorId;
 	public CiudadanoDto reciclador;
 	public Long zonaId;
+	public Long organizacionId; //requerido para la uri de zona
 	public ZonaDto zona;
 	public PuntoDto puntoInicio;
 	public PuntoDto puntoFin;
@@ -30,6 +31,7 @@ public class RecorridoDto {
 		r.recicladorId = entity.recicladorId;
 		r.reciclador = CiudadanoDto.from(entity.reciclador);
 		r.zonaId = entity.zonaId;
+		r.organizacionId = entity.organizacionId;
 		r.zona = ZonaDto.from(entity.zona);
 		r.puntoInicio = PuntoDto.from(entity.puntoInicio);
 		r.puntoFin = PuntoDto.from(entity.puntoFin);
@@ -38,6 +40,22 @@ public class RecorridoDto {
 	}
 
 	public RecorridoResponse toResponse() {
-		return new RecorridoResponse();
+		var r = new RecorridoResponse();
+		r.id = this.id;
+		r.fechaRetiro = this.fechaRetiro;
+		r.fechaInicio = this.fechaInicio;
+		r.fechaFin = this.fechaFin;
+		r.recicladorId = this.recicladorId;
+		r.recicladorUri = this.recicladorId != null ? ""+this.recicladorId : null;
+		r.reciclador = this.reciclador != null ? this.reciclador.toResponse() : null;
+		r.zonaId = this.zonaId;
+		r.zonaUri = (this.zonaId != null && this.organizacionId != null) ? 
+				"/organizacion/"+this.organizacionId+"/zona/"+this.zonaId : null;
+		r.zona = this.zona != null ? this.zona.toResponse() : null;
+		r.puntoInicio = this.puntoInicio != null ? this.puntoInicio.toResponse() : null;
+		r.puntoFin = this.puntoFin != null ? this.puntoFin.toResponse() : null;
+		r.puntos = this.puntos.stream().map(RetiroDto::toResponse).toList();
+		
+		return r;
 	}
 }

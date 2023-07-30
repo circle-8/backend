@@ -8,6 +8,7 @@ public class PuntoDto {
 	public float longitud;
 	
 	public static PuntoDto from(Punto entity) {
+		if ( entity == null ) return null;
 		var p = new PuntoDto();
 		p.latitud = entity.latitud;
 		p.longitud = entity.longitud;

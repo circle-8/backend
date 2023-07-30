@@ -12,6 +12,7 @@ public class ZonaDto {
 	public Long organizacionId;
 	public OrganizacionDto organizacion;
 	public List<TipoResiduoDto> tipoResiduo;
+	public List<RecorridoDto> recorridos;
 	
 	public static ZonaDto from(Zona entity) {
 		if ( entity == null ) return null;
@@ -22,6 +23,7 @@ public class ZonaDto {
 		z.organizacionId = entity.organizacionId;
 		z.organizacion = OrganizacionDto.from(entity.organizacion);
 		z.tipoResiduo = entity.tipoResiduo.stream().map(TipoResiduoDto::from).toList();
+		z.recorridos = entity.recorridos.stream().map(RecorridoDto::from).toList();
 		return z;
 	}
 	
@@ -33,7 +35,8 @@ public class ZonaDto {
 		zr.organizacionUri = "/organizacion/" + this.organizacionId;
 		zr.organizacionId = this.organizacionId;
 		zr.organizacion = this.organizacion != null ? this.organizacion.toResponse() : null;
-		zr.tipoResiduo = this.tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList();		
+		zr.tipoResiduo = this.tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList();
+		zr.recorridos = this.recorridos.stream().map(RecorridoDto::toResponse).toList();
 		return zr;		
 	}
 }
