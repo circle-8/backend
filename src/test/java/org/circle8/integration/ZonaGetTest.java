@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,28 @@ public class ZonaGetTest {
 			.body("organizacion.razonSocial", equalTo("Usuario 1 SA"))
 			.body("organizacion.usuarioUri", equalTo("/user/1"))
 			.body("organizacion.usuarioId", equalTo(1))
+		;
+	}
+	
+	@Test
+	void testGetOkWithExpandRecorridos() {
+		RestAssured.given()
+			.get("/organizacion/1/zona/1?expand=recorridos")
+			.then()
+			.statusCode(200)
+			.body("recorridos", hasSize(2))
+			.body("recorridos[0].id", equalTo(1))
+			.body("recorridos[0].fechaRetiro", equalTo("2023-07-03T03:00:00Z"))
+			.body("recorridos[0].fechaInicio", equalTo("2023-07-03T10:00:00Z"))
+			.body("recorridos[0].fechaFin", equalTo("2023-07-03T11:00:00Z"))
+			.body("recorridos[0].recicladorId", equalTo(1))
+			.body("recorridos[0].recicladorUri", equalTo("/user/3"))
+			.body("recorridos[1].id", equalTo(2))
+			.body("recorridos[1].fechaRetiro", equalTo("2023-07-05T03:00:00Z"))
+			.body("recorridos[1].fechaInicio", nullValue())
+			.body("recorridos[1].fechaFin", nullValue())
+			.body("recorridos[1].recicladorId", equalTo(1))
+			.body("recorridos[1].recicladorUri", equalTo("/user/3"))
 		;
 	}
 	

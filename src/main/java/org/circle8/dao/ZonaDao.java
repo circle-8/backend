@@ -7,16 +7,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.circle8.entity.Ciudadano;
 import org.circle8.entity.Organizacion;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Recorrido;
+import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.ZonaFilter;
+import org.circle8.utils.Dates;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
@@ -43,8 +47,24 @@ public class ZonaDao extends Dao {
 			, org."RazonSocial", org."UsuarioId"
 			""";
 	
+	private static final String SELECT_RECORRIDO = """
+			, rec."ID" as recorridoId, rec."FechaRetiro", rec."FechaInicio", rec."FechaFin", rec."RecicladorId"
+			""";
+	
+	private static final String SELECT_RECICLADOR = """
+			, reci."UsuarioId"
+			""";
+	
 	private static final String JOIN_ORGANIZACION = """
 			JOIN "Organizacion" AS org on org."ID" = z."OrganizacionId"
+			""";
+	
+	private static final String JOIN_RECORRIDO = """
+			LEFT JOIN "Recorrido" AS rec on rec."ZonaId" = z."ID"
+			""";
+	
+	private static final String JOIN_RECICLADOR = """
+			LEFT JOIN "RecicladorUrbano" AS reci on reci."ID" = rec."RecicladorId"
 			""";
 	
 	private static final String WHERE_ORGANIZACION = """
@@ -53,6 +73,16 @@ public class ZonaDao extends Dao {
 	
 	private static final String WHERE_ID = """
 			AND z."ID" = ?
+			""";
+	
+	private static final String WHERE_TIPO_RESIDUO = """
+			AND z."ID" IN (
+		    SELECT sz."ID"
+		    FROM "Zona" sz
+			LEFT JOIN "Zona_TipoResiduo" AS sztr ON sztr."ZonaId" = sz."ID"
+			LEFT JOIN "TipoResiduo" AS str on str."ID" = sztr."TipoResiduoId"
+		     WHERE str."ID" IN (%s)
+		    )
 			""";
 	
 
@@ -87,13 +117,17 @@ public class ZonaDao extends Dao {
 		ZonaFilter f
 	) throws PersistenceException, SQLException {
 		var selectFields = SELECT_SIMPLE;
-		if(f.organizacion)
-			selectFields += SELECT_ORGANIZACION;
-		
 		var joinFields = "";
-		if(f.organizacion)
+		if(f.organizacion) {
+			selectFields += SELECT_ORGANIZACION;
 			joinFields += JOIN_ORGANIZACION;
-		
+		}
+			
+		if(f.recorridos) {
+			selectFields += SELECT_RECORRIDO + SELECT_RECICLADOR;
+			joinFields += JOIN_RECORRIDO + JOIN_RECICLADOR;
+		}			
+				
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 		var b = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
@@ -107,6 +141,14 @@ public class ZonaDao extends Dao {
 			b.append(WHERE_ORGANIZACION);
 			parameters.add(f.organizacionId);
 		}	
+		
+		if ( f.hasTipo() ) {
+			String marks = f.tiposResiduos.stream()
+					.map(tr -> "?")
+					.collect(Collectors.joining(","));
+			b.append(String.format(WHERE_TIPO_RESIDUO, marks));
+			parameters.addAll(f.tiposResiduos);
+		}
 
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++)
@@ -116,49 +158,45 @@ public class ZonaDao extends Dao {
 	}
 	
 	@NotNull
-	private Zona getZona(ResultSet rs,ZonaFilter f) throws SQLException {
+	private Zona getZona(ResultSet rs, ZonaFilter f) throws SQLException {
 		Zona z = null;
 		boolean zonaCreada = false;
 		while (rs.next()) {
 			if (!zonaCreada) {
-				z = new Zona();
-				z.id = rs.getLong("ID");
-				z.nombre = rs.getString("Nombre");
-				z.polyline = getPolyline(rs.getString("Polyline"));
-				z.organizacionId = rs.getLong("OrganizacionId");
-				z.organizacion = buildOrganizacion(rs, f.organizacion);		
-				z.tipoResiduo = new ArrayList<TipoResiduo>();
-				z.recorridos = new ArrayList<Recorrido>();
+				z = buildZona(rs, f);
 				zonaCreada = true;
 			}
-			if (rs.getInt("TipoResiduoId") != 0)
-				z.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("tipoResiduoNombre")));
-
+			addTipoResiduo(rs, z);
+			addRecorrido(rs, f.recorridos, z);
 		}
 		return z;
 	}
 	
-	private List<Zona> getList(ResultSet rs,ZonaFilter f) throws SQLException {
+	private List<Zona> getList(ResultSet rs, ZonaFilter f) throws SQLException {
 		var mapZonas = new HashMap<Long, Zona>();
 		while (rs.next()) {
 			val id = rs.getLong("ID");
 			Zona z = mapZonas.get(id);
 			if (z == null) {
-				z = new Zona();
-				z.id = rs.getLong("ID");
-				z.nombre = rs.getString("Nombre");
-				z.polyline = getPolyline(rs.getString("Polyline"));
-				z.organizacionId = rs.getLong("OrganizacionId");
-				z.organizacion = buildOrganizacion(rs, f.organizacion);
-				z.tipoResiduo = new ArrayList<TipoResiduo>();
-				z.recorridos = new ArrayList<Recorrido>();
+				z = buildZona(rs, f);
 				mapZonas.put(id, z);
-			}
-			if (rs.getInt("TipoResiduoId") != 0)
-				z.tipoResiduo.add(new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("tipoResiduoNombre")));
+			}			
+			addTipoResiduo(rs, z);
+			addRecorrido(rs, f.recorridos, z);
 		}
-
 		return mapZonas.values().stream().toList();
+	}
+	
+	private Zona buildZona(ResultSet rs, ZonaFilter f) throws SQLException {
+		var z = new Zona();
+		z.id = rs.getLong("ID");
+		z.nombre = rs.getString("Nombre");
+		z.polyline = getPolyline(rs.getString("Polyline"));
+		z.organizacionId = rs.getLong("OrganizacionId");
+		z.organizacion = buildOrganizacion(rs, f.organizacion);
+		z.tipoResiduo = new ArrayList<TipoResiduo>();
+		z.recorridos = new ArrayList<Recorrido>();
+		return z;
 	}
 	
 	private  List<Punto> getPolyline(String poly){
@@ -169,6 +207,15 @@ public class ZonaDao extends Dao {
             l.add(new Punto(element[0], element[1]));
         }		
 		return l;
+	}
+	
+	private void addTipoResiduo(ResultSet rs, Zona z) throws SQLException {
+		if (rs.getInt("TipoResiduoId") != 0) {
+			val tr = new TipoResiduo(rs.getInt("TipoResiduoId"), rs.getString("tipoResiduoNombre"));
+			if(!z.tipoResiduo.contains(tr))
+				z.tipoResiduo.add(tr);
+		}
+			
 	}
 	
 	private Organizacion buildOrganizacion(ResultSet rs, boolean expand) throws SQLException {
@@ -183,5 +230,22 @@ public class ZonaDao extends Dao {
 				.usuarioId(rs.getLong("UsuarioId"))
 				.build();
 	}
-
+	
+	private void addRecorrido(ResultSet rs, boolean expand, Zona z) throws SQLException {
+		if(expand && rs.getInt("recorridoId") != 0) {
+			val rec = new Recorrido();
+			rec.id = rs.getInt("recorridoId");
+			rec.fechaRetiro = rs.getTimestamp("FechaRetiro").toInstant().atZone(Dates.UTC);
+			rec.recicladorId = rs.getLong("RecicladorId");
+			rec.reciclador = new Ciudadano(rs.getLong("RecicladorId"), rs.getLong("UsuarioId"));
+			rec.puntos = new ArrayList<Retiro>();
+			if(rs.getTimestamp("FechaInicio") != null)
+				rec.fechaInicio = rs.getTimestamp("FechaInicio").toInstant().atZone(Dates.UTC);
+			if(rs.getTimestamp("FechaFin") != null)
+				rec.fechaFin = rs.getTimestamp("FechaFin").toInstant().atZone(Dates.UTC);
+			
+			if(!z.recorridos.contains(rec))
+				z.recorridos.add(rec);
+		}
+	}
 }

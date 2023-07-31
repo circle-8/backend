@@ -46,7 +46,7 @@ public class RecorridoDto {
 		r.fechaInicio = this.fechaInicio;
 		r.fechaFin = this.fechaFin;
 		r.recicladorId = this.recicladorId;
-		r.recicladorUri = this.recicladorId != null ? ""+this.recicladorId : null;
+		r.recicladorUri = this.reciclador != null ? "/user/"+this.reciclador.usuarioId : null;
 		r.reciclador = this.reciclador != null ? this.reciclador.toResponse() : null;
 		r.zonaId = this.zonaId;
 		r.zonaUri = (this.zonaId != null && this.organizacionId != null) ? 

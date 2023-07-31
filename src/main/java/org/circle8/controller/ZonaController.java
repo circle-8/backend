@@ -82,6 +82,7 @@ public class ZonaController {
 				.organizacionId(organizacionId)
 				.organizacion(req.organizacion)
 				.recorridos(req.recorridos)
+				.tiposResiduos(req.tiposResiduo)
 				.build();
 		
 		try {
@@ -162,6 +163,7 @@ public class ZonaController {
 				.organizacionId(req.organizacionId)
 				.organizacion(req.organizacion)
 				.recorridos(req.recorridos)
+				.tiposResiduos(req.tiposResiduo)
 				.build();
 		
 		try {

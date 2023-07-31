@@ -66,10 +66,10 @@ CREATE TABLE IF NOT EXISTS public."RecicladorUrbano"
 
 CREATE TABLE IF NOT EXISTS public."Recorrido"
 (
-    "ID" bigint NOT NULL,
-    "FechaRetiro" date NOT NULL,
+    "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    "FechaRetiro" timestamp NOT NULL,
     "FechaInicio" timestamp with time zone,
-    "FechaFin" time with time zone,
+    "FechaFin" timestamp with time zone,
     "RecicladorId" bigint NOT NULL,
     "ZonaId" bigint NOT NULL,
     CONSTRAINT "Recorrido_pkey" PRIMARY KEY ("ID")
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS public."Usuario"
     "Username" character varying(50) NOT NULL,
     "Password" character varying NOT NULL,
     "SuscripcionId" bigint,
-    "TipoUsuario" character varying(15) NOT NULL,
+    "TipoUsuario" character varying(25) NOT NULL,
     "Email" character varying NOT NULL,
     CONSTRAINT "Usuario_pkey" PRIMARY KEY ("ID"),
     CONSTRAINT "Usuario_Email_key" UNIQUE ("Email"),

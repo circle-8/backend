@@ -14,12 +14,21 @@ public class ZonaRequest implements IRequest {
 	public Long organizacionId;
 	public final boolean organizacion;
 	public final boolean recorridos;
+	public List<Integer> tiposResiduo;
 
 	public ZonaRequest(Map<String, List<String>> queryParams) {
 		this.organizacionId = Parser.parseLong(validation, queryParams, "organizacion_id");
 		List<String> expands = queryParams.getOrDefault("expand", List.of());
 		this.organizacion = expands.contains("organizacion");
 		this.recorridos = expands.contains("recorridos");
+		try {
+			this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of())
+				.stream()
+				.map(Integer::parseInt)
+				.toList();
+		} catch (NumberFormatException e) {
+			validation.add("'tipos_residuo' deben ser números representando al id del tipo.");
+		}
 	}
 
 	@Override
