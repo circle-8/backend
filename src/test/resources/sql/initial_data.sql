@@ -1,4 +1,4 @@
-INSERT INTO public."Usuario"( "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email" )
+INSERT INTO public."Usuario"("NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email")
 	VALUES (
         'Usuario Existente',
         'existing',
@@ -17,7 +17,6 @@ INSERT INTO public."Usuario"( "NombreApellido", "Username", "Password", "Suscrip
     );
 
 INSERT INTO public."Ciudadano" ("UsuarioId") VALUES (1),(2);
-
 
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Plástico');
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Papel');
