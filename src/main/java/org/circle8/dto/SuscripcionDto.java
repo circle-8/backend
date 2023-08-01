@@ -12,6 +12,7 @@ public class SuscripcionDto {
 	public PlanDto plan;
 
 	public static SuscripcionDto from(Suscripcion entity) {
+		if ( entity == null ) return null;
 		var s = new SuscripcionDto();
 		s.id = entity.id;
 		return s;
