@@ -10,9 +10,11 @@ import org.circle8.exception.ServiceError;
 
 import com.google.inject.Inject;
 import org.circle8.exception.ServiceException;
+import org.circle8.filter.ResiduosFilter;
 import org.circle8.utils.Dates;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 public class ResiduoService {
 	private final ResiduoDao dao;
@@ -49,6 +51,14 @@ public class ResiduoService {
 			throw new NotFoundException(e.getMessage());
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar el residuo", e);
+		}
+	}
+
+	public List<ResiduoDto> list(ResiduosFilter f) throws ServiceException {
+		try {
+			return this.dao.list(f).stream().map(ResiduoDto::from).toList();
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al obtener los residuos", e);
 		}
 	}
 }

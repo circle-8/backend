@@ -1,8 +1,5 @@
 SET MODE PostgreSQL;
 
-CREATE TYPE public."TipoUsuario" AS ENUM
-    ('CIUDADANO', 'RECICLADOR_URBANO', 'ORGANIZACION', 'TRANSPORTISTA', 'RECICLADOR_PARTICULAR');
-
 CREATE TABLE IF NOT EXISTS public."Ciudadano"
 (
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
@@ -143,7 +140,7 @@ CREATE TABLE IF NOT EXISTS public."Usuario"
     "Username" character varying(50) NOT NULL,
     "Password" character varying NOT NULL,
     "SuscripcionId" bigint,
-    "TipoUsuario" character varying(15) NOT NULL,
+    "TipoUsuario" character varying(20) NOT NULL,
     "Email" character varying NOT NULL,
     CONSTRAINT "Usuario_pkey" PRIMARY KEY ("ID"),
     CONSTRAINT "Usuario_Email_key" UNIQUE ("Email"),
@@ -251,7 +248,7 @@ ALTER TABLE IF EXISTS public."Recorrido"
 
 
 ALTER TABLE IF EXISTS public."Recorrido"
-    ADD CONSTRAINT "Recorrido_ZonaId_fkey" FOREIGN KEY ("ZonaId")
+   ADD CONSTRAINT "Recorrido_ZonaId_fkey" FOREIGN KEY ("ZonaId")
     REFERENCES public."Zona" ("ID")
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
