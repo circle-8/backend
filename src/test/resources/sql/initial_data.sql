@@ -1,4 +1,4 @@
-INSERT INTO public."Usuario"( "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email" )
+INSERT INTO public."Usuario"("NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email")
 	VALUES (
         'Usuario Existente',
         'existing',
@@ -41,6 +41,7 @@ INSERT INTO public."Zona"("OrganizacionId", "Polyline", "Nombre")
 		
 INSERT INTO public."Recorrido"("FechaRetiro", "FechaInicio", "FechaFin", "RecicladorId", "ZonaId")
 	VALUES ('2023-07-03', '2023-07-03 10:00:00-00', '2023-07-03 11:00:00-00', 1, 1), ('2023-07-05', NULL, NULL, 1, 1);
+
 
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Plástico');
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Papel');

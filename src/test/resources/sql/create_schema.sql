@@ -1,8 +1,5 @@
 SET MODE PostgreSQL;
 
-CREATE TYPE public."TipoUsuario" AS ENUM
-    ('CIUDADANO', 'RECICLADOR_URBANO', 'ORGANIZACION', 'TRANSPORTISTA', 'RECICLADOR_PARTICULAR');
-
 CREATE TABLE IF NOT EXISTS public."Ciudadano"
 (
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
@@ -67,7 +64,7 @@ CREATE TABLE IF NOT EXISTS public."RecicladorUrbano"
 CREATE TABLE IF NOT EXISTS public."Recorrido"
 (
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
-    "FechaRetiro" timestamp NOT NULL,
+    "FechaRetiro" date NOT NULL,
     "FechaInicio" timestamp with time zone,
     "FechaFin" timestamp with time zone,
     "RecicladorId" bigint NOT NULL,
@@ -259,7 +256,7 @@ ALTER TABLE IF EXISTS public."Recorrido"
 
 
 ALTER TABLE IF EXISTS public."Recorrido"
-    ADD CONSTRAINT "Recorrido_ZonaId_fkey" FOREIGN KEY ("ZonaId")
+   ADD CONSTRAINT "Recorrido_ZonaId_fkey" FOREIGN KEY ("ZonaId")
     REFERENCES public."Zona" ("ID")
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
