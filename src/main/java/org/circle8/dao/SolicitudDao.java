@@ -225,7 +225,7 @@ public class SolicitudDao extends Dao {
 			.fechaCreacion(rs.getTimestamp("ResiduoFechaCreacion").toInstant().atZone(Dates.UTC))
 			.fechaLimiteRetiro(limitDate)
 			.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
-			.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId"))) // para evitar recursividad dentro de residuo
+			.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId"), rs.getLong("ResiduoCiudadanoId"))) // para evitar recursividad dentro de residuo
 			.descripcion(rs.getString("Descripcion"))
 			.build();
 	}
