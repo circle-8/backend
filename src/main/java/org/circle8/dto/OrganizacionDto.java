@@ -7,7 +7,7 @@ public class OrganizacionDto {
 	public long id;
 	public String razonSocial;
 	public Long usuarioId;
-	
+
 	public static OrganizacionDto from(Organizacion entity) {
 		if ( entity == null ) return null;
 		var o = new OrganizacionDto();

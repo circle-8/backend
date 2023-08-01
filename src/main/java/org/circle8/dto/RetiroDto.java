@@ -7,7 +7,7 @@ public class RetiroDto {
 	public float latitud;
 	public float longitud;
 	public ResiduoDto residuo;
-	
+
 	public static RetiroDto from(Retiro entity) {
 		if ( entity == null ) return null;
 		var r = new RetiroDto();

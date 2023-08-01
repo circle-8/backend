@@ -14,6 +14,7 @@ public class ZonaDto {
 	public List<TipoResiduoDto> tipoResiduo;
 	public List<RecorridoDto> recorridos;
 	
+
 	public static ZonaDto from(Zona entity) {
 		if ( entity == null ) return null;
 		var z = new ZonaDto();
@@ -23,7 +24,7 @@ public class ZonaDto {
 		z.organizacionId = entity.organizacionId;
 		z.organizacion = OrganizacionDto.from(entity.organizacion);
 		z.tipoResiduo = entity.tipoResiduo.stream().map(TipoResiduoDto::from).toList();
-		z.recorridos = entity.recorridos.stream().map(RecorridoDto::from).toList();
+		z.recorridos = entity.recorridos != null ? entity.recorridos.stream().map(RecorridoDto::from).toList() : List.of();
 		return z;
 	}
 	

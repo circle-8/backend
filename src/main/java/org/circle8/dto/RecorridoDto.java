@@ -21,7 +21,7 @@ public class RecorridoDto {
 	public PuntoDto puntoInicio;
 	public PuntoDto puntoFin;
 	public List<RetiroDto> puntos;
-	
+
 	public static RecorridoDto from(Recorrido entity) {
 		if ( entity == null ) return null;
 		var r = new RecorridoDto();
@@ -36,7 +36,7 @@ public class RecorridoDto {
 		r.zona = ZonaDto.from(entity.zona);
 		r.puntoInicio = PuntoDto.from(entity.puntoInicio);
 		r.puntoFin = PuntoDto.from(entity.puntoFin);
-		r.puntos = entity.puntos.stream().map(RetiroDto::from).toList();
+		r.puntos = entity.puntos != null ? entity.puntos.stream().map(RetiroDto::from).toList() : List.of();
 		return r;
 	}
 
