@@ -20,13 +20,14 @@ public class PuntoReciclajeDto {
 	public UserDto reciclador;
 
 	public static PuntoReciclajeDto from(PuntoReciclaje entity) {
+		if ( entity == null ) return null;
 		var pr = new PuntoReciclajeDto();
 		pr.id = entity.id;
 		pr.titulo = entity.titulo;
 		pr.latitud = entity.latitud;
 		pr.longitud = entity.longitud;
 		pr.dias = entity.dias;
-		pr.tipoResiduo = entity.tipoResiduo.stream().map(TipoResiduoDto::from).toList();
+		pr.tipoResiduo = entity.tipoResiduo != null ? entity.tipoResiduo.stream().map(TipoResiduoDto::from).toList() : List.of();
 		pr.recicladorId = entity.recicladorId;
 		pr.reciclador = entity.reciclador != null ? UserDto.from(entity.reciclador) : null;
 		return pr;

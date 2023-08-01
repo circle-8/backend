@@ -11,8 +11,9 @@ public class ZonaDto {
 	public Long organizacionId;
 	public OrganizacionDto organizacion;
 	public List<TipoResiduoDto> tipoResiduo;
-	
+
 	public static ZonaDto from(Zona entity) {
+		if ( entity == null ) return null;
 		var z = new ZonaDto();
 		z.id = entity.id;
 		z.nombre = entity.nombre;

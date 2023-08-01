@@ -7,6 +7,7 @@ public class PlanDto {
 	public long id;
 
 	public static PlanDto from(Plan entity) {
+		if ( entity == null ) return null;
 		var p = new PlanDto();
 		p.id = entity.id;
 		return p;
