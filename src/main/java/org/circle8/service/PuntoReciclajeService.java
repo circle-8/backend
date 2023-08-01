@@ -70,7 +70,6 @@ public class PuntoReciclajeService {
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el punto de reciclaje", e);
 		}
-
 	}
 
 	/**

@@ -4,40 +4,72 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TransaccionResponse;
+import org.circle8.exception.NotFoundException;
+import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
+import org.circle8.service.TransaccionService;
 import org.circle8.utils.Dates;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Singleton
+@Slf4j
 public class TransaccionController {
+
+	private final TransaccionService service;
 	private static final String ID_TRANSPORTE_PARAM = "id_transporte";
 	private static final String ID_RESIDUO_PARAM = "id_residuo";
 
+	@Inject
+	public TransaccionController(TransaccionService service) {
+		this.service = service;
+	}
+
 	private final TransaccionResponse mock = TransaccionResponse.builder()
-		.id(1)
+		.id(1L)
 		.fechaCreacion(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
 		.puntoReciclajeUri("/reciclador/1/punto_reciclaje/1")
-		.puntoReciclajeId(1)
+		.puntoReciclajeId(1L)
 		.build();
 
 	/**
 	 * GET /transaccion/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
+		final Long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", e.getMessage());
+		}
+		try {
+			return service.get(id).toResponse();
+		} catch (ServiceError e) {
+			log.error("[Request: id={}] error get transaccion", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
 	 * PUT /transaccion/{id}
 	 */
 	public ApiResponse put(Context ctx) {
-		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
+		return mock.toBuilder().id(Long.parseLong(ctx.pathParam("id"))).build();
 	}
 
 	/**
@@ -64,10 +96,10 @@ public class TransaccionController {
 	 */
 	public ApiResponse addResiduo(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.residuos(List.of(
-				ResiduoResponse.builder().id(Integer.parseInt(ctx.pathParam(ID_RESIDUO_PARAM))).build())
-			)
+			.id(Long.parseLong(ctx.pathParam("id")))
+			/*.residuos(List.of(
+				ResiduoResponse.builder().id(Long.parseLong(ctx.pathParam(ID_RESIDUO_PARAM))).build())
+			)*/
 			.build();
 	}
 
@@ -76,8 +108,8 @@ public class TransaccionController {
 	 */
 	public ApiResponse removeResiduo(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.residuos(List.of())
+			.id(Long.parseLong(ctx.pathParam("id")))
+			//.residuos(List.of())
 			.build();
 	}
 
@@ -86,8 +118,8 @@ public class TransaccionController {
 	 */
 	public ApiResponse setTransporte(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.transporteId(Integer.parseInt(ctx.pathParam(ID_TRANSPORTE_PARAM)))
+			.id(Long.parseLong(ctx.pathParam("id")))
+			.transporteId(Long.parseLong(ctx.pathParam(ID_TRANSPORTE_PARAM)))
 			.transporteUri("/transporte/"+ctx.pathParam(ID_TRANSPORTE_PARAM))
 			.build();
 	}
@@ -97,7 +129,7 @@ public class TransaccionController {
 	 */
 	public ApiResponse unsetTransporte(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
+			.id(Long.parseLong(ctx.pathParam("id")))
 			.build();
 	}
 
@@ -106,7 +138,7 @@ public class TransaccionController {
 	 */
 	public ApiResponse solicitudTransporte(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
+			.id(Long.parseLong(ctx.pathParam("id")))
 			.build();
 	}
 
@@ -116,7 +148,7 @@ public class TransaccionController {
 	public ApiResponse list(Context ctx) {
 		final var l = List.of(
 			mock,
-			mock.toBuilder().id(2).build()
+			mock.toBuilder().id(2L).build()
 		);
 
 		return new ListResponse<>(0, 1, 2, null, null, l);
