@@ -63,10 +63,10 @@ CREATE TABLE IF NOT EXISTS public."RecicladorUrbano"
 
 CREATE TABLE IF NOT EXISTS public."Recorrido"
 (
-    "ID" bigint NOT NULL,
+    "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
     "FechaRetiro" date NOT NULL,
     "FechaInicio" timestamp with time zone,
-    "FechaFin" time with time zone,
+    "FechaFin" timestamp with time zone,
     "RecicladorId" bigint NOT NULL,
     "ZonaId" bigint NOT NULL,
     CONSTRAINT "Recorrido_pkey" PRIMARY KEY ("ID")
@@ -140,7 +140,7 @@ CREATE TABLE IF NOT EXISTS public."Usuario"
     "Username" character varying(50) NOT NULL,
     "Password" character varying NOT NULL,
     "SuscripcionId" bigint,
-    "TipoUsuario" character varying(20) NOT NULL,
+    "TipoUsuario" character varying(25) NOT NULL,
     "Email" character varying NOT NULL,
     CONSTRAINT "Usuario_pkey" PRIMARY KEY ("ID"),
     CONSTRAINT "Usuario_Email_key" UNIQUE ("Email"),
@@ -152,7 +152,15 @@ CREATE TABLE IF NOT EXISTS public."Zona"
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY ,
     "OrganizacionId" bigint NOT NULL,
     "Polyline" character varying NOT NULL,
+    "Nombre" character varying(50) NOT NULL,
     CONSTRAINT "Zona_pkey" PRIMARY KEY ("ID")
+);
+
+CREATE TABLE IF NOT EXISTS public."Zona_TipoResiduo"
+(
+    "ZonaId" bigint NOT NULL,
+    "TipoResiduoId" bigint NOT NULL,
+    CONSTRAINT "Zona_TipoResiduo_pkey" PRIMARY KEY ("ZonaId", "TipoResiduoId")
 );
 
 CREATE TABLE IF NOT EXISTS public."Solicitud"

@@ -16,4 +16,5 @@ public class Zona {
 	public Long organizacionId;
 	public Organizacion organizacion;
 	public List<TipoResiduo> tipoResiduo;
+	public List<Recorrido> recorridos;
 }
