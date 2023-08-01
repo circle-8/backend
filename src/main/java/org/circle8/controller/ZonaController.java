@@ -13,6 +13,7 @@ import org.circle8.controller.response.ZonaResponse;
 import org.circle8.dto.ZonaDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 import org.circle8.service.ZonaService;
 
@@ -80,15 +81,15 @@ public class ZonaController {
 		val filter = ZonaFilter.builder()
 				.id(id)
 				.organizacionId(organizacionId)
-				.organizacion(req.organizacion)
-				.recorridos(req.recorridos)
 				.tiposResiduos(req.tiposResiduo)
 				.build();
 		
+		val expand = new ZonaExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
+		
 		try {
-			return this.service.get(filter).toResponse();
+			return this.service.get(filter, expand).toResponse();
 		} catch ( ServiceError e ) {
-			log.error("[Request: id={}, expand={}] error getting zona", id, e);
+			log.error("[Request: id={}, organizacionId={}, expand={}] error getting zona", id, organizacionId, expand, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(e);
@@ -161,15 +162,16 @@ public class ZonaController {
 		
 		val filter = ZonaFilter.builder()
 				.organizacionId(req.organizacionId)
-				.organizacion(req.organizacion)
-				.recorridos(req.recorridos)
 				.tiposResiduos(req.tiposResiduo)
 				.build();
 		
+		val expand = new ZonaExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
+		
 		try {
-			val zonas = this.service.list(filter);
+			val zonas = this.service.list(filter, expand);
 			return new ListResponse<>(zonas.stream().map(ZonaDto::toResponse).toList());
 		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error list zonas", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		}
 	}

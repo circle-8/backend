@@ -8,6 +8,7 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 
 import com.google.inject.Inject;
@@ -23,9 +24,9 @@ public class ZonaService {
 		this.dao = dao;
 	}
 	
-	public ZonaDto get(ZonaFilter f) throws ServiceException {
+	public ZonaDto get(ZonaFilter f, ZonaExpand x) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			val zona = this.dao.get(t,f)
+			val zona = this.dao.get(t,f, x)
 					.orElseThrow(() -> new NotFoundException("No existe la zona"));
 			return ZonaDto.from(zona);
 		} catch ( PersistenceException e ) {
@@ -33,9 +34,9 @@ public class ZonaService {
 		}
 	}
 	
-	public List<ZonaDto> list(ZonaFilter f) throws ServiceError{
+	public List<ZonaDto> list(ZonaFilter f, ZonaExpand x) throws ServiceError{
 		try {
-			return this.dao.list(f).stream().map(ZonaDto::from).toList();
+			return this.dao.list(f, x).stream().map(ZonaDto::from).toList();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el listado de zonas", e);
 		}

@@ -1,6 +1,7 @@
 package org.circle8.dto;
 
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -9,7 +10,7 @@ import org.circle8.entity.Recorrido;
 
 public class RecorridoDto {
 	public Long id;
-	public ZonedDateTime fechaRetiro;
+	public LocalDate fechaRetiro;
 	public ZonedDateTime fechaInicio;
 	public ZonedDateTime fechaFin;
 	public Long recicladorId;

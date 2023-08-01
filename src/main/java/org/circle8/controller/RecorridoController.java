@@ -1,5 +1,6 @@
 package org.circle8.controller;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class RecorridoController {
 	private static final String ID_ORGANIZACION_PARAM = "id_organizacion";
 
 	private final RecorridoResponse mock = RecorridoResponse.builder()
-		.fechaRetiro(ZonedDateTime.of (2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
+		.fechaRetiro(LocalDate.of(2023, 1, 1))
 		.recicladorId(1L).recicladorUri("/reciclador/1")
 		.zonaId(1L).zonaUri("/organizacion/1/zona/1")
 		.puntoInicio(new PuntoResponse(-34.6347176f,-58.5587959f))

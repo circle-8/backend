@@ -1,5 +1,6 @@
 package org.circle8.controller.response;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder(toBuilder = true)
 public class RecorridoResponse implements ApiResponse {
 	public long id;
-	public ZonedDateTime fechaRetiro;
+	public LocalDate fechaRetiro;
 	public ZonedDateTime fechaInicio;
 	public ZonedDateTime fechaFin;
 	public String recicladorUri;
