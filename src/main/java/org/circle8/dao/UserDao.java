@@ -24,7 +24,7 @@ public class UserDao extends Dao {
 			  """;
 	
 	private static final String SELECT_GET = """
-			   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."ID" AS OrganizacionId, r."ID" AS ZonaId
+			   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId"
 		     FROM "Usuario" u
 		LEFT JOIN "Ciudadano" c on c."UsuarioId" = u."ID"
 		LEFT JOIN "RecicladorUrbano" r on r."UsuarioId" = u."ID"

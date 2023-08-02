@@ -58,6 +58,8 @@ CREATE TABLE IF NOT EXISTS public."RecicladorUrbano"
 (
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY ,
     "UsuarioId" bigint NOT NULL,
+    "OrganizacionId" bigint NOT NULL,
+    "ZonaId" bigint,
     CONSTRAINT "RecicladorUrbano_pkey" PRIMARY KEY ("ID")
 );
 
@@ -251,7 +253,12 @@ ALTER TABLE IF EXISTS public."RecicladorUrbano"
     REFERENCES public."Usuario" ("ID")
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
-
+    
+ALTER TABLE IF EXISTS public."RecicladorUrbano"
+    ADD CONSTRAINT "RecicladorUrbano_OrganizacionId_fkey" FOREIGN KEY ("OrganizacionId")
+    REFERENCES public."Organizacion" ("ID")
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
 
 ALTER TABLE IF EXISTS public."Recorrido"
     ADD CONSTRAINT "Recorrido_RecicladorId_fkey" FOREIGN KEY ("RecicladorId")
