@@ -31,6 +31,8 @@ public class UserDto {
 		u.nombre = request.nombre;
 		u.email = request.email;
 		u.tipo = request.tipoUsuario.to();
+		u.organizacionId = request.organizacionId;
+		u.zonaId = request.zonaId;
 		return u;
 	}
 
@@ -71,6 +73,8 @@ public class UserDto {
 			.nombre(nombre)
 			.tipo(tipo)
 			.email(email)
+			.organizacionId(organizacionId)
+			.zonaId(zonaId)
 			.build();
 	}
 }

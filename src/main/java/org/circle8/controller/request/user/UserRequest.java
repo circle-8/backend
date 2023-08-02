@@ -18,8 +18,8 @@ public class UserRequest implements IRequest {
 
 	/* Opcionales */
 	public String razonSocial;
-	public Integer zonaId;
-	public Integer organizacionId;
+	public Long zonaId;
+	public Long organizacionId;
 
 	@Override
 	public Validation valid() {
