@@ -86,4 +86,184 @@ class SignUpTest {
 			.body("message", stringContainsInOrder("email", "registrado"))
 		;
 	}
+	
+	@Test
+	void testWithOutUserName() {
+		var request = """
+  {
+    "password": "1234",
+    "nombre": "Nuevo Usuario",
+    "email": "existing@email.com",
+    "tipoUsuario": "CIUDADANO"
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(400)
+		;
+	}	
+	
+	
+	@Test
+	void testWithOutPassword() {
+		var request = """
+  {
+    "username": "nuevo",
+    "nombre": "Nuevo Usuario",
+    "email": "existing@email.com",
+    "tipoUsuario": "CIUDADANO"
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(400)
+		;
+	}
+	
+	@Test
+	void testWithOutNombre() {
+		var request = """
+  {
+    "username": "nuevo",
+    "password": "1234",
+    "email": "existing@email.com",
+    "tipoUsuario": "CIUDADANO"
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(400)
+		;
+	}
+	
+	@Test
+	void testWithOutEmail() {
+		var request = """
+  {
+    "username": "nuevo",
+    "password": "1234",
+    "nombre": "Nuevo Usuario",
+    "tipoUsuario": "CIUDADANO"
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(400)
+		;
+	}
+	
+	@Test
+	void testWithOutTipo() {
+		var request = """
+ {
+    "username": "nuevo",
+    "password": "1234",
+    "nombre": "Nuevo Usuario",
+    "email": "existing@email.com"
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(500)
+		;
+	}
+	
+	@Test
+	void testWithOutRazonSocial() {
+		var request = """
+  {
+    "username": "nuevo",
+    "password": "1234",
+    "nombre": "Nuevo Usuario",
+    "email": "existing@email.com",
+    "tipoUsuario": "ORGANIZACION"
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(400)
+		;
+	}
+	
+	@Test
+	void testInvalidTipoPorRazonSocial() {
+		var request = """
+  {
+    "username": "nuevo",
+    "password": "1234",
+    "nombre": "Nuevo Usuario",
+    "email": "existing@email.com",
+    "tipoUsuario": "CIUDADANO",
+    "razonSocial": "RSA",
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(400)
+		;
+	}
+	
+	@Test
+	void testWithOutOrganizacionId() {
+		var request = """
+  {
+    "username": "nuevo",
+    "password": "1234",
+    "nombre": "Nuevo Usuario",
+    "email": "existing@email.com",
+    "tipoUsuario": "RECICLADOR_URBANO"
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(400)
+		;
+	}
+	
+	@Test
+	void testInvalidTipoPorOrganizacionId() {
+		var request = """
+  {
+    "username": "nuevo",
+    "password": "1234",
+    "nombre": "Nuevo Usuario",
+    "email": "existing@email.com",
+    "tipoUsuario": "CIUDADANO",
+    "organizacionId": 1,
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(400)
+		;
+	}
+	
+	@Test
+	void testInvalidPorTipoZonaId() {
+		var request = """
+  {
+    "username": "nuevo",
+    "password": "1234",
+    "nombre": "Nuevo Usuario",
+    "email": "existing@email.com",
+    "tipoUsuario": "CIUDADANO",
+    "zonaId": 1,
+  }""";
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(400)
+		;
+	}
+
 }
