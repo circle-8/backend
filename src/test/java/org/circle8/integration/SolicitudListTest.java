@@ -37,7 +37,7 @@ class SolicitudListTest {
 	@Test
 	void testListWithExpands() {
 		RestAssured.given()
-			.get("/solicitudes?expand=residuo&expand=ciudadanos")
+			.get("/solicitudes?expand=residuo&expand=ciudadanos&expand=punto_reciclaje")
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(2))
@@ -47,6 +47,7 @@ class SolicitudListTest {
 			.body("data[0].solicitante.nombre", not(nullValue()))
 			.body("data[0].solicitado.id", not(nullValue()))
 			.body("data[0].solicitado.nombre", not(nullValue()))
+			.body("data[0].puntoReciclaje.titulo", not(nullValue()))
 		;
 	}
 
@@ -115,7 +116,7 @@ class SolicitudListTest {
 	}
 
 	@Test
-	void testListWithotExistSolicitadoIdFilter() {
+	void testListWithoutExistSolicitadoIdFilter() {
 		RestAssured.given()
 		.get("/solicitudes?solicitado_id=0")
 		.then()
