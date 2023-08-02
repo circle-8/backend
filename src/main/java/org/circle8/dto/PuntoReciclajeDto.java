@@ -50,8 +50,8 @@ public class PuntoReciclajeDto {
 			titulo,
 			latitud,
 			longitud,
-			dias.stream().map(DiaResponse::from).toList(),
-			tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList(),
+			dias != null ? dias.stream().map(DiaResponse::from).toList() : null,
+			tipoResiduo != null ? tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList() : null,
 			reciclador != null ? "/user/" + reciclador.id : "",
 			recicladorId,
 			reciclador != null ? reciclador.toResponse() : null
