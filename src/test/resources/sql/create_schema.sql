@@ -166,6 +166,7 @@ CREATE TABLE IF NOT EXISTS public."Solicitud"
     "ResiduoId" bigint NOT NULL,
     "TransaccionId" bigint,
     "CiudadanoCancelaId" bigint,
+    "PuntoReciclajeId" bigint NOT NULL,
     CONSTRAINT "Solicitud_pkey" PRIMARY KEY ("ID"),
     CONSTRAINT "Solicitud_Estado_CiudadanoSolicitanteId_CiudadanoSolicitado_key" UNIQUE ("Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId"),
     CONSTRAINT "Solicitud_CiudadanoCancelaId_fkey" FOREIGN KEY ("CiudadanoCancelaId")
@@ -180,6 +181,10 @@ CREATE TABLE IF NOT EXISTS public."Solicitud"
         REFERENCES public."Ciudadano" ("ID")
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
+    CONSTRAINT "Solicitud_PuntoReciclajeId_fkey" FOREIGN KEY ("PuntoReciclajeId")
+            REFERENCES public."PuntoReciclaje" ("ID")
+            ON UPDATE NO ACTION
+            ON DELETE NO ACTION,
     CONSTRAINT "Solicitud_ResiduoId_fkey" FOREIGN KEY ("ResiduoId")
         REFERENCES public."Residuo" ("ID")
         ON UPDATE NO ACTION

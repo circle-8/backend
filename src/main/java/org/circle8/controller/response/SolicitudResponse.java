@@ -19,4 +19,7 @@ public class SolicitudResponse implements ApiResponse {
 	public EstadoSolicitud estado;
 	public Long canceladorId;
 	public ResiduoResponse residuo;
+	public Long puntoReciclajeId;
+	public String puntoReciclajeUri;
+	public PuntoReciclajeResponse puntoReciclaje;
 }
