@@ -26,17 +26,17 @@ public class TransaccionDao extends Dao{
 
 	private static final String SELECT_GET = """
 			SELECT tr."ID", tr."FechaPrimerContacto", tr."FechaEfectiva", tr."PuntoReciclajeId", tr."TransporteId",
-		 							 pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."CiudadanoId",
-		 							 tra."FechaAcordada", tra."FechaInicio", tra."FechaFin", tra."Precio", tra."TransportistaId", tran."UsuarioId", tra."PagoConfirmado", tra."EntregaConfirmada",
-		 							 re."ID" AS residuoId, re."FechaCreacion", re."FechaRetiro", re."PuntoResiduoId", re."Descripcion", re."FechaLimiteRetiro",
-		 		       				 re."TipoResiduoId", re."RecorridoId", tre."Nombre" AS TipoResiduoNombre
-		 					FROM public."TransaccionResiduo" AS tr
-		 					LEFT JOIN Public."PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
-		 					LEFT JOIN Public."Transporte" AS tra on tr."TransporteId"=tra."ID"
-		 					LEFT JOIN Public."Transportista" AS tran on tra."TransportistaId" = tran."ID"
-		 					LEFT JOIN Public."Residuo" AS re on tr."ID" = re."TransaccionId"
-		 					LEFT JOIN Public."TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
-					WHERE tr."ID" = ?
+		 	pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."CiudadanoId",
+		 	tra."FechaAcordada", tra."FechaInicio", tra."FechaFin", tra."Precio", tra."TransportistaId", tra."PagoConfirmado", tra."EntregaConfirmada", tran."UsuarioId"
+		 	re."ID" AS residuoId, re."FechaCreacion", re."FechaRetiro", re."PuntoResiduoId", re."Descripcion", re."FechaLimiteRetiro",
+		 	re."TipoResiduoId", re."RecorridoId", tre."Nombre" AS TipoResiduoNombre
+		 	FROM public."TransaccionResiduo" AS tr
+		 	JOIN Public."PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
+		 	JOIN Public."Transporte" AS tra on tr."TransporteId"=tra."ID"
+		 	JOIN Public."Transportista" AS tran on tra."TransportistaId" = tran."ID"
+		 	JOIN Public."Residuo" AS re on tr."ID" = re."TransaccionId"
+		 	JOIN Public."TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
+			WHERE tr."ID" = ?
 		""";
 
 	@Inject
@@ -73,15 +73,15 @@ public class TransaccionDao extends Dao{
 					retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null,
 					rs.getLong("TransporteId"),
 					new Transporte(rs.getLong("TransporteId"),
-										fechaAcordadaTimestamp != null ? fechaAcordadaTimestamp.toInstant().atZone(Dates.UTC) : null,
-										fechaInicioTimestamp != null ? fechaInicioTimestamp.toInstant().atZone(Dates.UTC) : null,
-										fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null,
-										rs.getBigDecimal("Precio"),
-										rs.getLong("TransportistaId"),
-										new Transportista(rs.getLong("UsuarioId")),
-										rs.getLong("ID"),
-										rs.getBoolean("PagoConfirmado"),
-										rs.getBoolean("EntregaConfirmada")),
+						fechaAcordadaTimestamp != null ? fechaAcordadaTimestamp.toInstant().atZone(Dates.UTC) : null,
+						fechaInicioTimestamp != null ? fechaInicioTimestamp.toInstant().atZone(Dates.UTC) : null,
+						fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null,
+						rs.getBigDecimal("Precio"),
+						rs.getLong("TransportistaId"),
+						new Transportista(rs.getLong("UsuarioId")),
+						rs.getLong("ID"),
+						rs.getBoolean("PagoConfirmado"),
+						rs.getBoolean("EntregaConfirmada")),
 					rs.getLong("PuntoReciclajeId"),
 					new PuntoReciclaje(
 						rs.getLong("ID"),

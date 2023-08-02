@@ -24,9 +24,9 @@ public class TransaccionService {
 		try{
 			return this.dao.get(transaccionId)
 				.map(TransaccionDto::from)
-								.orElseThrow(() -> new NotFoundException("No existe el punto de residuos"));
+				.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 		} catch (PersistenceException e) {
-			throw new ServiceError("Ha ocurrido un error al obtener el punto de reciclaje", e);
+			throw new ServiceError("Ha ocurrido un error al obtener la transaccion", e);
 		}
 	}
 

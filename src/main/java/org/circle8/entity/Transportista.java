@@ -6,5 +6,4 @@ import lombok.RequiredArgsConstructor;
 public class Transportista {
 	public long id;
 	public final long usuarioId;
-	// TODO: implementar bien polyline
 }

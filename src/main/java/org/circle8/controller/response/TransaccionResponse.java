@@ -20,5 +20,5 @@ public class TransaccionResponse implements ApiResponse {
 	public String puntoReciclajeUri;
 	public Long puntoReciclajeId;
 	public PuntoReciclajeResponse puntoReciclaje;
-	List<ResiduoResponse> residuos;
+	public List<ResiduoResponse> residuos;
 }

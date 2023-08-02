@@ -27,7 +27,7 @@ public class TransporteDto {
 		t.precioAcordado = entity.precioAcordado;
 		t.transportistaId = entity.transportistaId;
 		t.transportista = TransportistaDto.from(entity.transportista);
-		//TODO: CHEQUEAR ESTO: t.transaccionId = entity.transaccionId;
+		t.transaccionId = entity.transaccionId;
 		t.pagoConfirmado = entity.pagoConfirmado;
 		t.entregaConfirmada = entity.entregaConfirmada;
 		return t;
@@ -40,13 +40,11 @@ public class TransporteDto {
 			fechaInicio,
 			fechaFin,
 			precioAcordado,
-			//TODO: completar bien la uri
-			"",
+			transportista != null ? "/user/" + transportista.usuarioId : null,
 			transportistaId,
-			transportista.toResponse(),
-			//TODO: completar bien la uri e id
-			"",
-			2L,
+			transportista != null ? transportista.toResponse() : null,
+			"/transaccion/" + transaccionId,
+			transaccionId,
 			pagoConfirmado,
 			entregaConfirmada
 		);

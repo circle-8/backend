@@ -27,9 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TransaccionController {
 
-	private final TransaccionService service;
 	private static final String ID_TRANSPORTE_PARAM = "id_transporte";
 	private static final String ID_RESIDUO_PARAM = "id_residuo";
+
+	private final TransaccionService service;
 
 	@Inject
 	public TransaccionController(TransaccionService service) {
@@ -57,9 +58,7 @@ public class TransaccionController {
 			return service.get(id).toResponse();
 		} catch (ServiceError e) {
 			log.error("[Request: id={}] error get transaccion", id, e);
-			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
-		} catch ( NotFoundException e ) {
-			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+			return new ErrorResponse(e);
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}
@@ -97,9 +96,9 @@ public class TransaccionController {
 	public ApiResponse addResiduo(Context ctx) {
 		return mock.toBuilder()
 			.id(Long.parseLong(ctx.pathParam("id")))
-			/*.residuos(List.of(
+			.residuos(List.of(
 				ResiduoResponse.builder().id(Long.parseLong(ctx.pathParam(ID_RESIDUO_PARAM))).build())
-			)*/
+			)
 			.build();
 	}
 

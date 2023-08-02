@@ -62,9 +62,7 @@ public class PuntoReciclajeController {
 		}
 
 		try {
-			var puntoReciclajeDto = this.service.get(id, recicladorId).toResponse();
-			//TODO: Redundante y mal el nombre
-			return puntoReciclajeDto;
+			return this.service.get(id, recicladorId).toResponse();
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( NotFoundException e ) {

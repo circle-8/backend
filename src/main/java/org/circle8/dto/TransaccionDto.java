@@ -12,6 +12,7 @@ public class TransaccionDto {
 	public ZonedDateTime fechaRetiro;
 	public Long transporteId;
 	public TransporteDto transporte;
+	public String puntoReciclajeUri;
 	public Long puntoReciclajeId;
 	public PuntoReciclajeDto puntoReciclaje;
 	public List<ResiduoDto> residuos;
@@ -32,14 +33,14 @@ public class TransaccionDto {
 
 	public TransaccionResponse toResponse(){
 		return new TransaccionResponse(id,
-						fechaCreacion,
-						fechaRetiro,
-						transporte != null ? "/transporte/" + transporte.id : "",
-						transporteId,
-						transporte != null ? transporte.toResponse() : null,
-						puntoReciclaje != null ? "/reciclador/" + puntoReciclaje.recicladorId + "/punto_reciclaje/" + puntoReciclaje.id : "",
-						puntoReciclajeId,
-						puntoReciclaje != null ? puntoReciclaje.toResponse() : null,
-						residuos.stream().map(ResiduoDto::toResponse).toList());
+			fechaCreacion,
+			fechaRetiro,
+			transporte != null ? "/transporte/" + transporte.id : null,
+			transporteId,
+			transporte != null ? transporte.toResponse() : null,
+			puntoReciclaje != null ? "/reciclador/" + puntoReciclaje.recicladorId + "/punto_reciclaje/" + puntoReciclaje.id : null,
+			puntoReciclajeId,
+			puntoReciclaje != null ? puntoReciclaje.toResponse() : null,
+			residuos != null ? residuos.stream().map(ResiduoDto::toResponse).toList() : null);
 	}
 }
