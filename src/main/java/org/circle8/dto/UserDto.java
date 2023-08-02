@@ -20,7 +20,10 @@ public class UserDto {
 	public String email;
 	public TipoUsuario tipo;
 	public SuscripcionDto suscripcion;
-	public Long ciudadanoId; // TODO: se puede cambiar por CiudadanoDto (nullable)
+	public Long ciudadanoId;
+	public Long recicladorUrbanoId;
+	public Long organizacionId;
+	public Long zonaId;
 
 	public static UserDto from(UserRequest request) {
 		val u = new UserDto();
@@ -40,6 +43,9 @@ public class UserDto {
 		u.email = entity.email;
 		u.tipo = entity.tipo;
 		u.ciudadanoId = entity.ciudadanoId;
+		u.recicladorUrbanoId = entity.recicladorUrbanoId;
+		u.organizacionId = entity.organizacionId;
+		u.zonaId = entity.zonaId;
 		return u;
 	}
 
@@ -51,13 +57,20 @@ public class UserDto {
 			email,
 			TipoUsuarioResponse.from(tipo),
 			suscripcion != null ? suscripcion.toResponse() : null,
-			ciudadanoId
+			ciudadanoId,
+			recicladorUrbanoId,
+			organizacionId,
+			zonaId
 		);
 	}
 
 	public User toEntity() {
 		return User.builder()
-			.id(id).username(username).nombre(nombre).tipo(tipo).email(email)
+			.id(id)
+			.username(username)
+			.nombre(nombre)
+			.tipo(tipo)
+			.email(email)
 			.build();
 	}
 }
