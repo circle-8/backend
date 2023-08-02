@@ -128,12 +128,12 @@ public class Routes {
 			.post("/transaccion/{id}/solicitud_transporte", result(transaccionController::solicitudTransporte))
 			// ZONA
 			.get("/zonas", result(zonaController::list))
-			.get("/organizacion/{id_organizacion}/zona/{id}", result(zonaController::get))
-			.put("/organizacion/{id_organizacion}/zona/{id}", result(zonaController::put))
-			.delete("/organizacion/{id_organizacion}/zona/{id}", result(zonaController::delete))
-			.post("/organizacion/{id_organizacion}/zona", result(zonaController::post))
-			.post("/punto_residuo/{id_punto_residuo}/zona/{id}", result(zonaController::includePuntoResiduo))
-			.delete("/punto_residuo/{id_punto_residuo}/zona/{id}", result(zonaController::excludePuntoResiduo))
+			.get("/organizacion/{organizacion_id}/zona/{id}", result(zonaController::get))
+			.put("/organizacion/{organizacion_id}/zona/{id}", result(zonaController::put))
+			.delete("/organizacion/{organizacion_id}/zona/{id}", result(zonaController::delete))
+			.post("/organizacion/{organizacion_id}/zona", result(zonaController::post))
+			.post("/punto_residuo/{punto_residuo_id}/zona/{id}", result(zonaController::includePuntoResiduo))
+			.delete("/punto_residuo/{punto_residuo_id}/zona/{id}", result(zonaController::excludePuntoResiduo))
 			// RECORRIDO
 			.get("/recorridos", result(recorridoController::list))
 			.get("/recorrido/{id}", result(recorridoController::get))
