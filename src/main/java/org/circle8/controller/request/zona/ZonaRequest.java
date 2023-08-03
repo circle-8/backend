@@ -12,10 +12,12 @@ public class ZonaRequest implements IRequest {
 	private final Validation validation = new Validation();
 
 	public Long organizacionId;
+	public Long recicladorId;
 	public List<Integer> tiposResiduo;
 
 	public ZonaRequest(Map<String, List<String>> queryParams) {
 		this.organizacionId = Parser.parseLong(validation, queryParams, "organizacion_id");	
+		this.recicladorId = Parser.parseLong(validation, queryParams, "reciclador_id");	
 		try {
 			this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of())
 				.stream()
