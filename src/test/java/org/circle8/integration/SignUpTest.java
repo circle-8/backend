@@ -15,7 +15,7 @@ class SignUpTest {
 	private final DataSource ds = ApiTestExtension.Dep.getDatasource();
 
 	@Test
-	void testNewUser() throws Exception {
+	void testNewCidadano() throws Exception {
 		var request = """
    {
      "username": "nuevo-usuario",
@@ -43,6 +43,43 @@ class SignUpTest {
 		try ( var conn = ds.getConnection(); var ps = conn.prepareStatement(checkUserSQL) ) {
 			ps.setString(1, "nuevo-usuario");
 			ps.setString(2, "nuevo@email.com");
+			assertTrue(ps.executeQuery().next());
+		}
+	}
+	
+	@Test
+	void testNewReciclador() throws Exception {
+		var request = """
+   {
+     "username": "nuevo-usuario-reciclador",
+     "password": "1234",
+     "nombre": "Nuevo Usuario reciclador",
+     "email": "nuevoReciclador@email.com",
+     "tipoUsuario": "RECICLADOR_URBANO",
+     "organizacionId": 1
+   }""";
+
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(200)
+			.body("id", is(not(emptyOrNullString())))
+			.body("username", equalTo("nuevo-usuario-reciclador"))
+			.body("nombre", equalTo("Nuevo Usuario reciclador"))
+			.body("email", equalTo("nuevoReciclador@email.com"))
+			.body("tipoUsuario", equalTo("RECICLADOR_URBANO"))
+			.body("ciudadanoId", nullValue())
+			.body("recicladorUrbanoId", is(not(empty())))
+			.body("organizacionId", equalTo(1))
+			.body("password", is(nullValue()))
+			.body("suscripcion", is(not(empty())))
+			;
+
+		var checkUserSQL = "SELECT \"Username\" FROM public.\"Usuario\" WHERE \"Username\" = ? AND \"Email\" = ?";
+		try ( var conn = ds.getConnection(); var ps = conn.prepareStatement(checkUserSQL) ) {
+			ps.setString(1, "nuevo-usuario-reciclador");
+			ps.setString(2, "nuevoReciclador@email.com");
 			assertTrue(ps.executeQuery().next());
 		}
 	}
