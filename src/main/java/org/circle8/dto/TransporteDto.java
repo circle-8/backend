@@ -19,6 +19,7 @@ public class TransporteDto {
 	public boolean entregaConfirmada;
 	
 	public static TransporteDto from(Transporte entity) {
+		if ( entity == null ) return null;
 		var t = new TransporteDto();
 		t.id = entity.id;
 		t.fechaAcordada = entity.fechaAcordada;

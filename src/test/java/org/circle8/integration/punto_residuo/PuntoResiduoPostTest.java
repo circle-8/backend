@@ -1,4 +1,8 @@
-package org.circle8.integration;
+package org.circle8.integration.punto_residuo;
+
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
@@ -7,7 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
-public class PuntoResiduoPutTest {
+public class PuntoResiduoPostTest {
 	
 	private static final String REQUEST =  """
 			{
@@ -16,12 +20,13 @@ public class PuntoResiduoPutTest {
 			}""";
 
 	@Test
-	void testPutOk() {		
+	void testPostOk() {		
 		RestAssured.given()
 		.body(REQUEST)
-		.put("/ciudadano/1/punto_residuo/1")
+		.post("/ciudadano/1/punto_residuo")
 		.then()
 		.statusCode(200)
+		.body("id", is(not(emptyOrNullString())))
 		;
 	}
 	
@@ -33,7 +38,7 @@ public class PuntoResiduoPutTest {
 			}""";
 		RestAssured.given()
 		.body(request)
-		.put("/ciudadano/1/punto_residuo/1")
+		.post("/ciudadano/1/punto_residuo")
 		.then()
 		.statusCode(400)
 		;
@@ -47,7 +52,7 @@ public class PuntoResiduoPutTest {
 			}""";
 		RestAssured.given()
 		.body(request)
-		.put("/ciudadano/1/punto_residuo/1")
+		.post("/ciudadano/1/punto_residuo")
 		.then()
 		.statusCode(400)
 		;
@@ -56,7 +61,7 @@ public class PuntoResiduoPutTest {
 	@Test
 	void testWithOutParams() {		
 		RestAssured.given()
-		.put("/ciudadano/1/punto_residuo/1")
+		.post("/ciudadano/1/punto_residuo")
 		.then()
 		.statusCode(500)
 		;
@@ -66,37 +71,17 @@ public class PuntoResiduoPutTest {
 	void testNotFoundCiudadanoID() {		
 		RestAssured.given()
 		.body(REQUEST)
-		.put("/ciudadano/0/punto_residuo/1")
+		.post("/ciudadano/0/punto_residuo")
 		.then()
 		.statusCode(404)
 		;
 	}
 	
 	@Test
-	void testNotFoundPuntoResiduoID() {		
+	void testInvalidCiudadanoID() {		
 		RestAssured.given()
 		.body(REQUEST)
-		.put("/ciudadano/1/punto_residuo/0")
-		.then()
-		.statusCode(404)
-		;
-	}
-	
-	@Test
-	void testWithOutPuntoResiduoID() {		
-		RestAssured.given()
-		.body(REQUEST)
-		.put("/ciudadano/1/punto_residuo/")
-		.then()
-		.statusCode(404)
-		;
-	}
-	
-	@Test
-	void testInvalidPuntoResiduoID() {		
-		RestAssured.given()
-		.body(REQUEST)
-		.put("/ciudadano/1/punto_residuo/dfff")
+		.post("/ciudadano/dasda/punto_residuo")
 		.then()
 		.statusCode(400)
 		;
@@ -106,19 +91,9 @@ public class PuntoResiduoPutTest {
 	void testWithOutCiudadanoID() {		
 		RestAssured.given()
 		.body(REQUEST)
-		.put("/ciudadano//punto_residuo/1")
+		.post("/ciudadano//punto_residuo")
 		.then()
 		.statusCode(404)
-		;
-	}
-	
-	@Test
-	void tesInvalidCiudadanoID() {		
-		RestAssured.given()
-		.body(REQUEST)
-		.put("/ciudadano/hhh/punto_residuo/1")
-		.then()
-		.statusCode(400)
 		;
 	}
 }

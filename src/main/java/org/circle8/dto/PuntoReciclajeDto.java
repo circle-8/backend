@@ -20,6 +20,7 @@ public class PuntoReciclajeDto {
 	public UserDto reciclador;
 
 	public static PuntoReciclajeDto from(PuntoReciclaje entity) {
+		if(entity == null) return null;
 		var pr = new PuntoReciclajeDto();
 		pr.id = entity.id;
 		pr.titulo = entity.titulo;

@@ -9,6 +9,7 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.TransaccionExpand;
 
 import com.google.inject.Inject;
 
@@ -20,9 +21,9 @@ public class TransaccionService {
 		this.dao = dao;
 	}
 
-	public TransaccionDto get(Long transaccionId) throws ServiceException {
+	public TransaccionDto get(Long transaccionId, TransaccionExpand expand) throws ServiceException {
 		try{
-			return this.dao.get(transaccionId)
+			return this.dao.get(transaccionId, expand)
 				.map(TransaccionDto::from)
 				.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 		} catch (PersistenceException e) {

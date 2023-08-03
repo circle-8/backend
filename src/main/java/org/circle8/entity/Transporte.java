@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 
+@Builder
 @AllArgsConstructor
 public class Transporte {
 	public Long id;

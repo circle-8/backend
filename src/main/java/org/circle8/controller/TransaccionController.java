@@ -12,6 +12,8 @@ import org.circle8.controller.response.TransaccionResponse;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.PuntoResiduoExpand;
+import org.circle8.expand.TransaccionExpand;
 import org.circle8.service.TransaccionService;
 import org.circle8.utils.Dates;
 
@@ -22,6 +24,7 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Singleton
 @Slf4j
@@ -54,11 +57,14 @@ public class TransaccionController {
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", e.getMessage());
 		}
+		val expand = new TransaccionExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
 		try {
-			return service.get(id).toResponse();
+			return service.get(id, expand).toResponse();
 		} catch (ServiceError e) {
 			log.error("[Request: id={}] error get transaccion", id, e);
 			return new ErrorResponse(e);
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}

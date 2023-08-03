@@ -35,11 +35,11 @@ public class TransaccionDto {
 		return new TransaccionResponse(id,
 			fechaCreacion,
 			fechaRetiro,
-			transporte != null ? "/transporte/" + transporte.id : null,
-			transporteId,
+			transporte != null ? "/transporte/" + transporteId: null,
+			transporte == null ? transporteId : null,
 			transporte != null ? transporte.toResponse() : null,
 			puntoReciclaje != null ? "/reciclador/" + puntoReciclaje.recicladorId + "/punto_reciclaje/" + puntoReciclaje.id : null,
-			puntoReciclajeId,
+			puntoReciclaje == null ? puntoReciclajeId : null,
 			puntoReciclaje != null ? puntoReciclaje.toResponse() : null,
 			residuos != null ? residuos.stream().map(ResiduoDto::toResponse).toList() : null);
 	}

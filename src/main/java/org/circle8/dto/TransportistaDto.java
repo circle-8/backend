@@ -8,6 +8,7 @@ public class TransportistaDto {
 	public long usuarioId;
 	
 	public static TransportistaDto from(Transportista entity) {
+		if ( entity == null ) return null;
 		var t = new TransportistaDto();
 		t.id = entity.id;
 		t.usuarioId = entity.usuarioId;

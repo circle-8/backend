@@ -50,6 +50,15 @@ INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", 
 INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', '2023-07-22 19:41:00-00', 1, 1, NULL, NULL, 'Residuo Fulfilled', NULL);
 INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 4, NULL, NULL, 'Carton', NULL);
 
-
 INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'PENDIENTE', 2, 1, 1);
 INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'PENDIENTE', 1, 2, 2);
+
+INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (1, 'fakePolyline');
+INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (2, 'fakePolyline');
+
+INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId") VALUES (40, NULL, '2020-01-01 08:00:00+00', '2020-01-02 08:00:00+00', false, false, 1);
+INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId") VALUES (50, NULL, '2020-02-01 08:00:00+00', '2020-02-02 08:00:00+00', true, true, 2);
+
+INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-01-01 08:00:00+00', '2023-01-02 08:00:00+00', 1, 1);
+INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-02-01 08:00:00+00', '2023-02-02 08:00:00+00', 2, 2);
+
