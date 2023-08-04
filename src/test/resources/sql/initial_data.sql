@@ -22,11 +22,17 @@ INSERT INTO public."Usuario"("NombreApellido", "Username", "Password", "Suscripc
         NULL,
         'RECICLADOR_URBANO',
         'reciclador1@email.com'
+    ),
+     (
+        'Reciclador 2',
+        'reciclador2',
+        '$2a$10$vQ35vpn5y4RPXXNm4blxWer6NVn0Pl3GHmSn5XRr2VdGITgpn1j0G', -- 1234
+        NULL,
+        'RECICLADOR_URBANO',
+        'reciclador2@email.com'
     );
 
 INSERT INTO public."Ciudadano" ("UsuarioId") VALUES (1),(2);
-
-INSERT INTO public."RecicladorUrbano" ("UsuarioId") VALUES (3);
 
 INSERT INTO public."Organizacion"("RazonSocial", "UsuarioId") VALUES ('Usuario 1 SA', 1),('Usuario 2 SA', 2);
 
@@ -39,9 +45,10 @@ INSERT INTO public."Zona"("OrganizacionId", "Polyline", "Nombre")
 		'[[-34.634716, -58.558796], [-34.651657, -58.535603], [-34.67316, -58.559628], [-34.663677, -58.568333], [-34.650585, -58.585228], [-34.649334, -58.58329], [-34.643433, -58.583534], [-34.641556, -58.57158], [-34.63838, -58.57357]]',
 		'Zona 2');
 
+INSERT INTO public."RecicladorUrbano" ("UsuarioId", "OrganizacionId", "ZonaId") VALUES (3, 1, 1),(4, 2, NULL);
+
 INSERT INTO public."Recorrido"("FechaRetiro", "FechaInicio", "FechaFin", "RecicladorId", "ZonaId")
 	VALUES ('2023-07-03', '2023-07-03 10:00:00-00', '2023-07-03 11:00:00-00', 1, 1), ('2023-07-05', NULL, NULL, 1, 1);
-
 
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Plástico');
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Papel');

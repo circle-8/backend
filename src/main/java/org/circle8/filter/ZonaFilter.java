@@ -7,7 +7,8 @@ import lombok.Builder;
 @Builder
 public class ZonaFilter {
 	public Long id;
-	public Long organizacionId;	
+	public Long organizacionId;
+	public Long recicladorId;	
 	public List<Integer> tiposResiduos;
 	
 	public boolean hasTipo() {

@@ -21,7 +21,6 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 import org.circle8.utils.Dates;
-import org.jetbrains.annotations.NotNull;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -55,7 +54,7 @@ public class ZonaDao extends Dao {
 			""";
 
 	private static final String SELECT_RECICLADOR = """
-			, reci."UsuarioId"
+			, reciUrb."UsuarioId"
 			""";
 
 	private static final String JOIN_ORGANIZACION = """
@@ -64,14 +63,19 @@ public class ZonaDao extends Dao {
 
 	private static final String JOIN_RECORRIDO = """
 			LEFT JOIN "Recorrido" AS rec on rec."ZonaId" = z."ID"
+			LEFT JOIN "RecicladorUrbano" AS reciUrb on reciUrb."ID" = rec."RecicladorId"
 			""";
-
+	
 	private static final String JOIN_RECICLADOR = """
-			LEFT JOIN "RecicladorUrbano" AS reci on reci."ID" = rec."RecicladorId"
+			LEFT JOIN "RecicladorUrbano" AS reci on z."ID" = reci."ZonaId"
 			""";
 
 	private static final String WHERE_ORGANIZACION = """
 			AND z."OrganizacionId" = ?
+			""";
+	
+	private static final String WHERE_RECICLADOR = """
+			AND reci."ID" = ?
 			""";
 
 	private static final String WHERE_ID = """
@@ -129,7 +133,11 @@ public class ZonaDao extends Dao {
 
 		if(x.recorridos) {
 			selectFields += SELECT_RECORRIDO + SELECT_RECICLADOR;
-			joinFields += JOIN_RECORRIDO + JOIN_RECICLADOR;
+			joinFields += JOIN_RECORRIDO;
+		}
+		
+		if(f.recicladorId != null) {
+			joinFields += JOIN_RECICLADOR;
 		}
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
@@ -148,6 +156,11 @@ public class ZonaDao extends Dao {
 
 		if ( f.hasTipo() ) {
 			appendListCondition(f.tiposResiduos, WHERE_TIPO_RESIDUO, b, parameters);
+		}
+		
+		if(f.recicladorId != null) {
+			b.append(WHERE_RECICLADOR);
+			parameters.add(f.recicladorId);
 		}
 
 		var p = t.prepareStatement(b.toString());

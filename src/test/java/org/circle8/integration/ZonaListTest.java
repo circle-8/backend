@@ -138,6 +138,35 @@ public class ZonaListTest {
 	}
 	
 	@Test
+	void testWithFilterRecicladorId() {
+		RestAssured.given()
+			.get("/zonas?reciclador_id=1")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(1))
+		;
+	}
+	
+	@Test
+	void testWithFilterRecicladorIdNotFound() {
+		RestAssured.given()
+			.get("/zonas?reciclador_id=0")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(0))			
+		;
+	}
+	
+	@Test
+	void testWithInvalidRecicladorId() {
+		RestAssured.given()
+			.get("/zonas?reciclador_id=a")
+			.then()
+			.statusCode(400)		
+		;
+	}
+	
+	@Test
 	void testWithFilterOrganizacionId() {
 		RestAssured.given()
 			.get("/zonas?organizacion_id=1")
