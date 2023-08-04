@@ -3,17 +3,20 @@ package org.circle8.controller;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import org.circle8.controller.request.punto_residuo.PuntosResiduosRequest;
+import org.circle8.controller.request.transaccion.TransaccionesRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TransaccionResponse;
+import org.circle8.dto.TransaccionDto;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
-import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.expand.TransaccionExpand;
+import org.circle8.filter.TransaccionFilter;
 import org.circle8.service.TransaccionService;
 import org.circle8.utils.Dates;
 
@@ -151,11 +154,23 @@ public class TransaccionController {
 	 * GET /transacciones
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2L).build()
-		);
+		val req = new TransaccionesRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if (!valid.valid())
+			return new ErrorResponse(valid);
 
-		return new ListResponse<>(0, 1, 2, null, null, l);
+		val filter = TransaccionFilter.builder().puntosReciclaje(req.puntosReciclaje).transportistaId(req.transportistaId).build();
+
+		val expand = new TransaccionExpand(req.expands);
+
+		try {
+			val transactions = service.list(filter, expand);
+			return new ListResponse<>(transactions.stream().map(TransaccionDto::toResponse).toList());
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error list transacciones", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch (ServiceException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
 	}
 }

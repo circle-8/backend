@@ -3,12 +3,14 @@ package org.circle8.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
-
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.PuntoResiduo;
@@ -16,8 +18,6 @@ import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
 import org.circle8.entity.Transporte;
-import org.circle8.entity.Transportista;
-import org.circle8.entity.User;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
@@ -28,10 +28,6 @@ import com.google.inject.Inject;
 import lombok.val;
 
 public class TransaccionDao extends Dao{
-
-	private static final String WHERE_ID = """
-		AND tr."ID" = ?
-		""";
 
 	private static final String SELECT_FMT = """
 		SELECT
@@ -73,11 +69,41 @@ public class TransaccionDao extends Dao{
 		JOIN Public."Transporte" AS tra on tr."TransporteId"=tra."ID"
 		""";
 
+	private static final String WHERE_ID = """
+		AND tr."ID" = ?
+		""";
+
+	private static final String WHERE_PUNTO_RECICLAJE = """
+		AND pr."ID" IN ( %s )
+		""";
+
+	private static final String WHERE_TRANSPORTISTA = """
+		AND tra."TransportistaId" = ?
+		""";
+
 	@Inject
 	TransaccionDao(DataSource ds) {
 		super(ds);
 	}
 
+	public List<Transaccion> list(TransaccionFilter filter, TransaccionExpand exp) throws PersistenceException {
+		try (val t = open(true); val select = createSelect(t, filter, exp); val rs = select.executeQuery()) {
+			val mapTransacciones = new HashMap<Long, Transaccion>();
+			while(rs.next()) {
+				val id = rs.getLong("ID");
+				Transaccion transaccion = mapTransacciones.get(id);
+				if (transaccion == null){
+					transaccion = buildTransaccion(rs, exp);
+					mapTransacciones.put(id, transaccion);
+				}
+				else
+					transaccion.residuos.add(buildResiduo(rs, exp.residuos));
+			}
+			return mapTransacciones.values().stream().toList();
+		} catch (SQLException e) {
+			throw new PersistenceException("error getting Transacciones", e);
+		}
+	}
 
 	public Optional<Transaccion> get(long transaccionId, TransaccionExpand expand) throws PersistenceException {
 		try (var t = open(true)) {
@@ -89,12 +115,15 @@ public class TransaccionDao extends Dao{
 		val f = TransaccionFilter.builder().id(id).build();
 		try ( val ps = createSelect(t, f, expand) ) {
 			ps.setLong(1, id);
-			String req = ps.toString();
 			try (val rs = ps.executeQuery()) {
 				if (!rs.next()) {
 					return Optional.empty();
 				}
-				return Optional.of(buildTransaccion(rs, expand));
+				Transaccion tr = buildTransaccion(rs, expand);
+				while(rs.next()) {
+					tr.residuos.add(buildResiduo(rs, expand.residuos));
+				}
+				return Optional.of(tr);
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error selecting transaccion", e);
@@ -120,7 +149,7 @@ public class TransaccionDao extends Dao{
 			puntoReciclaje,
 			residuos);
 
-		buildResiduos(rs, expand.residuos, residuos);
+		residuos.add(buildResiduo(rs, expand.residuos));
 		return tr;
 	}
 
@@ -144,7 +173,6 @@ public class TransaccionDao extends Dao{
 		val fechaInicioTimestamp = rs.getTimestamp("FechaInicio");
 		val fechaAcordadaTimestamp = rs.getTimestamp("FechaAcordada");
 		val fechaFinTimestamp = rs.getTimestamp("FechaFin");
-
 		return new Transporte(rs.getLong("TransporteId"),
 			fechaAcordadaTimestamp != null ? fechaAcordadaTimestamp.toInstant().atZone(Dates.UTC) : null,
 			fechaInicioTimestamp != null ? fechaInicioTimestamp.toInstant().atZone(Dates.UTC) : null,
@@ -155,28 +183,26 @@ public class TransaccionDao extends Dao{
 			rs.getLong("ID"),
 			rs.getBoolean("PagoConfirmado"),
 			rs.getBoolean("EntregaConfirmada"));
+
 	}
 
-	private void buildResiduos(ResultSet rs, boolean expand, List<Residuo> residuos) throws SQLException {
-		if(!expand) return;
-		do {
-			val limit = rs.getTimestamp("FechaLimiteRetiro");
-			val retiro = rs.getTimestamp("FechaRetiro");
-			val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
-			val retiroDate = retiro != null ? retiro.toInstant().atZone(Dates.UTC) : null;
+	private Residuo buildResiduo(ResultSet rs, boolean expand) throws SQLException {
+		if(!expand) return null;
+		val limit = rs.getTimestamp("FechaLimiteRetiro");
+		val retiro = rs.getTimestamp("FechaRetiro");
+		val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
+		val retiroDate = retiro != null ? retiro.toInstant().atZone(Dates.UTC) : null;
 
-			val r = Residuo.builder()
-								.id(rs.getLong("ResiduoId"))
-								.ciudadanoId(rs.getLong("CiudadanoId"))
-								.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
-								.fechaRetiro(retiroDate)
-								.fechaLimiteRetiro(limitDate)
-								.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
-								.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId")))
-								.descripcion(rs.getString("Descripcion"))
-								.build();
-			residuos.add(r);
-		} while ( rs.next() );
+		return Residuo.builder()
+							.id(rs.getLong("ResiduoId"))
+							.ciudadanoId(rs.getLong("CiudadanoId"))
+							.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
+							.fechaRetiro(retiroDate)
+							.fechaLimiteRetiro(limitDate)
+							.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
+							.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId")))
+							.descripcion(rs.getString("Descripcion"))
+							.build();
 	}
 
 	private PreparedStatement createSelect(
@@ -195,18 +221,33 @@ public class TransaccionDao extends Dao{
 		if ( exp.transporte ) joinFields += JOIN_TRANSPORTE;
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
-		var b = new StringBuilder(sql);
+		var conditions = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
 
 		if ( f.id != null ) {
-			b.append(WHERE_ID);
+			conditions.append(WHERE_ID);
 			parameters.add(f.id);
 		}
 
-		var p = t.prepareStatement(b.toString());
+		if( f.puntosReciclaje != null && f.hasPuntos()) {
+			val marks = f.puntosReciclaje.stream()
+				.map(pr -> "?")
+				.collect(Collectors.joining(","));
+
+			conditions.append(String.format(WHERE_PUNTO_RECICLAJE, marks));
+			parameters.addAll(f.puntosReciclaje);
+		}
+
+		if(f.transportistaId != null) {
+			conditions.append(WHERE_TRANSPORTISTA);
+			parameters.add(f.transportistaId);
+		}
+
+		var p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i + 1, parameters.get(i));
 
+		val prueba = p.toString();
 		return p;
 	}
 
