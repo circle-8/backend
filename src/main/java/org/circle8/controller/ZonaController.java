@@ -162,6 +162,7 @@ public class ZonaController {
 		
 		val filter = ZonaFilter.builder()
 				.organizacionId(req.organizacionId)
+				.recicladorId(req.recicladorId)
 				.tiposResiduos(req.tiposResiduo)
 				.build();
 		

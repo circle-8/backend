@@ -1,7 +1,5 @@
 package org.circle8.service;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import org.circle8.dao.UserDao;
 import org.circle8.dto.SuscripcionDto;
 import org.circle8.dto.UserDto;
@@ -11,12 +9,16 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
 @Singleton
 public class UserService {
 	private final UserDao dao;
 	private final CryptService crypt;
 	private final SuscripcionService suscripcion;
 	private final CiudadanoService ciudadano;
+	private final RecicladorUrbanoService reciclador;
 	private final TransportistaService transportista;
 
 	@Inject
@@ -25,12 +27,14 @@ public class UserService {
 		CryptService crypt,
 		SuscripcionService suscripcion,
 		CiudadanoService ciudadano,
+		RecicladorUrbanoService reciclador,
 		TransportistaService transportista
 	) {
 		this.dao = dao;
 		this.crypt = crypt;
 		this.suscripcion = suscripcion;
 		this.ciudadano = ciudadano;
+		this.reciclador = reciclador;
 		this.transportista = transportista;
 	}
 
@@ -66,7 +70,7 @@ public class UserService {
 					var c = ciudadano.save(t, user);
 					transportista.save(t, c);
 				}
-				case RECICLADOR_URBANO -> throw new IllegalArgumentException("RECICLADOR_URBANO todavía no definido");
+				case RECICLADOR_URBANO -> reciclador.save(t, user);
 				case ORGANIZACION -> throw new IllegalArgumentException("ORGANIZACION todavía no definido");
 				default -> throw new IllegalStateException("hay un TipoUsuario no contemplado al guardar");
 			}
