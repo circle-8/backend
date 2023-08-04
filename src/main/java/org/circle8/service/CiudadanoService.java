@@ -1,6 +1,5 @@
 package org.circle8.service;
 
-import com.google.inject.Inject;
 import org.circle8.dao.CiudadanoDao;
 import org.circle8.dao.Transaction;
 import org.circle8.entity.Ciudadano;
@@ -8,6 +7,8 @@ import org.circle8.entity.User;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+
+import com.google.inject.Inject;
 
 public class CiudadanoService {
 	private final CiudadanoDao dao;

@@ -1,16 +1,18 @@
 package org.circle8.dao;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Optional;
+
+import javax.sql.DataSource;
+
 import org.circle8.dto.TipoUsuario;
 import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
 
-import javax.sql.DataSource;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Optional;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class UserDao extends Dao {

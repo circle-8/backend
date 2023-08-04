@@ -3,6 +3,9 @@ package org.circle8.controller;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResponse;
@@ -12,9 +15,6 @@ import org.circle8.controller.response.RetiroResponse;
 import org.circle8.utils.Dates;
 
 import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
 
 @Singleton
 public class RecorridoController {

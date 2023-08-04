@@ -1,13 +1,14 @@
 package org.circle8.dao;
 
-import org.circle8.exception.PersistenceException;
-import org.intellij.lang.annotations.MagicConstant;
-
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import javax.sql.DataSource;
+
+import org.circle8.exception.PersistenceException;
+import org.intellij.lang.annotations.MagicConstant;
 
 /**
  * Wrapper for {@link Connection} which can be used across services and DAOs

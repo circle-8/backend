@@ -7,7 +7,6 @@ import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.dto.TipoResiduoDto;
 import org.circle8.exception.NotFoundException;
-
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;

@@ -3,6 +3,9 @@ package org.circle8.controller;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+
 import org.circle8.controller.request.residuo.PostResiduoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -21,10 +24,8 @@ import org.circle8.utils.Dates;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Singleton
 @Slf4j

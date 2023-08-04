@@ -2,9 +2,10 @@ package org.circle8.controller.request.residuo;
 
 import java.time.ZonedDateTime;
 
-import lombok.ToString;
 import org.circle8.controller.request.IRequest;
 import org.circle8.utils.Dates;
+
+import lombok.ToString;
 
 @ToString
 public class PostResiduoRequest implements IRequest {

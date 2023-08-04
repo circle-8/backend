@@ -1,7 +1,8 @@
 package org.circle8.controller.request.punto_residuo;
 
-import lombok.ToString;
 import org.circle8.controller.request.IRequest;
+
+import lombok.ToString;
 
 @ToString
 public class PostPutPuntoResiduoRequest implements IRequest {

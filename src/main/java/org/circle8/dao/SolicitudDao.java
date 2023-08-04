@@ -1,6 +1,5 @@
 package org.circle8.dao;
 
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,11 +25,11 @@ import org.circle8.expand.SolicitudExpand;
 import org.circle8.filter.SolicitudFilter;
 import org.circle8.service.SolicitudService;
 import org.circle8.utils.Dates;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.inject.Inject;
 
 import lombok.val;
-import org.jetbrains.annotations.NotNull;
 
 public class SolicitudDao extends Dao {
 	private static final String INSERT_INTO_FMT = """

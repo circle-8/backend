@@ -2,8 +2,9 @@ package org.circle8.filter;
 
 import java.util.List;
 
-import lombok.Builder;
 import org.circle8.dto.Dia;
+
+import lombok.Builder;
 
 @Builder
 public class PuntoReciclajeFilter {

@@ -1,7 +1,5 @@
 package org.circle8.service;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import org.circle8.dao.UserDao;
 import org.circle8.dto.SuscripcionDto;
 import org.circle8.dto.UserDto;
@@ -10,6 +8,9 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class UserService {

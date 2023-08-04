@@ -1,11 +1,11 @@
 package org.circle8.dao;
 
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.circle8.entity.Ciudadano;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
-
-import java.sql.SQLException;
-import java.sql.Statement;
 
 public class CiudadanoDao {
 

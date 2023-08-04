@@ -2,6 +2,8 @@ package org.circle8.controller;
 
 import java.util.List;
 
+import io.javalin.http.Context;
+
 import org.circle8.controller.request.punto_residuo.PostPutPuntoResiduoRequest;
 import org.circle8.controller.request.punto_residuo.PuntosResiduosRequest;
 import org.circle8.controller.response.ApiResponse;
@@ -19,9 +21,8 @@ import org.circle8.service.PuntoResiduoService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import io.javalin.http.Context;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Singleton
 @Slf4j

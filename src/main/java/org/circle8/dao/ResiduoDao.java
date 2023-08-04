@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import lombok.val;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
@@ -18,6 +17,8 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.utils.Dates;
 
 import com.google.inject.Inject;
+
+import lombok.val;
 
 public class ResiduoDao extends Dao {
 

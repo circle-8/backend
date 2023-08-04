@@ -41,6 +41,6 @@ public class TransaccionDto {
 			puntoReciclaje != null ? "/reciclador/" + puntoReciclaje.recicladorId + "/punto_reciclaje/" + puntoReciclaje.id : null,
 			puntoReciclaje == null ? puntoReciclajeId : null,
 			puntoReciclaje != null ? puntoReciclaje.toResponse() : null,
-			residuos != null ? residuos.stream().map(ResiduoDto::toResponse).toList() : null);
+			(residuos != null && !residuos.isEmpty()) ? residuos.stream().map(ResiduoDto::toResponse).toList() : null);
 	}
 }

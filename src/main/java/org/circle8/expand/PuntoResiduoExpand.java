@@ -1,8 +1,8 @@
 package org.circle8.expand;
 
-import lombok.ToString;
-
 import java.util.List;
+
+import lombok.ToString;
 
 @ToString
 public class PuntoResiduoExpand {

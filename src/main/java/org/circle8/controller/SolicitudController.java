@@ -1,10 +1,9 @@
 package org.circle8.controller;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import java.util.List;
+
 import io.javalin.http.Context;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+
 import org.circle8.controller.request.solicitud.SolicitudRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -12,14 +11,17 @@ import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.dto.SolicitudDto;
 import org.circle8.entity.EstadoSolicitud;
-import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.SolicitudExpand;
 import org.circle8.filter.SolicitudFilter;
 import org.circle8.service.SolicitudService;
 
-import java.util.List;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Singleton
 @Slf4j

@@ -1,18 +1,19 @@
 package org.circle8.service;
 
-import lombok.val;
+import java.time.ZonedDateTime;
+
 import org.circle8.dao.ResiduoDao;
 import org.circle8.dto.ResiduoDto;
 import org.circle8.exception.ForeingKeyException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
-
-import com.google.inject.Inject;
 import org.circle8.exception.ServiceException;
 import org.circle8.utils.Dates;
 
-import java.time.ZonedDateTime;
+import com.google.inject.Inject;
+
+import lombok.val;
 
 public class ResiduoService {
 	private final ResiduoDao dao;

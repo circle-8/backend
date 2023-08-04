@@ -12,6 +12,6 @@ public class TransaccionFilter {
 	public List<Long> puntosReciclaje;
 
 	public boolean hasPuntos() {
-		return !puntosReciclaje.isEmpty();
+		return puntosReciclaje != null && !puntosReciclaje.isEmpty();
 	}
 }

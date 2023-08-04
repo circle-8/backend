@@ -1,10 +1,11 @@
 package org.circle8.dao;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import javax.sql.DataSource;
+
 import org.circle8.exception.PersistenceException;
 
-import javax.sql.DataSource;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 abstract class Dao {

@@ -3,7 +3,6 @@ package org.circle8.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
+
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.PuntoResiduo;
@@ -96,8 +96,8 @@ public class TransaccionDao extends Dao{
 					transaccion = buildTransaccion(rs, exp);
 					mapTransacciones.put(id, transaccion);
 				}
-				else
-					transaccion.residuos.add(buildResiduo(rs, exp.residuos));
+				else if(exp.residuos)
+					transaccion.residuos.add(buildResiduo(rs));
 			}
 			return mapTransacciones.values().stream().toList();
 		} catch (SQLException e) {
@@ -121,7 +121,8 @@ public class TransaccionDao extends Dao{
 				}
 				Transaccion tr = buildTransaccion(rs, expand);
 				while(rs.next()) {
-					tr.residuos.add(buildResiduo(rs, expand.residuos));
+					if(expand.residuos)
+						tr.residuos.add(buildResiduo(rs));
 				}
 				return Optional.of(tr);
 			}
@@ -149,7 +150,8 @@ public class TransaccionDao extends Dao{
 			puntoReciclaje,
 			residuos);
 
-		residuos.add(buildResiduo(rs, expand.residuos));
+		if(expand.residuos)
+			residuos.add(buildResiduo(rs));
 		return tr;
 	}
 
@@ -186,8 +188,7 @@ public class TransaccionDao extends Dao{
 
 	}
 
-	private Residuo buildResiduo(ResultSet rs, boolean expand) throws SQLException {
-		if(!expand) return null;
+	private Residuo buildResiduo(ResultSet rs) throws SQLException {
 		val limit = rs.getTimestamp("FechaLimiteRetiro");
 		val retiro = rs.getTimestamp("FechaRetiro");
 		val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
@@ -212,13 +213,13 @@ public class TransaccionDao extends Dao{
 	) throws PersistenceException, SQLException {
 		var selectFields = SELECT_SIMPLE;
 		if ( exp.residuos ) selectFields += SELECT_RESIDUOS;
-		if ( exp.transporte ) selectFields += SELECT_TRANSPORTE;
-		if ( exp.puntoReciclaje ) selectFields += SELECT_PUNTO_RECICLAJE;
+		if ( exp.transporte || f.hasPuntos()) selectFields += SELECT_TRANSPORTE;
+		if ( exp.puntoReciclaje || f.transportistaId != null ) selectFields += SELECT_PUNTO_RECICLAJE;
 
 		var joinFields = "";
 		if ( exp.residuos ) joinFields += JOIN_RESIDUOS;
-		else if ( exp.puntoReciclaje ) joinFields += JOIN_PUNTO_RECICLAJE;
-		if ( exp.transporte ) joinFields += JOIN_TRANSPORTE;
+		else if ( exp.puntoReciclaje || f.hasPuntos() ) joinFields += JOIN_PUNTO_RECICLAJE;
+		if ( exp.transporte || f.transportistaId != null ) joinFields += JOIN_TRANSPORTE;
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 		var conditions = new StringBuilder(sql);
@@ -229,7 +230,7 @@ public class TransaccionDao extends Dao{
 			parameters.add(f.id);
 		}
 
-		if( f.puntosReciclaje != null && f.hasPuntos()) {
+		if( f.hasPuntos()) {
 			val marks = f.puntosReciclaje.stream()
 				.map(pr -> "?")
 				.collect(Collectors.joining(","));
