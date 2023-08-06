@@ -204,6 +204,42 @@ public class ZonaListTest {
 	}
 	
 	@Test
+	void testWithFilterCiudadanoId() {
+		RestAssured.given()
+			.get("/zonas?ciudadano_id=1")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(2))
+		;
+		
+		RestAssured.given()
+			.get("/zonas?ciudadano_id=2")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(1))
+		;
+	}
+	
+	@Test
+	void testWithFilterCiudadanoIdNotFound() {
+		RestAssured.given()
+			.get("/zonas?ciudadano_id=0")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(0))			
+		;
+	}
+	
+	@Test
+	void testWithInvalidCiudadanoId() {
+		RestAssured.given()
+			.get("/zonas?ciudadano_id=a")
+			.then()
+			.statusCode(400)		
+		;
+	}
+	
+	@Test
 	void testWithFilterOrganizacionId() {
 		RestAssured.given()
 			.get("/zonas?organizacion_id=1")
