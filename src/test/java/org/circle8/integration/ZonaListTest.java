@@ -138,6 +138,43 @@ public class ZonaListTest {
 	}
 	
 	@Test
+	void testWithFilterPuntoReciduoId() {
+		RestAssured.given()
+			.get("/zonas?punto_residuo_id=1")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(2))
+		;
+		
+		RestAssured.given()
+			.get("/zonas?punto_residuo_id=2")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(1))
+		;
+	}
+	
+	@Test
+	void testWithFilterPuntoReciduoIdNotFound() {
+		RestAssured.given()
+			.get("/zonas?punto_residuo_id=0")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(0))			
+		;
+	}
+	
+	@Test
+	void testWithInvalidPuntoReciduoId() {
+		RestAssured.given()
+			.get("/zonas?punto_residuo_id=a")
+			.then()
+			.statusCode(400)		
+		;
+	}
+	
+	
+	@Test
 	void testWithFilterRecicladorId() {
 		RestAssured.given()
 			.get("/zonas?reciclador_id=1")

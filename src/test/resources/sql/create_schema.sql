@@ -54,6 +54,13 @@ CREATE TABLE IF NOT EXISTS public."PuntoResiduo"
     CONSTRAINT "PuntoResiduo_pkey" PRIMARY KEY ("ID")
 );
 
+CREATE TABLE IF NOT EXISTS public."PuntoResiduo_Zona"
+(
+    "PuntoResiduoId" bigint NOT NULL,
+    "ZonaId" bigint NOT NULL,
+    CONSTRAINT "PuntoResiduo_Zona_pkey" PRIMARY KEY ("PuntoResiduoId", "ZonaId")
+);
+
 CREATE TABLE IF NOT EXISTS public."RecicladorUrbano"
 (
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY ,
@@ -247,6 +254,17 @@ ALTER TABLE IF EXISTS public."PuntoResiduo"
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
+ALTER TABLE IF EXISTS public."PuntoResiduo_Zona"
+    ADD CONSTRAINT "PuntoResiduo_fkey" FOREIGN KEY ("PuntoResiduoId")
+    REFERENCES public."PuntoResiduo" ("ID")
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+ALTER TABLE IF EXISTS public."PuntoResiduo_Zona"
+    ADD CONSTRAINT "ZonaId_fkey" FOREIGN KEY ("ZonaId")
+    REFERENCES public."Zona" ("ID")
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
 
 ALTER TABLE IF EXISTS public."RecicladorUrbano"
     ADD CONSTRAINT "RecicladorUrbano_UsuarioId_fkey" FOREIGN KEY ("UsuarioId")
