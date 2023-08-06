@@ -1,10 +1,12 @@
 package org.circle8.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.circle8.dao.PuntoResiduoDao;
 import org.circle8.dao.ZonaDao;
 import org.circle8.dto.ZonaDto;
+import org.circle8.entity.PuntoResiduo;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
@@ -49,7 +51,9 @@ public class ZonaService {
 	public ZonaDto includePuntoResiduo(Long ciudadanoId, Long puntoResiduoId, Long zonaId) throws ServiceError, ServiceException {
 		try ( val t = dao.open(true) ) {
 			val f = ZonaFilter.builder().id(zonaId).build();
-			val zona = this.dao.get(t,f, ZonaExpand.EMPTY)
+			val zonaExpand = new ZonaExpand(false, false, true);
+			
+			val zona = this.dao.get(t,f, zonaExpand)
 					.orElseThrow(() -> new NotFoundException("No existe la zona"));
 			
 			val punto = this.puntoResiduoDao.get(ciudadanoId, puntoResiduoId, PuntoResiduoExpand.EMPTY)
@@ -58,7 +62,11 @@ public class ZonaService {
 			//TODO: validar que el punto este dentro de la zona
 					
 			this.dao.includePuntoResiduo(t, puntoResiduoId, zonaId);
-					
+			
+			if(zona.puntosResiduos == null)
+				zona.puntosResiduos = new ArrayList<PuntoResiduo>();
+			
+			zona.puntosResiduos.add(punto);					
 			return ZonaDto.from(zona);		
 		}catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar el punto de residuo", e);

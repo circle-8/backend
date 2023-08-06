@@ -18,6 +18,7 @@ import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Recorrido;
 import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
+import org.circle8.entity.User;
 import org.circle8.entity.Zona;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
@@ -54,7 +55,7 @@ public class ZonaDao extends Dao {
 			""";
 
 	private static final String SELECT_ORGANIZACION = """
-			, org."RazonSocial", org."UsuarioId"
+			, org."RazonSocial", org."UsuarioId" as usuarioOrgId
 			""";
 
 	private static final String SELECT_RECORRIDO = """
@@ -62,7 +63,11 @@ public class ZonaDao extends Dao {
 			""";
 
 	private static final String SELECT_RECICLADOR = """
-			, reciUrb."UsuarioId"
+			, reciUrb."UsuarioId" as usuarioRecicladorId
+			""";
+	
+	private static final String SELECT_CIUDADANO = """
+			, ciu."UsuarioId" as usuarioCiudadanoId
 			""";
 	
 	private static final String SELECT_PUNTO_RESIDUO = """
@@ -89,6 +94,10 @@ public class ZonaDao extends Dao {
 	private static final String JOIN_PUNTO_RESIDUO = """
 			LEFT JOIN "PuntoResiduo_Zona" AS prz2 on z."ID" = prz2."ZonaId"			
 			LEFT JOIN "PuntoResiduo" AS pr on pr."ID" = prz2."PuntoResiduoId"
+			""";
+	
+	private static final String JOIN_PUNTO_RESIDUO_CIUDADANO = """
+			LEFT JOIN "Ciudadano" AS ciu on ciu."ID" = pr."CiudadanoId"
 			""";
 
 	private static final String WHERE_ORGANIZACION = """
@@ -195,7 +204,7 @@ public class ZonaDao extends Dao {
 		}
 		
 		if(x.puntosResiduo) {
-			selectFields += SELECT_PUNTO_RESIDUO;
+			selectFields += SELECT_PUNTO_RESIDUO + SELECT_CIUDADANO;
 		}
 		
 		if(f.recicladorId != null) {
@@ -208,6 +217,8 @@ public class ZonaDao extends Dao {
 		
 		if(f.ciudadanoId != null || x.puntosResiduo) {
 			joinFields += JOIN_PUNTO_RESIDUO;
+			if(x.puntosResiduo)
+				joinFields += JOIN_PUNTO_RESIDUO_CIUDADANO;				
 		}
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
@@ -321,7 +332,7 @@ public class ZonaDao extends Dao {
 		return Organizacion.builder()
 				.id(rs.getLong("OrganizacionId"))
 				.razonSocial(rs.getString("RazonSocial"))
-				.usuarioId(rs.getLong("UsuarioId"))
+				.usuarioId(rs.getLong("usuarioOrgId"))
 				.build();
 	}
 
@@ -331,7 +342,7 @@ public class ZonaDao extends Dao {
 			rec.id = rs.getInt("recorridoId");
 			rec.fechaRetiro = rs.getDate("FechaRetiro").toLocalDate();
 			rec.recicladorId = rs.getLong("RecicladorId");
-			rec.reciclador = new Ciudadano(rs.getLong("RecicladorId"), rs.getLong("UsuarioId"));
+			rec.reciclador = new Ciudadano(rs.getLong("RecicladorId"), rs.getLong("usuarioRecicladorId"));
 			rec.puntos = new ArrayList<Retiro>();
 			if(rs.getTimestamp("FechaInicio") != null)
 				rec.fechaInicio = rs.getTimestamp("FechaInicio").toInstant().atZone(Dates.UTC);
@@ -348,7 +359,7 @@ public class ZonaDao extends Dao {
 			val pr = new PuntoResiduo(rs.getLong("puntoResiduoID"), rs.getLong("CiudadanoId"));
 			pr.latitud = rs.getDouble("latitud");
 			pr.longitud = rs.getDouble("longitud");
-			
+			pr.ciudadano = User.builder().id(rs.getLong("usuarioCiudadanoId")).build();			
 			if(!z.puntosResiduos.contains(pr))
 				z.puntosResiduos.add(pr);
 		}
