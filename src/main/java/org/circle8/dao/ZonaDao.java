@@ -76,6 +76,15 @@ public class ZonaDao extends Dao {
 	private static final String JOIN_RECICLADOR = """
 			LEFT JOIN "RecicladorUrbano" AS reci on z."ID" = reci."ZonaId"
 			""";
+	
+	private static final String JOIN_PUNTO_RESIDUO_ZONA = """
+			LEFT JOIN "PuntoResiduo_Zona" AS prz on z."ID" = prz."ZonaId"
+			""";
+	
+	private static final String JOIN_PUNTO_RESIDUO = """
+			LEFT JOIN "PuntoResiduo_Zona" AS prz2 on z."ID" = prz2."ZonaId"			
+			LEFT JOIN "PuntoResiduo" AS pr on pr."ID" = prz2."PuntoResiduoId"
+			""";
 
 	private static final String WHERE_ORGANIZACION = """
 			AND z."OrganizacionId" = ?
@@ -83,6 +92,14 @@ public class ZonaDao extends Dao {
 	
 	private static final String WHERE_RECICLADOR = """
 			AND reci."ID" = ?
+			""";
+	
+	private static final String WHERE_PUNTO_RESIDUO = """
+			AND prz."PuntoResiduoId" = ?
+			""";
+	
+	private static final String WHERE_CIUDADANO = """
+			AND pr."CiudadanoId" = ?
 			""";
 
 	private static final String WHERE_ID = """
@@ -175,6 +192,14 @@ public class ZonaDao extends Dao {
 		if(f.recicladorId != null) {
 			joinFields += JOIN_RECICLADOR;
 		}
+		
+		if(f.puntoResiduoId != null) {
+			joinFields += JOIN_PUNTO_RESIDUO_ZONA;
+		}
+		
+		if(f.ciudadanoId != null) {
+			joinFields += JOIN_PUNTO_RESIDUO;
+		}
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 		var b = new StringBuilder(sql);
@@ -197,6 +222,16 @@ public class ZonaDao extends Dao {
 		if(f.recicladorId != null) {
 			b.append(WHERE_RECICLADOR);
 			parameters.add(f.recicladorId);
+		}
+		
+		if(f.puntoResiduoId != null) {
+			b.append(WHERE_PUNTO_RESIDUO);
+			parameters.add(f.puntoResiduoId);
+		}
+		
+		if(f.ciudadanoId != null) {
+			b.append(WHERE_CIUDADANO);
+			parameters.add(f.ciudadanoId);
 		}
 
 		var p = t.prepareStatement(b.toString());
