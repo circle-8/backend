@@ -14,6 +14,7 @@ import javax.sql.DataSource;
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.Organizacion;
 import org.circle8.entity.Punto;
+import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Recorrido;
 import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
@@ -62,6 +63,10 @@ public class ZonaDao extends Dao {
 
 	private static final String SELECT_RECICLADOR = """
 			, reciUrb."UsuarioId"
+			""";
+	
+	private static final String SELECT_PUNTO_RESIDUO = """
+			, pr."ID" AS puntoResiduoID , pr."CiudadanoId", pr."Latitud", pr."Longitud"
 			""";
 
 	private static final String JOIN_ORGANIZACION = """
@@ -189,6 +194,10 @@ public class ZonaDao extends Dao {
 			joinFields += JOIN_RECORRIDO;
 		}
 		
+		if(x.puntosResiduo) {
+			selectFields += SELECT_PUNTO_RESIDUO;
+		}
+		
 		if(f.recicladorId != null) {
 			joinFields += JOIN_RECICLADOR;
 		}
@@ -197,7 +206,7 @@ public class ZonaDao extends Dao {
 			joinFields += JOIN_PUNTO_RESIDUO_ZONA;
 		}
 		
-		if(f.ciudadanoId != null) {
+		if(f.ciudadanoId != null || x.puntosResiduo) {
 			joinFields += JOIN_PUNTO_RESIDUO;
 		}
 
@@ -251,6 +260,7 @@ public class ZonaDao extends Dao {
 			}
 			addTipoResiduo(rs, z);
 			addRecorrido(rs, x.recorridos, z);
+			addPuntoResiduo(rs, x.puntosResiduo, z);
 		}
 		return z;
 	}
@@ -266,6 +276,7 @@ public class ZonaDao extends Dao {
 			}
 			addTipoResiduo(rs, z);
 			addRecorrido(rs, x.recorridos, z);
+			addPuntoResiduo(rs, x.puntosResiduo, z);
 		}
 		return mapZonas.values().stream().toList();
 	}
@@ -279,6 +290,7 @@ public class ZonaDao extends Dao {
 		z.organizacion = buildOrganizacion(rs, x.organizacion);
 		z.tipoResiduo = new ArrayList<TipoResiduo>();
 		z.recorridos = new ArrayList<Recorrido>();
+		z.puntosResiduos = new ArrayList<PuntoResiduo>();
 		return z;
 	}
 
@@ -328,6 +340,17 @@ public class ZonaDao extends Dao {
 
 			if(!z.recorridos.contains(rec))
 				z.recorridos.add(rec);
+		}
+	}
+	
+	private void addPuntoResiduo(ResultSet rs, boolean expand, Zona z) throws SQLException {
+		if(expand && rs.getInt("puntoResiduoID") != 0) {
+			val pr = new PuntoResiduo(rs.getLong("puntoResiduoID"), rs.getLong("CiudadanoId"));
+			pr.latitud = rs.getDouble("latitud");
+			pr.longitud = rs.getDouble("longitud");
+			
+			if(!z.puntosResiduos.contains(pr))
+				z.puntosResiduos.add(pr);
 		}
 	}
 }

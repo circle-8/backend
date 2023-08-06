@@ -17,4 +17,5 @@ public class Zona {
 	public Organizacion organizacion;
 	public List<TipoResiduo> tipoResiduo;
 	public List<Recorrido> recorridos;
+	public List<PuntoResiduo> puntosResiduos;
 }
