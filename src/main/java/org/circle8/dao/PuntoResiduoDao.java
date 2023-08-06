@@ -8,7 +8,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -36,35 +35,53 @@ public class PuntoResiduoDao extends Dao {
 		    %s
 		 WHERE 1=1
 		""";
-	private static final String SELECT_SIMPLE = "pr.\"ID\", \"Latitud\", \"Longitud\", \"CiudadanoId\", c.\"UsuarioId\"";
-	private static final String SELECT_CIUDADANO = ", u.\"Username\", u.\"NombreApellido\", u.\"Email\", u.\"TipoUsuario\"";
-	private static final String SELECT_RESIDUOS = ", r.\"ID\" AS ResiduoId, r.\"FechaCreacion\", r.\"FechaLimiteRetiro\", r.\"Descripcion\", tr.\"ID\" AS TipoResiduoId," +
-		"tr.\"Nombre\" AS TipoResiduoNombre";
+	
+	private static final String SELECT_SIMPLE = """
+			pr."ID", "Latitud", "Longitud", "CiudadanoId", c."UsuarioId"
+			""";
+	
+	private static final String SELECT_CIUDADANO = """
+			, u."Username", u."NombreApellido", u."Email", u."TipoUsuario"
+			""" ;
+	
+	private static final String SELECT_RESIDUOS = """			
+			, r."ID" AS ResiduoId, r."FechaCreacion", r."FechaLimiteRetiro", r."Descripcion", tr."ID" AS TipoResiduoId,	tr."Nombre" AS TipoResiduoNombre
+			""";
+	
 	private static final String JOIN_TIPO = """
 		LEFT JOIN "Residuo" AS r ON r."PuntoResiduoId" = pr."ID"
 		LEFT JOIN "TipoResiduo" AS tr on tr."ID" = r."TipoResiduoId"
 		""";
-	private static final String JOIN_CIUDADANO = "JOIN \"Usuario\" AS u ON u.\"ID\" = c.\"UsuarioId\"\n";
+	
+	private static final String JOIN_CIUDADANO = """
+			JOIN "Usuario" AS u ON u."ID" = c."UsuarioId"
+			""";
+	
 	private static final String WHERE_CIUDADANO = """
 		AND pr."CiudadanoId" = ?
 		""";
+	
 	private static final String WHERE_AREA = """
 		AND pr."Latitud" BETWEEN ? AND ?
 		AND pr."Longitud" BETWEEN ? AND ?
 		""";
+	
 	private static final String WHERE_RESIDUO = """
 		AND r."RecorridoId" IS NULL
 		AND r."TransaccionId" IS NULL
 		AND r."FechaRetiro" IS NULL
 		AND ( r."FechaLimiteRetiro" IS NULL OR r."FechaLimiteRetiro" > ? )
 		""";
+	
 	private static final String WHERE_TIPO = """
 		AND tr."Nombre" IN ( %s )
 		""" + WHERE_RESIDUO;
+	
 	private static final String WHERE_IDS = """
 		AND "CiudadanoId" = ?
 		AND pr."ID" = ?
 		""";
+	
 	private static final String INSERT = """
 			INSERT INTO public."PuntoResiduo"(
 			"CiudadanoId", "Latitud", "Longitud")
@@ -138,12 +155,7 @@ public class PuntoResiduoDao extends Dao {
 		}
 
 		if ( f.hasTipo() ) {
-			val marks = f.tipoResiduos.stream()
-				.map(tr -> "?")
-				.collect(Collectors.joining(","));
-
-			conditions.append(String.format(WHERE_TIPO, marks));
-			parameters.addAll(f.tipoResiduos);
+			appendListCondition(f.tipoResiduos, WHERE_TIPO, conditions, parameters);
 			parameters.add(Timestamp.from(ZonedDateTime.now().toInstant()));
 		}
 

@@ -3,6 +3,7 @@ package org.circle8.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.circle8.entity.Recorrido;
 import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
+import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
@@ -30,6 +32,11 @@ import lombok.val;
 public class ZonaDao extends Dao {
 
 	private static final Gson GSON = new Gson();
+	
+	private static final String INSERT_INTO_PUNTO_RESIDUO_ZONA = """
+			INSERT INTO "PuntoResiduo_Zona" ("PuntoResiduoId", "ZonaId")
+			VALUES (?, ?);
+			""";
 
 	private static final String SELECT_FMT = """
 			SELECT
@@ -97,6 +104,24 @@ public class ZonaDao extends Dao {
 	ZonaDao(DataSource ds) {
 		super(ds);
 	}
+	
+	public void includePuntoResiduo(Transaction t,Long puntoResiduoId, Long zonaId) throws PersistenceException {
+		try ( val insert = createInsert(t, puntoResiduoId, zonaId) ) {
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new SQLException("Creating the punto residuo zona failed, no affected rows");
+
+			try ( var rs = insert.getGeneratedKeys() ) {
+				if ( !rs.next() )
+					throw new SQLException("Creating the punto residuo zona failed, no ID obtained");
+			}
+		} catch (SQLException e) {
+			if ( e.getMessage().contains("PuntoResiduo_Zona_pkey") )
+				throw new DuplicatedEntry("punto residuo zona already exist", e);
+			
+			throw new PersistenceException("error inserting punto de residuo in zona", e);
+		}
+	}
 
 	public Optional<Zona> get(Transaction t, ZonaFilter f, ZonaExpand x) throws PersistenceException {
 		try ( val select = createSelect(t, f, x) ) {
@@ -118,6 +143,17 @@ public class ZonaDao extends Dao {
 			throw new PersistenceException("error getting zonas", e);
 		}
 	}
+	
+	private PreparedStatement createInsert(
+			Transaction t,
+			long puntoResiduoId,
+			long zonaId
+		) throws PersistenceException, SQLException {
+			val ps = t.prepareStatement(INSERT_INTO_PUNTO_RESIDUO_ZONA, Statement.RETURN_GENERATED_KEYS);
+			ps.setLong(1, puntoResiduoId);
+			ps.setLong(2, zonaId);
+			return ps;
+		}
 
 	private PreparedStatement createSelect(
 		Transaction t,

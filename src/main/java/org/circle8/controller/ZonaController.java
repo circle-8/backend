@@ -130,14 +130,28 @@ public class ZonaController {
 	}
 
 	/**
-	 * POST /punto_residuo/{id_punto_residuo}/zona/{id}
+	 * POST /ciudadano/{ciudadano_id}/punto_residuo/{punto_residuo_id}/zona/{id}
 	 */
 	public ApiResponse includePuntoResiduo(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
-			.build();
+		final long ciudadanoId;
+		final long puntoResiduoId;
+		final long zonaId;
+		try {
+			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));
+			puntoResiduoId = Long.parseLong(ctx.pathParam("punto_residuo_id"));
+			zonaId = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+		
+		try {
+			val dto = this.service.includePuntoResiduo(ciudadanoId, puntoResiduoId, zonaId);
+			return dto.toResponse();
+		} catch (ServiceError e) {
+			return new ErrorResponse(e);
+		} catch (ServiceException e) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
