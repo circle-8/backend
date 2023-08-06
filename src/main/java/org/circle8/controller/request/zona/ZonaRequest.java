@@ -13,11 +13,15 @@ public class ZonaRequest implements IRequest {
 
 	public Long organizacionId;
 	public Long recicladorId;
+	public Long ciudadanoId;
+	public Long puntoResiduoId;
 	public List<Integer> tiposResiduo;
 
 	public ZonaRequest(Map<String, List<String>> queryParams) {
 		this.organizacionId = Parser.parseLong(validation, queryParams, "organizacion_id");	
-		this.recicladorId = Parser.parseLong(validation, queryParams, "reciclador_id");	
+		this.recicladorId = Parser.parseLong(validation, queryParams, "reciclador_id");
+		this.ciudadanoId = Parser.parseLong(validation, queryParams, "ciudadano_id");
+		this.puntoResiduoId = Parser.parseLong(validation, queryParams, "punto_residuo_id");
 		try {
 			this.tiposResiduo = queryParams.getOrDefault("tipos_residuo", List.of())
 				.stream()
