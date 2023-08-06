@@ -73,6 +73,25 @@ public class ZonaGetTest {
 	}
 	
 	@Test
+	void testGetOkWithExpandPuntoResiduo() {
+		RestAssured.given()
+			.get("/organizacion/1/zona/1?expand=punto_residuo")
+			.then()
+			.statusCode(200)
+			.body("puntosResiduos", notNullValue())
+			.body("puntosResiduos", hasSize(2))
+			.body("puntosResiduos[0].id", equalTo(1))
+			.body("puntosResiduos[0].latitud", equalTo(-34.6611203f))
+			.body("puntosResiduos[0].longitud", equalTo(-58.5422521f))
+			.body("puntosResiduos[0].ciudadanoId", equalTo(1))
+			.body("puntosResiduos[1].id", equalTo(2))
+			.body("puntosResiduos[1].latitud", equalTo(-35.6611203f))
+			.body("puntosResiduos[1].longitud", equalTo(-58.5422521f))
+			.body("puntosResiduos[1].ciudadanoId", equalTo(2))
+		;
+	}
+	
+	@Test
 	void testNotFound() {
 		RestAssured.given()
 		.get("/organizacion/0/zona/0")

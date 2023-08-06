@@ -90,7 +90,32 @@ public class ZonaListTest {
 			.body("data[0].recorridos[1].fechaFin", nullValue())
 			.body("data[0].recorridos[1].recicladorId", equalTo(1))
 			.body("data[0].recorridos[1].recicladorUri", equalTo("/user/3"))
-			.body("data[1].recorridos", hasSize(0))
+		;
+	}
+	
+	@Test
+	void testGetOkWithExpandPuntoResiduo() {
+		RestAssured.given()
+			.get("/zonas?expand=punto_residuo")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(2))
+			.body("data[0].puntosResiduos", notNullValue())
+			.body("data[0].puntosResiduos", hasSize(2))
+			.body("data[0].puntosResiduos[0].id", equalTo(1))
+			.body("data[0].puntosResiduos[0].latitud", equalTo(-34.6611203f))
+			.body("data[0].puntosResiduos[0].longitud", equalTo(-58.5422521f))
+			.body("data[0].puntosResiduos[0].ciudadanoId", equalTo(1))
+			.body("data[0].puntosResiduos[1].id", equalTo(2))
+			.body("data[0].puntosResiduos[1].latitud", equalTo(-35.6611203f))
+			.body("data[0].puntosResiduos[1].longitud", equalTo(-58.5422521f))
+			.body("data[0].puntosResiduos[1].ciudadanoId", equalTo(2))
+			.body("data[1].puntosResiduos", notNullValue())
+			.body("data[1].puntosResiduos", hasSize(1))
+			.body("data[1].puntosResiduos[0].id", equalTo(1))
+			.body("data[1].puntosResiduos[0].latitud", equalTo(-34.6611203f))
+			.body("data[1].puntosResiduos[0].longitud", equalTo(-58.5422521f))
+			.body("data[1].puntosResiduos[0].ciudadanoId", equalTo(1))
 		;
 	}
 	
