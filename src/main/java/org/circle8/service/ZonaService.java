@@ -6,6 +6,7 @@ import java.util.List;
 import org.circle8.dao.PuntoResiduoDao;
 import org.circle8.dao.ZonaDao;
 import org.circle8.dto.ZonaDto;
+import org.circle8.entity.Punto;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
@@ -59,7 +60,8 @@ public class ZonaService {
 			val punto = this.puntoResiduoDao.get(ciudadanoId, puntoResiduoId, PuntoResiduoExpand.EMPTY)
 					.orElseThrow(() -> new NotFoundException("No existe el punto de residuo"));;
 			
-			//TODO: validar que el punto este dentro de la zona
+			if(!acceptPunto(zona.polyline, punto))
+				throw new ServiceException("El punto no se encuentra dentro de la zona.");
 					
 			this.dao.includePuntoResiduo(t, puntoResiduoId, zonaId);
 			
@@ -71,6 +73,34 @@ public class ZonaService {
 		}catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar el punto de residuo", e);
 		}	
+	}
+	
+	/**
+	 * Se utiliza el algoritmo de Algoritmo de Ray Casting
+	 * Si el número de intersecciones es impar, el punto está dentro del polígono
+	 * Se usa el mismo algoritmo en el front
+	 */
+	private boolean acceptPunto(List<Punto> polyline,PuntoResiduo punto) {
+		int numIntersecciones = 0;	
+		val n = polyline.size();
+		for (int i = 0; i < n; i++) {
+			val punto1 = polyline.get(i);
+            val punto2 = polyline.get((i + 1) % n);
+
+            if (punto.latitud > Math.min(punto1.latitud, punto2.latitud)
+                    && punto.latitud <= Math.max(punto1.latitud, punto2.latitud)
+                    && punto.longitud <= Math.max(punto1.longitud, punto2.longitud)
+                    && punto1.latitud != punto2.latitud) {
+                
+            	double xInterseccion = (punto.latitud - punto1.latitud) * (punto2.longitud - punto1.longitud) /
+                        (punto2.latitud - punto1.latitud) + punto1.longitud;
+                if (punto1.longitud == punto2.longitud || punto.longitud <= xInterseccion) {
+                    numIntersecciones++;
+                }
+            }
+		}
+		
+		return numIntersecciones % 2 != 0;
 	}
 
 }
