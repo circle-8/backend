@@ -31,6 +31,15 @@ public class ZonaIncludePuntoResiduoTest {
 	}
 	
 	@Test
+	void testAlreadyExist() {
+		RestAssured.given()
+			.post("/ciudadano/1/punto_residuo/1/zona/1")
+			.then()
+			.statusCode(400)			
+		;
+	}
+	
+	@Test
 	void testNotFoundZona() {
 		RestAssured.given()
 			.post("/ciudadano/2/punto_residuo/2/zona/0")
