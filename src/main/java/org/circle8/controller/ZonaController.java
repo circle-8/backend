@@ -150,7 +150,7 @@ public class ZonaController {
 		} catch (ServiceError e) {
 			return new ErrorResponse(e);
 		} catch (ServiceException e) {
-			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+			return new ErrorResponse(e);
 		}
 	}
 

@@ -85,8 +85,8 @@ public class ZonaGetTest {
 			.body("puntosResiduos[0].longitud", equalTo(-58.5422521f))
 			.body("puntosResiduos[0].ciudadanoId", equalTo(1))
 			.body("puntosResiduos[1].id", equalTo(2))
-			.body("puntosResiduos[1].latitud", equalTo(-35.6611203f))
-			.body("puntosResiduos[1].longitud", equalTo(-58.5422521f))
+			.body("puntosResiduos[1].latitud", equalTo(-34.66381f))
+			.body("puntosResiduos[1].longitud", equalTo(-58.581509f))
 			.body("puntosResiduos[1].ciudadanoId", equalTo(2))
 		;
 	}
