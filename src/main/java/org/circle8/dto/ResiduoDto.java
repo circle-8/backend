@@ -76,10 +76,11 @@ public class ResiduoDto {
 	public Residuo toEntity() {
 		//Son los atributos necesarios para hacer el POST
 		return Residuo.builder()
+				.id(this.id)
 				.fechaLimiteRetiro(this.fechaLimiteRetiro)
 				.descripcion(this.descripcion)
-				.puntoResiduo(this.puntoResiduo.toEntity())
-				.tipoResiduo(this.tipoResiduo.toEntity())
+				.puntoResiduo(this.puntoResiduo != null ? this.puntoResiduo.toEntity() : null)
+				.tipoResiduo(this.tipoResiduo != null ? this.tipoResiduo.toEntity() : null)
 				.build();
 	}
 }

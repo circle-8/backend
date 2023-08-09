@@ -45,14 +45,6 @@ INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResidu
 INSERT INTO public."PuntoResiduo" ("CiudadanoId", "Latitud", "Longitud") VALUES (1, -34.6611203, -58.5422521);
 INSERT INTO public."PuntoResiduo" ("CiudadanoId", "Latitud", "Longitud") VALUES (2, -35.6611203, -58.5422521);
 
-INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, NULL, NULL, 'Prueba 1', NULL);
-INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, NULL, NULL, 'Residuo con limite', '2023-07-10 19:41:00-00');
-INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', '2023-07-22 19:41:00-00', 1, 1, NULL, NULL, 'Residuo Fulfilled', NULL);
-INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 4, NULL, NULL, 'Carton', NULL);
-
-INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'PENDIENTE', 2, 1, 1);
-INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'PENDIENTE', 1, 2, 2);
-
 INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (1, 'fakePolyline');
 INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (2, 'fakePolyline');
 
@@ -61,4 +53,12 @@ INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "Fecha
 
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-01-01 08:00:00+00', '2023-01-02 08:00:00+00', 1, 1);
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-02-01 08:00:00+00', '2023-02-02 08:00:00+00', 2, 2);
+INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-02-01 08:00:00+00', '2023-02-02 08:00:00+00', 1, 2);
 
+INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, 1, NULL, 'Prueba 1', NULL);
+INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, 2, NULL, 'Residuo con limite', '2023-07-10 19:41:00-00');
+INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', '2023-07-22 19:41:00-00', 1, 1, 3, NULL, 'Residuo Fulfilled', NULL);
+INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 4, 1, NULL, 'Carton', NULL);
+
+INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'PENDIENTE', 2, 1, 1);
+INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'PENDIENTE', 1, 2, 2);

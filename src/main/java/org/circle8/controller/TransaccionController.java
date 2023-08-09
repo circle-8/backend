@@ -6,6 +6,7 @@ import java.util.List;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
+import org.circle8.controller.request.transaccion.TransaccionPostRequest;
 import org.circle8.controller.request.transaccion.TransaccionesRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -95,8 +96,21 @@ public class TransaccionController {
 	 * POST /transaccion
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock;
-	}
+		val req = new TransaccionPostRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if (!valid.valid())
+			return new ErrorResponse(valid);
+		val dto = TransaccionDto.from(req);
+		dto.id = 0L;
+		try {
+			return service.save(dto).toResponse();
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error saving new Transaccion", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch (NotFoundException e) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+      }
+   }
 
 	/**
 	 * PUT /transaccion/{id}/residuo/{id_residuo}

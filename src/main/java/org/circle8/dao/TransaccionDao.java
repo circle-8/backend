@@ -3,6 +3,9 @@ package org.circle8.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +21,7 @@ import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
 import org.circle8.entity.Transporte;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
@@ -28,6 +32,17 @@ import com.google.inject.Inject;
 import lombok.val;
 
 public class TransaccionDao extends Dao{
+
+	private static final String INSERT_SQL = """
+		INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "PuntoReciclajeId")
+		VALUES (?, ?);
+		""";
+
+	private static final String UPDATE_RESIDUO_TRANSACCION_ID = """
+		UPDATE public."Residuo" as r
+			SET "TransaccionId" = ?
+			WHERE r."ID"= ?;
+		""";
 
 	private static final String SELECT_FMT = """
 		SELECT
@@ -213,8 +228,8 @@ public class TransaccionDao extends Dao{
 	) throws PersistenceException, SQLException {
 		var selectFields = SELECT_SIMPLE;
 		if ( exp.residuos ) selectFields += SELECT_RESIDUOS;
-		if ( exp.transporte || f.hasPuntos()) selectFields += SELECT_TRANSPORTE;
-		if ( exp.puntoReciclaje || f.transportistaId != null ) selectFields += SELECT_PUNTO_RECICLAJE;
+		if ( exp.transporte || f.transportistaId != null ) selectFields += SELECT_TRANSPORTE;
+		if ( exp.puntoReciclaje || f.hasPuntos() ) selectFields += SELECT_PUNTO_RECICLAJE;
 
 		var joinFields = "";
 		if ( exp.residuos ) joinFields += JOIN_RESIDUOS;
@@ -252,4 +267,40 @@ public class TransaccionDao extends Dao{
 		return p;
 	}
 
+	public Transaccion save(Transaction t, Transaccion transaccion) throws PersistenceException {
+		try ( var insert = t.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+			insert.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
+			insert.setLong(2, transaccion.puntoReciclajeId);
+
+			int insertions = insert.executeUpdate();
+			if(insertions == 0)
+				throw new SQLException("Creating the Transaccion failed, no affected rows");
+
+
+			try ( var rs = insert.getGeneratedKeys() ) {
+				if (rs.next())
+					transaccion.id = rs.getLong(1);
+				else
+					throw new SQLException("Creating the Transaccion failed, no ID obtained");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error inserting Transaccion", e);
+      }
+
+		return transaccion;
+   }
+
+	public void saveResiduos(Transaction t, long idResiduo, long idTransaccion) throws PersistenceException, NotFoundException {
+		try ( var insert = t.prepareStatement(UPDATE_RESIDUO_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
+			insert.setLong(1, idTransaccion);
+			insert.setLong(2, idResiduo);
+
+			int insertions = insert.executeUpdate();
+			if( insertions == 0 ) {
+				throw new NotFoundException("No existe el Residuo a actualizar.");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating the transaccionId on Residuo", e);
+      }
+   }
 }

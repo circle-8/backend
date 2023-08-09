@@ -1,9 +1,11 @@
 package org.circle8.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.circle8.dao.TransaccionDao;
 import org.circle8.dto.TransaccionDto;
+import org.circle8.entity.Residuo;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
@@ -12,6 +14,8 @@ import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
 
 import com.google.inject.Inject;
+
+import lombok.val;
 
 public class TransaccionService {
 	private final TransaccionDao dao;
@@ -39,4 +43,22 @@ public class TransaccionService {
 		}
 	}
 
+   public TransaccionDto save(TransaccionDto dto) throws ServiceError, NotFoundException {
+		var entity = dto.toEntity();
+		try (var t = dao.open()) {
+			entity = dao.save(t, entity);
+			dto.id = entity.id;
+			for(Residuo r : entity.residuos) {
+				dao.saveResiduos(t, r.id, dto.id);
+			}
+			t.commit();
+			List<String> expandList = new ArrayList<>();
+			expandList.add("residuos");
+			return this.dao.get(t, dto.id, new TransaccionExpand(expandList))
+																	.map(TransaccionDto::from)
+																	.orElseThrow(() -> new NotFoundException("No existe la transaccion que se buscaba actualizar"));
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al guardar la transaccion", e);
+      }
+   }
 }

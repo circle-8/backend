@@ -34,7 +34,7 @@ public class TransporteDto {
 		return t;
 	}
 
-	public TransporteResponse toResponse(){
+	public TransporteResponse toResponse() {
 		return new TransporteResponse(
 			id,
 			fechaAcordada,
@@ -49,5 +49,20 @@ public class TransporteDto {
 			pagoConfirmado,
 			entregaConfirmada
 		);
+	}
+
+	public Transporte toEntity() {
+		var t = new Transporte();
+		t.id = id;
+		t.fechaAcordada = fechaAcordada;
+		t.fechaInicio = fechaInicio;
+		t.fechaFin = fechaFin;
+		t.precioAcordado = precioAcordado;
+		t.transportistaId = transportistaId;
+		t.transportista = transportista.toEntity();
+		t.transaccionId = transaccionId;
+		t.pagoConfirmado = pagoConfirmado;
+		t.entregaConfirmada = entregaConfirmada;
+		return t;
 	}
 }

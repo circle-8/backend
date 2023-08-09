@@ -19,4 +19,8 @@ public class TransportistaDto {
 		//TODO: implementar
 		return new TransportistaResponse();
 	}
+
+	public Transportista toEntity() {
+		return new Transportista(usuarioId);
+	}
 }
