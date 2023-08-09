@@ -132,7 +132,7 @@ public class Routes {
 			.put("/organizacion/{organizacion_id}/zona/{id}", result(zonaController::put))
 			.delete("/organizacion/{organizacion_id}/zona/{id}", result(zonaController::delete))
 			.post("/organizacion/{organizacion_id}/zona", result(zonaController::post))
-			.post("/ciudadano/{ciudadano_id}/punto_residuo/{punto_residuo_id}/zona/{id}", result(zonaController::includePuntoResiduo))
+			.post("/punto_residuo/{punto_residuo_id}/zona/{id}", result(zonaController::includePuntoResiduo))
 			.delete("/punto_residuo/{punto_residuo_id}/zona/{id}", result(zonaController::excludePuntoResiduo))
 			// RECORRIDO
 			.get("/recorridos", result(recorridoController::list))

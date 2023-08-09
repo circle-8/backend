@@ -130,14 +130,12 @@ public class ZonaController {
 	}
 
 	/**
-	 * POST /ciudadano/{ciudadano_id}/punto_residuo/{punto_residuo_id}/zona/{id}
+	 * POST /punto_residuo/{punto_residuo_id}/zona/{id}
 	 */
 	public ApiResponse includePuntoResiduo(Context ctx) {
-		final long ciudadanoId;
 		final long puntoResiduoId;
 		final long zonaId;
 		try {
-			ciudadanoId = Long.parseLong(ctx.pathParam("ciudadano_id"));
 			puntoResiduoId = Long.parseLong(ctx.pathParam("punto_residuo_id"));
 			zonaId = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
@@ -145,7 +143,7 @@ public class ZonaController {
 		}
 		
 		try {
-			val dto = this.service.includePuntoResiduo(ciudadanoId, puntoResiduoId, zonaId);
+			val dto = this.service.includePuntoResiduo(puntoResiduoId, zonaId);
 			return dto.toResponse();
 		} catch (ServiceError e) {
 			return new ErrorResponse(e);

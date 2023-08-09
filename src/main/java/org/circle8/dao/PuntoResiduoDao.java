@@ -57,6 +57,10 @@ public class PuntoResiduoDao extends Dao {
 			JOIN "Usuario" AS u ON u."ID" = c."UsuarioId"
 			""";
 	
+	private static final String WHERE_ID = """		
+			AND pr."ID" = ?
+			""";
+	
 	private static final String WHERE_CIUDADANO = """
 		AND pr."CiudadanoId" = ?
 		""";
@@ -76,11 +80,6 @@ public class PuntoResiduoDao extends Dao {
 	private static final String WHERE_TIPO = """
 		AND tr."Nombre" IN ( %s )
 		""" + WHERE_RESIDUO;
-	
-	private static final String WHERE_IDS = """
-		AND "CiudadanoId" = ?
-		AND pr."ID" = ?
-		""";
 	
 	private static final String INSERT = """
 			INSERT INTO public."PuntoResiduo"(
@@ -233,11 +232,19 @@ public class PuntoResiduoDao extends Dao {
 		var join = JOIN_TIPO;
 		if ( x.ciudadano ) join += JOIN_CIUDADANO;
 
-		val sql = String.format(SELECT_FMT, select, join) + WHERE_IDS + WHERE_RESIDUO;
+		val sql = String.format(SELECT_FMT, select, join) 
+				+ WHERE_ID 
+				+ (ciudadanoId != null ? WHERE_CIUDADANO : "")
+				+ WHERE_RESIDUO;
 		val p = t.prepareStatement(sql);
-		p.setLong(1, ciudadanoId);
-		p.setLong(2, id);
-		p.setTimestamp(3, Timestamp.from(ZonedDateTime.now().toInstant()));
+		if(ciudadanoId != null) {
+			p.setLong(1, ciudadanoId);
+			p.setLong(2, id);
+			p.setTimestamp(3, Timestamp.from(ZonedDateTime.now().toInstant()));
+		}else {
+			p.setLong(1, id);
+			p.setTimestamp(2, Timestamp.from(ZonedDateTime.now().toInstant()));
+		}		
 
 		return p;
 	}

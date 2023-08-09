@@ -49,7 +49,7 @@ public class ZonaService {
 		}
 	}
 	
-	public ZonaDto includePuntoResiduo(Long ciudadanoId, Long puntoResiduoId, Long zonaId) throws ServiceError, ServiceException {
+	public ZonaDto includePuntoResiduo(Long puntoResiduoId, Long zonaId) throws ServiceError, ServiceException {
 		try ( val t = dao.open(true) ) {
 			val f = ZonaFilter.builder().id(zonaId).build();
 			val zonaExpand = new ZonaExpand(false, false, true);
@@ -57,7 +57,7 @@ public class ZonaService {
 			val zona = this.dao.get(t,f, zonaExpand)
 					.orElseThrow(() -> new NotFoundException("No existe la zona"));
 			
-			val punto = this.puntoResiduoDao.get(ciudadanoId, puntoResiduoId, PuntoResiduoExpand.EMPTY)
+			val punto = this.puntoResiduoDao.get(null, puntoResiduoId, PuntoResiduoExpand.EMPTY)
 					.orElseThrow(() -> new NotFoundException("No existe el punto de residuo"));;
 			
 			if(!acceptPunto(zona.polyline, punto))
