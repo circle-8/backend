@@ -290,7 +290,7 @@ public class TransaccionDao extends Dao{
 		return transaccion;
    }
 
-	public void saveResiduos(Transaction t, long idResiduo, long idTransaccion) throws PersistenceException, NotFoundException {
+	public void saveResiduo(Transaction t, long idResiduo, long idTransaccion) throws PersistenceException, NotFoundException {
 		try ( var insert = t.prepareStatement(UPDATE_RESIDUO_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
 			insert.setLong(1, idTransaccion);
 			insert.setLong(2, idResiduo);

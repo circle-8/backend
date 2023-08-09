@@ -116,12 +116,21 @@ public class TransaccionController {
 	 * PUT /transaccion/{id}/residuo/{id_residuo}
 	 */
 	public ApiResponse addResiduo(Context ctx) {
-		return mock.toBuilder()
-			.id(Long.parseLong(ctx.pathParam("id")))
-			.residuos(List.of(
-				ResiduoResponse.builder().id(Long.parseLong(ctx.pathParam(ID_RESIDUO_PARAM))).build())
-			)
-			.build();
+		final Long id;
+		final Long residuoId;
+
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			residuoId = Long.parseLong(ctx.pathParam(ID_RESIDUO_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+		try {
+			return this.service.put(id, residuoId).toResponse();
+		} catch (ServiceException e) {
+			log.error("[Request:{}] error put de residuo en transaccion");
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**

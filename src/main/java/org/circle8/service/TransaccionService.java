@@ -15,8 +15,6 @@ import org.circle8.filter.TransaccionFilter;
 
 import com.google.inject.Inject;
 
-import lombok.val;
-
 public class TransaccionService {
 	private final TransaccionDao dao;
 
@@ -49,7 +47,7 @@ public class TransaccionService {
 			entity = dao.save(t, entity);
 			dto.id = entity.id;
 			for(Residuo r : entity.residuos) {
-				dao.saveResiduos(t, r.id, dto.id);
+				dao.saveResiduo(t, r.id, dto.id);
 			}
 			t.commit();
 			List<String> expandList = new ArrayList<>();
@@ -61,4 +59,21 @@ public class TransaccionService {
 			throw new ServiceError("Ha ocurrido un error al guardar la transaccion", e);
       }
    }
+
+	public TransaccionDto put(Long id, Long residuoId) throws ServiceException{
+		try (var t = dao.open()){
+			TransaccionDto dto = dao.get(t, id, new TransaccionExpand(new ArrayList<>()))
+											.map(TransaccionDto::from)
+											.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+			dao.saveResiduo(t, residuoId, id);
+			t.commit();
+			List<String> expandList = new ArrayList<>();
+			expandList.add("residuos");
+			return this.dao.get(t, dto.id, new TransaccionExpand(expandList))
+								.map(TransaccionDto::from)
+								.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al tratar de agregar un residuo a la transaccion", e);
+		}
+	}
 }
