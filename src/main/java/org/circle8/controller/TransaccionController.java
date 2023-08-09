@@ -1,12 +1,14 @@
 package org.circle8.controller;
 
 import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 import org.circle8.controller.request.transaccion.TransaccionPostRequest;
+import org.circle8.controller.request.transaccion.TransaccionPutRequest;
 import org.circle8.controller.request.transaccion.TransaccionesRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -15,6 +17,7 @@ import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TransaccionResponse;
 import org.circle8.dto.TransaccionDto;
+import org.circle8.entity.Transaccion;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
@@ -77,7 +80,21 @@ public class TransaccionController {
 	 * PUT /transaccion/{id}
 	 */
 	public ApiResponse put(Context ctx) {
-		return mock.toBuilder().id(Long.parseLong(ctx.pathParam("id"))).build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de transaccion debe ser numérico", "");
+		}
+		val req = ctx.bodyAsClass(TransaccionPutRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+		try {
+			return this.service.put(id, req).toResponse();
+		} catch (ServiceException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**

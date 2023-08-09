@@ -31,7 +31,7 @@ import com.google.inject.Inject;
 
 import lombok.val;
 
-public class TransaccionDao extends Dao{
+public class TransaccionDao extends Dao {
 
 	private static final String INSERT_SQL = """
 		INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "PuntoReciclajeId")
@@ -40,8 +40,14 @@ public class TransaccionDao extends Dao{
 
 	private static final String UPDATE_RESIDUO_TRANSACCION_ID = """
 		UPDATE public."Residuo" as r
-			SET "TransaccionId" = ?
-			WHERE r."ID"= ?;
+		SET "TransaccionId" = ?
+		WHERE r."ID"= ?;
+		""";
+
+	private static final String PUT = """
+		UPDATE public."TransaccionResiduo" as tr
+		SET "FechaEfectiva"=?
+		WHERE tr."ID"=?;
 		""";
 
 	private static final String SELECT_FMT = """
@@ -104,14 +110,13 @@ public class TransaccionDao extends Dao{
 	public List<Transaccion> list(TransaccionFilter filter, TransaccionExpand exp) throws PersistenceException {
 		try (val t = open(true); val select = createSelect(t, filter, exp); val rs = select.executeQuery()) {
 			val mapTransacciones = new HashMap<Long, Transaccion>();
-			while(rs.next()) {
+			while (rs.next()) {
 				val id = rs.getLong("ID");
 				Transaccion transaccion = mapTransacciones.get(id);
-				if (transaccion == null){
+				if (transaccion == null) {
 					transaccion = buildTransaccion(rs, exp);
 					mapTransacciones.put(id, transaccion);
-				}
-				else if(exp.residuos)
+				} else if (exp.residuos)
 					transaccion.residuos.add(buildResiduo(rs));
 			}
 			return mapTransacciones.values().stream().toList();
@@ -120,6 +125,12 @@ public class TransaccionDao extends Dao{
 		}
 	}
 
+
+	public Optional<Transaccion> get(long transaccionId) throws PersistenceException {
+		try (var t = open(true)) {
+			return get(t, transaccionId, new TransaccionExpand(new ArrayList<>()));
+		}
+	}
 	public Optional<Transaccion> get(long transaccionId, TransaccionExpand expand) throws PersistenceException {
 		try (var t = open(true)) {
 			return get(t, transaccionId, expand);
@@ -128,20 +139,20 @@ public class TransaccionDao extends Dao{
 
 	public Optional<Transaccion> get(Transaction t, Long id, TransaccionExpand expand) throws PersistenceException {
 		val f = TransaccionFilter.builder().id(id).build();
-		try ( val ps = createSelect(t, f, expand) ) {
+		try (val ps = createSelect(t, f, expand)) {
 			ps.setLong(1, id);
 			try (val rs = ps.executeQuery()) {
 				if (!rs.next()) {
 					return Optional.empty();
 				}
 				Transaccion tr = buildTransaccion(rs, expand);
-				while(rs.next()) {
-					if(expand.residuos)
+				while (rs.next()) {
+					if (expand.residuos)
 						tr.residuos.add(buildResiduo(rs));
 				}
 				return Optional.of(tr);
 			}
-		} catch ( SQLException e ) {
+		} catch (SQLException e) {
 			throw new PersistenceException("error selecting transaccion", e);
 		}
 	}
@@ -155,51 +166,34 @@ public class TransaccionDao extends Dao{
 		val creacionTimestamp = rs.getTimestamp("FechaPrimerContacto");
 		val retiroTimestamp = rs.getTimestamp("FechaEfectiva");
 
-		val tr = new Transaccion(
-			rs.getLong("ID"),
-			creacionTimestamp != null ? creacionTimestamp.toInstant().atZone(Dates.UTC) : null,
-			retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null,
-			rs.getLong("TransporteId"),
-			transporte,
-			rs.getLong("PuntoReciclajeId"),
-			puntoReciclaje,
-			residuos);
+		val tr = new Transaccion(rs.getLong("ID"), creacionTimestamp != null ? creacionTimestamp.toInstant().atZone(Dates.UTC) : null,
+			retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null, rs.getLong("TransporteId"), transporte,
+			rs.getLong("PuntoReciclajeId"), puntoReciclaje, residuos);
 
-		if(expand.residuos)
+		if (expand.residuos)
 			residuos.add(buildResiduo(rs));
 		return tr;
 	}
 
 	private PuntoReciclaje buildPuntoReciclaje(ResultSet rs, boolean expand) throws SQLException {
-		if(!expand) return null;
+		if (!expand)
+			return null;
 
-		return new PuntoReciclaje(
-			rs.getLong("PuntoReciclajeId"),
-			rs.getString("Titulo"),
-			rs.getDouble("Latitud"),
-			rs.getDouble("Longitud"),
-			Dia.getDia(rs.getString("DiasAbierto")),
-			new ArrayList<>(),
-			rs.getLong("CiudadanoId"),
-			null);
+		return new PuntoReciclaje(rs.getLong("PuntoReciclajeId"), rs.getString("Titulo"), rs.getDouble("Latitud"), rs.getDouble("Longitud"),
+			Dia.getDia(rs.getString("DiasAbierto")), new ArrayList<>(), rs.getLong("CiudadanoId"), null);
 	}
 
 	private Transporte buildTransporte(ResultSet rs, boolean expand) throws SQLException {
-		if(!expand) return null;
+		if (!expand)
+			return null;
 
 		val fechaInicioTimestamp = rs.getTimestamp("FechaInicio");
 		val fechaAcordadaTimestamp = rs.getTimestamp("FechaAcordada");
 		val fechaFinTimestamp = rs.getTimestamp("FechaFin");
-		return new Transporte(rs.getLong("TransporteId"),
-			fechaAcordadaTimestamp != null ? fechaAcordadaTimestamp.toInstant().atZone(Dates.UTC) : null,
+		return new Transporte(rs.getLong("TransporteId"), fechaAcordadaTimestamp != null ? fechaAcordadaTimestamp.toInstant().atZone(Dates.UTC) : null,
 			fechaInicioTimestamp != null ? fechaInicioTimestamp.toInstant().atZone(Dates.UTC) : null,
-			fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null,
-			rs.getBigDecimal("Precio"),
-			rs.getLong("TransportistaId"),
-			null,
-			rs.getLong("ID"),
-			rs.getBoolean("PagoConfirmado"),
-			rs.getBoolean("EntregaConfirmada"));
+			fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null, rs.getBigDecimal("Precio"),
+			rs.getLong("TransportistaId"), null, rs.getLong("ID"), rs.getBoolean("PagoConfirmado"), rs.getBoolean("EntregaConfirmada"));
 
 	}
 
@@ -209,52 +203,53 @@ public class TransaccionDao extends Dao{
 		val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
 		val retiroDate = retiro != null ? retiro.toInstant().atZone(Dates.UTC) : null;
 
-		return Residuo.builder()
-							.id(rs.getLong("ResiduoId"))
-							.ciudadanoId(rs.getLong("CiudadanoId"))
-							.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
-							.fechaRetiro(retiroDate)
-							.fechaLimiteRetiro(limitDate)
-							.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
-							.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId")))
-							.descripcion(rs.getString("Descripcion"))
-							.build();
+		return Residuo
+			.builder()
+			.id(rs.getLong("ResiduoId"))
+			.ciudadanoId(rs.getLong("CiudadanoId"))
+			.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
+			.fechaRetiro(retiroDate)
+			.fechaLimiteRetiro(limitDate)
+			.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
+			.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId")))
+			.descripcion(rs.getString("Descripcion"))
+			.build();
 	}
 
-	private PreparedStatement createSelect(
-		Transaction t,
-		TransaccionFilter f,
-		TransaccionExpand exp
-	) throws PersistenceException, SQLException {
+	private PreparedStatement createSelect(Transaction t, TransaccionFilter f, TransaccionExpand exp) throws PersistenceException, SQLException {
 		var selectFields = SELECT_SIMPLE;
-		if ( exp.residuos ) selectFields += SELECT_RESIDUOS;
-		if ( exp.transporte || f.transportistaId != null ) selectFields += SELECT_TRANSPORTE;
-		if ( exp.puntoReciclaje || f.hasPuntos() ) selectFields += SELECT_PUNTO_RECICLAJE;
+		if (exp.residuos)
+			selectFields += SELECT_RESIDUOS;
+		if (exp.transporte || f.transportistaId != null)
+			selectFields += SELECT_TRANSPORTE;
+		if (exp.puntoReciclaje || f.hasPuntos())
+			selectFields += SELECT_PUNTO_RECICLAJE;
 
 		var joinFields = "";
-		if ( exp.residuos ) joinFields += JOIN_RESIDUOS;
-		else if ( exp.puntoReciclaje || f.hasPuntos() ) joinFields += JOIN_PUNTO_RECICLAJE;
-		if ( exp.transporte || f.transportistaId != null ) joinFields += JOIN_TRANSPORTE;
+		if (exp.residuos)
+			joinFields += JOIN_RESIDUOS;
+		else if (exp.puntoReciclaje || f.hasPuntos())
+			joinFields += JOIN_PUNTO_RECICLAJE;
+		if (exp.transporte || f.transportistaId != null)
+			joinFields += JOIN_TRANSPORTE;
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 		var conditions = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
 
-		if ( f.id != null ) {
+		if (f.id != null) {
 			conditions.append(WHERE_ID);
 			parameters.add(f.id);
 		}
 
-		if( f.hasPuntos()) {
-			val marks = f.puntosReciclaje.stream()
-				.map(pr -> "?")
-				.collect(Collectors.joining(","));
+		if (f.hasPuntos()) {
+			val marks = f.puntosReciclaje.stream().map(pr -> "?").collect(Collectors.joining(","));
 
 			conditions.append(String.format(WHERE_PUNTO_RECICLAJE, marks));
 			parameters.addAll(f.puntosReciclaje);
 		}
 
-		if(f.transportistaId != null) {
+		if (f.transportistaId != null) {
 			conditions.append(WHERE_TRANSPORTISTA);
 			parameters.add(f.transportistaId);
 		}
@@ -268,16 +263,15 @@ public class TransaccionDao extends Dao{
 	}
 
 	public Transaccion save(Transaction t, Transaccion transaccion) throws PersistenceException {
-		try ( var insert = t.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+		try (var insert = t.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 			insert.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
 			insert.setLong(2, transaccion.puntoReciclajeId);
 
 			int insertions = insert.executeUpdate();
-			if(insertions == 0)
+			if (insertions == 0)
 				throw new SQLException("Creating the Transaccion failed, no affected rows");
 
-
-			try ( var rs = insert.getGeneratedKeys() ) {
+			try (var rs = insert.getGeneratedKeys()) {
 				if (rs.next())
 					transaccion.id = rs.getLong(1);
 				else
@@ -285,22 +279,35 @@ public class TransaccionDao extends Dao{
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException("error inserting Transaccion", e);
-      }
+		}
 
 		return transaccion;
-   }
+	}
 
 	public void saveResiduo(Transaction t, long idResiduo, long idTransaccion) throws PersistenceException, NotFoundException {
-		try ( var insert = t.prepareStatement(UPDATE_RESIDUO_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
+		try (var insert = t.prepareStatement(UPDATE_RESIDUO_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
 			insert.setLong(1, idTransaccion);
 			insert.setLong(2, idResiduo);
 
 			int insertions = insert.executeUpdate();
-			if( insertions == 0 ) {
+			if (insertions == 0) {
 				throw new NotFoundException("No existe el Residuo a actualizar.");
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException("error updating the transaccionId on Residuo", e);
-      }
-   }
+		}
+	}
+
+	public void put(Transaction t, long idTransaccion, Transaccion tr) throws PersistenceException, NotFoundException {
+		try (var put = t.prepareStatement(PUT)) {
+			put.setTimestamp(1, Timestamp.from(tr.fechaRetiro.toInstant()));
+			put.setLong(2, idTransaccion);
+			int puts = put.executeUpdate();
+			if (puts == 0)
+				throw new NotFoundException("No existe la transaccion con id " + idTransaccion);
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating transaccion", e);
+		}
+	}
+
 }

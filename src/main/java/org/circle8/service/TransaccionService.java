@@ -3,9 +3,11 @@ package org.circle8.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.circle8.controller.request.transaccion.TransaccionPutRequest;
 import org.circle8.dao.TransaccionDao;
 import org.circle8.dto.TransaccionDto;
 import org.circle8.entity.Residuo;
+import org.circle8.entity.Transaccion;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
@@ -72,6 +74,18 @@ public class TransaccionService {
 			return this.dao.get(t, dto.id, new TransaccionExpand(expandList))
 								.map(TransaccionDto::from)
 								.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al tratar de agregar un residuo a la transaccion", e);
+		}
+	}
+
+	public TransaccionDto put(Long id, TransaccionPutRequest req) throws ServiceException{
+		try (var t = dao.open()){
+			dao.put(t, id, req.toEntity());
+			t.commit();
+			return dao.get(id)
+						 .map(TransaccionDto::from)
+						 .orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al tratar de agregar un residuo a la transaccion", e);
 		}
