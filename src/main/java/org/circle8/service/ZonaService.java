@@ -71,7 +71,20 @@ public class ZonaService {
 			zona.puntosResiduos.add(punto);					
 			return ZonaDto.from(zona);		
 		}catch ( PersistenceException e ) {
-			throw new ServiceError("Ha ocurrido un error al guardar el punto de residuo", e);
+			throw new ServiceError("Ha ocurrido un error al guardar el punto de residuo en la zona", e);
+		}	
+	}
+	
+	public ZonaDto excludePuntoResiduo(Long puntoResiduoId, Long zonaId) throws ServiceError, ServiceException {
+		try ( val t = dao.open(true) ) {
+			this.dao.excludePuntoResiduo(t, puntoResiduoId, zonaId);			
+			val f = ZonaFilter.builder().id(zonaId).build();
+			val zonaExpand = new ZonaExpand(false, false, true);			
+			val zona = this.dao.get(t,f, zonaExpand)
+					.orElseThrow(() -> new NotFoundException("No existe la zona"));				
+			return ZonaDto.from(zona);		
+		}catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al eliminar el punto de residuo de la zona", e);
 		}	
 	}
 	

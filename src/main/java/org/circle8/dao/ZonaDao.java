@@ -21,6 +21,7 @@ import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.User;
 import org.circle8.entity.Zona;
 import org.circle8.exception.DuplicatedEntry;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
@@ -38,6 +39,11 @@ public class ZonaDao extends Dao {
 	private static final String INSERT_INTO_PUNTO_RESIDUO_ZONA = """
 			INSERT INTO "PuntoResiduo_Zona" ("PuntoResiduoId", "ZonaId")
 			VALUES (?, ?);
+			""";
+	
+	private static final String DELETE_PUNTO_ZONA = """
+			DELETE FROM "PuntoResiduo_Zona"
+			WHERE "PuntoResiduoId" = ? AND "ZonaId" = ?;
 			""";
 
 	private static final String SELECT_FMT = """
@@ -137,7 +143,9 @@ public class ZonaDao extends Dao {
 	}
 	
 	public void includePuntoResiduo(Transaction t,Long puntoResiduoId, Long zonaId) throws PersistenceException {
-		try ( val insert = createInsert(t, puntoResiduoId, zonaId) ) {
+		try ( val insert = t.prepareStatement(INSERT_INTO_PUNTO_RESIDUO_ZONA, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setLong(1, puntoResiduoId);
+			insert.setLong(2, zonaId);
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
 				throw new SQLException("Creating the punto residuo zona failed, no affected rows");
@@ -151,6 +159,18 @@ public class ZonaDao extends Dao {
 				throw new DuplicatedEntry("punto residuo zona already exist", e);
 			
 			throw new PersistenceException("error inserting punto de residuo in zona", e);
+		}
+	}
+	
+	public void excludePuntoResiduo(Transaction t,Long puntoResiduoId, Long zonaId) throws PersistenceException, NotFoundException {
+		try ( val delete =  t.prepareStatement(DELETE_PUNTO_ZONA) ) {
+			delete.setLong(1, puntoResiduoId);
+			delete.setLong(2, zonaId);
+			
+			if ( delete.executeUpdate() <= 0 )
+				throw new NotFoundException("No se encontro el punto en la zona para eliminar");
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Deleting punto de residuo in zona", e);
 		}
 	}
 
@@ -173,19 +193,8 @@ public class ZonaDao extends Dao {
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting zonas", e);
 		}
-	}
+	}	
 	
-	private PreparedStatement createInsert(
-			Transaction t,
-			long puntoResiduoId,
-			long zonaId
-		) throws PersistenceException, SQLException {
-			val ps = t.prepareStatement(INSERT_INTO_PUNTO_RESIDUO_ZONA, Statement.RETURN_GENERATED_KEYS);
-			ps.setLong(1, puntoResiduoId);
-			ps.setLong(2, zonaId);
-			return ps;
-		}
-
 	private PreparedStatement createSelect(
 		Transaction t,
 		ZonaFilter f,

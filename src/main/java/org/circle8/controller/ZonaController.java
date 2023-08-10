@@ -133,6 +133,17 @@ public class ZonaController {
 	 * POST /punto_residuo/{punto_residuo_id}/zona/{id}
 	 */
 	public ApiResponse includePuntoResiduo(Context ctx) {
+		return doIncludeExclude(ctx, true);
+	}
+
+	/**
+	 * DELETE /punto_residuo/{id_punto_residuo}/zona/{id}
+	 */
+	public ApiResponse excludePuntoResiduo(Context ctx) {
+		return doIncludeExclude(ctx, false);
+	}
+	
+	private ApiResponse doIncludeExclude(Context ctx,boolean isInclude) {
 		final long puntoResiduoId;
 		final long zonaId;
 		try {
@@ -143,24 +154,15 @@ public class ZonaController {
 		}
 		
 		try {
-			val dto = this.service.includePuntoResiduo(puntoResiduoId, zonaId);
+			val dto = isInclude ?
+					this.service.includePuntoResiduo(puntoResiduoId, zonaId) : 
+						this.service.excludePuntoResiduo(puntoResiduoId, zonaId);
 			return dto.toResponse();
 		} catch (ServiceError e) {
 			return new ErrorResponse(e);
 		} catch (ServiceException e) {
 			return new ErrorResponse(e);
 		}
-	}
-
-	/**
-	 * DELETE /punto_residuo/{id_punto_residuo}/zona/{id}
-	 */
-	public ApiResponse excludePuntoResiduo(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
-			.build();
 	}
 
 	/**
