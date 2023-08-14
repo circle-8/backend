@@ -2,6 +2,7 @@ package org.circle8.dto;
 
 import java.util.List;
 
+import org.circle8.controller.request.zona.PostZonaRequest;
 import org.circle8.controller.response.ZonaResponse;
 import org.circle8.entity.Zona;
 
@@ -14,6 +15,13 @@ public class ZonaDto {
 	public List<TipoResiduoDto> tipoResiduo;
 	public List<RecorridoDto> recorridos;
 	
+	public static ZonaDto from(PostZonaRequest req) {
+		var dto = new ZonaDto();
+		dto.nombre = req.nombre;
+		dto.polyline = req.polyline.stream().map(PuntoDto::from).toList();
+		dto.tipoResiduo = req.tiposResiduo.stream().map(TipoResiduoDto::from).toList();
+		return dto;
+	}	
 
 	public static ZonaDto from(Zona entity) {
 		if ( entity == null ) return null;
@@ -39,5 +47,16 @@ public class ZonaDto {
 		zr.tipoResiduo = this.tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList();
 		zr.recorridos = this.recorridos.stream().map(RecorridoDto::toResponse).toList();
 		return zr;		
+	}
+	
+	public Zona toEntity() {
+		Zona z = new Zona();
+		z.id = this.id;
+		z.nombre = this.nombre;
+		z.polyline = this.polyline != null ?
+				this.polyline.stream().map(PuntoDto::toEntity).toList() : null;
+		z.tipoResiduo = this.tipoResiduo != null ? 
+				this.tipoResiduo.stream().map(TipoResiduoDto::toEntity).toList() : null;		
+		return z;
 	}
 }

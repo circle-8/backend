@@ -18,4 +18,8 @@ public class PuntoDto {
 	public PuntoResponse toResponse() {
 		return new PuntoResponse(latitud, longitud);
 	}
+	
+	public Punto toEntity() {
+		return new Punto(latitud, longitud);
+	}
 }

@@ -1,9 +1,11 @@
 package org.circle8.expand;
 
+import lombok.AllArgsConstructor;
 import lombok.ToString;
 
 import java.util.List;
 
+@AllArgsConstructor
 @ToString
 public class ZonaExpand {
 	public boolean organizacion;

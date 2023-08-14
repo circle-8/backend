@@ -3,6 +3,7 @@ package org.circle8.service;
 import java.util.List;
 
 import org.circle8.dao.ZonaDao;
+import org.circle8.dto.TipoResiduoDto;
 import org.circle8.dto.ZonaDto;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
@@ -22,6 +23,22 @@ public class ZonaService {
 	@Inject
 	public ZonaService(ZonaDao dao) {
 		this.dao = dao;
+	}
+	
+	public ZonaDto save(Long organizacionId,ZonaDto dto) throws ServiceException {
+		var entity = dto.toEntity();	
+		try (var t = dao.open()) {
+			entity = dao.save(t, organizacionId, entity);
+			for(TipoResiduoDto tr : dto.tipoResiduo){
+				dao.saveTipos(t, entity.id, tr.id);
+			}
+			t.commit();			
+			val f = ZonaFilter.builder().id(entity.id).build();
+			val x = new ZonaExpand(true, false);
+			return get(f, x);
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al guardar la zona", e);
+		}
 	}
 	
 	public ZonaDto get(ZonaFilter f, ZonaExpand x) throws ServiceException {

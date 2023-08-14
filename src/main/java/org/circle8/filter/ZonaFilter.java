@@ -12,6 +12,6 @@ public class ZonaFilter {
 	public List<Integer> tiposResiduos;
 	
 	public boolean hasTipo() {
-		return !tiposResiduos.isEmpty();
+		return tiposResiduos != null && !tiposResiduos.isEmpty();
 	}
 }

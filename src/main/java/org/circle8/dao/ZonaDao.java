@@ -3,6 +3,7 @@ package org.circle8.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,12 +18,15 @@ import org.circle8.entity.Recorrido;
 import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 import org.circle8.utils.Dates;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonPrimitive;
 import com.google.inject.Inject;
 
 import lombok.val;
@@ -30,6 +34,17 @@ import lombok.val;
 public class ZonaDao extends Dao {
 
 	private static final Gson GSON = new Gson();
+	
+	private static final String INSERT = """
+			INSERT INTO "Zona"(
+			"OrganizacionId", "Polyline", "Nombre")
+			VALUES (?, ?, ?);
+			""";
+	
+	private static final String INSERT_ZONA_TIPO_RESIDUO = """
+			INSERT INTO "Zona_TipoResiduo"("ZonaId", "TipoResiduoId")
+			VALUES (?, ?);
+			""";
 
 	private static final String SELECT_FMT = """
 			SELECT
@@ -96,6 +111,43 @@ public class ZonaDao extends Dao {
 	@Inject
 	ZonaDao(DataSource ds) {
 		super(ds);
+	}
+	
+	public Zona save(Transaction t,Long organizacionId,Zona zona) throws PersistenceException {		
+		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setLong(1, organizacionId);
+			insert.setString(2, getPolyline(zona.polyline));
+			insert.setString(3, zona.nombre);
+
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new SQLException("Creating the Zona failed, no affected rows");
+
+			try ( var rs = insert.getGeneratedKeys() ) {
+				if (rs.next())
+					zona.id = rs.getLong(1);
+				else
+					throw new SQLException("Creating the Zona failed, no ID obtained");
+			}
+		} catch ( SQLException e ) {
+				throw new PersistenceException("error inserting Zona", e);
+		}
+
+		return zona;
+	}
+	
+	public void saveTipos(Transaction t, long zonaId, long tipoResiduoId) throws PersistenceException, NotFoundException {
+		try ( var insert = t.prepareStatement(INSERT_ZONA_TIPO_RESIDUO, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setLong(1, zonaId);
+			insert.setLong(2, tipoResiduoId);
+
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new NotFoundException("No existe el TipoResiduo a actualizar.");
+
+		} catch (SQLException e ) {			
+			throw new PersistenceException("error creating the relation between zona and tipoResiduo.", e);
+		}
 	}
 
 	public Optional<Zona> get(Transaction t, ZonaFilter f, ZonaExpand x) throws PersistenceException {
@@ -218,6 +270,17 @@ public class ZonaDao extends Dao {
 			l.add(new Punto(element[0], element[1]));
 		}
 		return l;
+	}
+	
+	private String getPolyline(List<Punto> puntos) {
+		JsonArray array = new JsonArray();
+		for(Punto punto : puntos) {
+			JsonArray puntoArray = new JsonArray();
+			puntoArray.add(new JsonPrimitive(punto.latitud));
+			puntoArray.add(new JsonPrimitive(punto.longitud));
+			array.add(puntoArray);
+		}
+		return GSON.toJson(array);
 	}
 
 	private void addTipoResiduo(ResultSet rs, Zona z) throws SQLException {

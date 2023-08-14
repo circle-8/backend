@@ -2,6 +2,7 @@ package org.circle8.controller;
 
 import java.util.List;
 
+import org.circle8.controller.request.zona.PostZonaRequest;
 import org.circle8.controller.request.zona.ZonaRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -120,13 +121,32 @@ public class ZonaController {
 	}
 
 	/**
-	 * POST /organizacion/{id_organizacion}/zona
+	 * POST /organizacion/{organizacion_id}/zona
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock.toBuilder()
-			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
-			.build();
+		final long organizacionId;
+		try {
+			organizacionId = Long.parseLong(ctx.pathParam("organizacion_id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la organización debe ser numérico", "");
+		}
+		
+		val req = ctx.bodyAsClass(PostZonaRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid()) {
+			return new ErrorResponse(valid);
+		}
+		
+		val dto = ZonaDto.from(req);
+		
+		try {
+			return service.save(organizacionId,dto).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error saving new PuntoReciclaje", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
