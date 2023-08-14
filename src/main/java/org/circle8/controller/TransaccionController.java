@@ -19,6 +19,7 @@ import org.circle8.controller.response.SuccessResponse;
 import org.circle8.controller.response.TransaccionResponse;
 import org.circle8.dto.TransaccionDto;
 import org.circle8.entity.Transaccion;
+import org.circle8.exception.BadRequestException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
@@ -188,12 +189,26 @@ public class TransaccionController {
 	 * POST /transaccion/{id}/transporte/{id_transporte}
 	 */
 	public ApiResponse setTransporte(Context ctx) {
-		return mock.toBuilder()
-			.id(Long.parseLong(ctx.pathParam("id")))
-			.transporteId(Long.parseLong(ctx.pathParam(ID_TRANSPORTE_PARAM)))
-			.transporteUri("/transporte/"+ctx.pathParam(ID_TRANSPORTE_PARAM))
-			.build();
-	}
+		final Long id;
+		final Long transporteId;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			transporteId = Long.parseLong(ctx.pathParam(ID_TRANSPORTE_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+		try {
+			this.service.setTransporte(id, transporteId);
+			return new SuccessResponse();
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error setting Transporte to Transaccion: ", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch (NotFoundException e) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+      } catch (BadRequestException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "La Transaccion ya posee un Transporte", "");
+		}
+   }
 
 	/**
 	 * DELETE /transaccion/{id}/transporte/{id_transporte}

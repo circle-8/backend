@@ -21,6 +21,7 @@ import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
 import org.circle8.entity.Transporte;
+import org.circle8.exception.BadRequestException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.TransaccionExpand;
@@ -59,7 +60,7 @@ public class TransaccionDao extends Dao {
 
 	private static final String DELETE = """
 		DELETE FROM public."TransaccionResiduo" AS tr
-			WHERE tr."ID"= ?;
+		WHERE tr."ID"= ?;
 		""";
 
 	private static final String UPDATE_TRANSACCION_REMOVE_TRANSPORTE_ID = """
@@ -69,18 +70,31 @@ public class TransaccionDao extends Dao {
 		AND tr."TransporteId"= ?;
 		""";
 
+	private static final String UPDATE_TRANSACCION_ADD_TRANSPORTE_ID = """
+		UPDATE public."TransaccionResiduo" as tr
+		SET "TransporteId" = ?
+		WHERE tr."ID"= ?;
+		""";
+
+
 	private static final String PUT = """
 		UPDATE public."TransaccionResiduo" as tr
 		SET "FechaEfectiva"=?
 		WHERE tr."ID"=?;
 		""";
 
+	private static final String SELECT_TRANSPORTE_ID = """
+		SELECT "TransporteId"
+		FROM public."TransaccionResiduo" AS tr
+		WHERE tr."ID"= ?;
+		""";
+
 	private static final String SELECT_FMT = """
 		SELECT
-		       %s
-		  FROM public."TransaccionResiduo" AS tr
-		    %s
-		 WHERE 1 = 1
+		%s
+		FROM public."TransaccionResiduo" AS tr
+		%s
+		WHERE 1 = 1
 		""";
 
 	private static final String SELECT_SIMPLE = """
@@ -282,8 +296,6 @@ public class TransaccionDao extends Dao {
 		var p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i + 1, parameters.get(i));
-
-		val prueba = p.toString();
 		return p;
 	}
 
@@ -381,6 +393,36 @@ public class TransaccionDao extends Dao {
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException("error updating the removing a Residuo from a Transaccion", e);
+		}
+	}
+
+	public void setTransporte(Transaction t, Long id, Long transporteId) throws PersistenceException, NotFoundException, BadRequestException {
+		if(!transaccionExistWithoutTransporte(t, id)) {
+			throw new BadRequestException("La transaccion ya posee un transporte");
+		}
+		try (var setTransporte = t.prepareStatement(UPDATE_TRANSACCION_ADD_TRANSPORTE_ID, Statement.RETURN_GENERATED_KEYS)) {
+			setTransporte.setLong(1, transporteId);
+			setTransporte.setLong(2, id);
+
+			int updated = setTransporte.executeUpdate();
+			if (updated == 0) {
+				throw new NotFoundException("No existe la Transaccion a actualizar");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error adding a Transporte to a Transaccion", e);
+		}
+	}
+
+	private boolean transaccionExistWithoutTransporte(Transaction t, Long id) throws PersistenceException, NotFoundException {
+		try (var select = t.prepareStatement(SELECT_TRANSPORTE_ID, Statement.RETURN_GENERATED_KEYS)) {
+			select.setLong(1, id);
+			var rs = select.executeQuery();
+			if (!rs.next()) {
+				throw new NotFoundException("No existe la Transaccion a actualizar");
+			}
+			return rs.getLong("TransporteId") == 0;
+		} catch (SQLException e) {
+			throw new PersistenceException("error removing a Residuo from a Transaccion", e);
 		}
 	}
 }

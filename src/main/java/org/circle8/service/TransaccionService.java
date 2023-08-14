@@ -6,6 +6,7 @@ import java.util.List;
 import org.circle8.dao.TransaccionDao;
 import org.circle8.dto.TransaccionDto;
 import org.circle8.entity.Residuo;
+import org.circle8.exception.BadRequestException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
@@ -88,12 +89,19 @@ public class TransaccionService {
 			throw new ServiceError("Ha ocurrido un error al eliminar la transaccion", e);
 		}
 	}
+	public void setTransporte(Long id, Long transporteId) throws ServiceError, NotFoundException, BadRequestException {
+		try (var t = dao.open(true)) {
+			dao.setTransporte(t, id, transporteId);
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al intentar añadir el transporte de la transaccion", e);
+      }
+   }
 
 	public void removeResiduo(Long transaccionId, Long residuoId) throws ServiceError, NotFoundException {
 		try (var t = dao.open(true)) {
 			dao.removeResiduo(t, transaccionId, residuoId);
 		} catch (PersistenceException e) {
-			throw new ServiceError("Ha ocurrido un error al eliminar la transaccion", e);
+			throw new ServiceError("Ha ocurrido un error al intentar remover el residuo de la transaccion", e);
 		}
 	}
 
@@ -101,7 +109,8 @@ public class TransaccionService {
 		try (var t = dao.open(true)) {
 			dao.removeTransporte(t, id, transporteId);
 		} catch (PersistenceException e) {
-			throw new ServiceError("Ha ocurrido un error al eliminar la transaccion", e);
+			throw new ServiceError("Ha ocurrido un error al intentar remover el transporte de la transaccion", e);
 		}
 	}
+
 }
