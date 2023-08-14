@@ -15,6 +15,7 @@ import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.ResiduoResponse;
+import org.circle8.controller.response.SuccessResponse;
 import org.circle8.controller.response.TransaccionResponse;
 import org.circle8.dto.TransaccionDto;
 import org.circle8.entity.Transaccion;
@@ -66,11 +67,11 @@ public class TransaccionController {
 		val expand = new TransaccionExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
 		try {
 			return service.get(id, expand).toResponse();
+		} catch (NotFoundException e) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch (ServiceError e) {
 			log.error("[Request: id={}] error get transaccion", id, e);
 			return new ErrorResponse(e);
-		} catch ( NotFoundException e ) {
-			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}
@@ -88,12 +89,13 @@ public class TransaccionController {
 		}
 		val req = ctx.bodyAsClass(TransaccionPutRequest.class);
 		val valid = req.valid();
+		req.id = id;
 		if ( !valid.valid() )
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 		try {
-			return this.service.put(id, req).toResponse();
+			return this.service.put(TransaccionDto.from(req)).toResponse();
 		} catch (ServiceException e) {
-			throw new RuntimeException(e);
+			return new ErrorResponse(e);
 		}
 	}
 
@@ -101,12 +103,21 @@ public class TransaccionController {
 	 * DELETE /transaccion/{id}
 	 */
 	public ApiResponse delete(Context ctx) {
-		return new ApiResponse() {
-			@Override
-			public HttpStatus status() {
-				return HttpStatus.ACCEPTED;
-			}
-		};
+		final Long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", e.getMessage());
+		}
+		try{
+			service.delete(id);
+			return new SuccessResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error delete transaccion: ", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
@@ -154,10 +165,23 @@ public class TransaccionController {
 	 * DELETE /transaccion/{id}/residuo/{id_residuo}
 	 */
 	public ApiResponse removeResiduo(Context ctx) {
-		return mock.toBuilder()
-			.id(Long.parseLong(ctx.pathParam("id")))
-			//.residuos(List.of())
-			.build();
+		final Long id;
+		final Long residuoId;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			residuoId = Long.parseLong(ctx.pathParam(ID_RESIDUO_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+		try {
+			this.service.removeResiduo(id, residuoId);
+			return new SuccessResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error delete transaccion: ", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
@@ -175,9 +199,23 @@ public class TransaccionController {
 	 * DELETE /transaccion/{id}/transporte/{id_transporte}
 	 */
 	public ApiResponse unsetTransporte(Context ctx) {
-		return mock.toBuilder()
-			.id(Long.parseLong(ctx.pathParam("id")))
-			.build();
+		final Long id;
+		final Long transporteId;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			transporteId = Long.parseLong(ctx.pathParam(ID_TRANSPORTE_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+		try {
+			this.service.removeTransporte(id, transporteId);
+			return new SuccessResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error delete transporteId from transaccion: ", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**

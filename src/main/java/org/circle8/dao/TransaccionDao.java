@@ -38,10 +38,35 @@ public class TransaccionDao extends Dao {
 		VALUES (?, ?);
 		""";
 
-	private static final String UPDATE_RESIDUO_TRANSACCION_ID = """
+	private static final String UPDATE_RESIDUO_ADD_TRANSACCION_ID = """
 		UPDATE public."Residuo" as r
 		SET "TransaccionId" = ?
 		WHERE r."ID"= ?;
+		""";
+
+	private static final String UPDATE_RESIDUOS_REMOVE_TRANSACCION_ID = """
+		UPDATE public."Residuo" as r
+		SET "TransaccionId" = NULL
+		WHERE r."TransaccionId"= ?;
+		""";
+
+	private static final String UPDATE_RESIDUO_REMOVE_TRANSACCION_ID = """
+		UPDATE public."Residuo" as r
+		SET "TransaccionId" = NULL
+		WHERE r."ID"= ?
+		AND r."TransaccionId"= ?;
+		""";
+
+	private static final String DELETE = """
+		DELETE FROM public."TransaccionResiduo" AS tr
+			WHERE tr."ID"= ?;
+		""";
+
+	private static final String UPDATE_TRANSACCION_REMOVE_TRANSPORTE_ID = """
+		UPDATE public."TransaccionResiduo" as tr
+		SET "TransporteId" = NULL
+		WHERE tr."ID"= ?
+		AND tr."TransporteId"= ?;
 		""";
 
 	private static final String PUT = """
@@ -125,12 +150,12 @@ public class TransaccionDao extends Dao {
 		}
 	}
 
-
 	public Optional<Transaccion> get(long transaccionId) throws PersistenceException {
 		try (var t = open(true)) {
 			return get(t, transaccionId, new TransaccionExpand(new ArrayList<>()));
 		}
 	}
+
 	public Optional<Transaccion> get(long transaccionId, TransaccionExpand expand) throws PersistenceException {
 		try (var t = open(true)) {
 			return get(t, transaccionId, expand);
@@ -285,7 +310,7 @@ public class TransaccionDao extends Dao {
 	}
 
 	public void saveResiduo(Transaction t, long idResiduo, long idTransaccion) throws PersistenceException, NotFoundException {
-		try (var insert = t.prepareStatement(UPDATE_RESIDUO_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
+		try (var insert = t.prepareStatement(UPDATE_RESIDUO_ADD_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
 			insert.setLong(1, idTransaccion);
 			insert.setLong(2, idResiduo);
 
@@ -298,16 +323,64 @@ public class TransaccionDao extends Dao {
 		}
 	}
 
-	public void put(Transaction t, long idTransaccion, Transaccion tr) throws PersistenceException, NotFoundException {
+	public void put(Transaction t, Transaccion tr) throws PersistenceException, NotFoundException {
 		try (var put = t.prepareStatement(PUT)) {
 			put.setTimestamp(1, Timestamp.from(tr.fechaRetiro.toInstant()));
-			put.setLong(2, idTransaccion);
+			put.setLong(2, tr.id);
 			int puts = put.executeUpdate();
 			if (puts == 0)
-				throw new NotFoundException("No existe la transaccion con id " + idTransaccion);
+				throw new NotFoundException("No existe la transaccion con id " + tr.id);
 		} catch (SQLException e) {
 			throw new PersistenceException("error updating transaccion", e);
 		}
 	}
 
+	public void delete(Transaction t, Long transaccionId) throws PersistenceException, NotFoundException {
+		try (var delete = t.prepareStatement(DELETE)) {
+			delete.setLong(1, transaccionId);
+			int deleted = delete.executeUpdate();
+			if (deleted == 0)
+				throw new NotFoundException("No existe la transaccion con id " + transaccionId);
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating transaccion", e);
+		}
+
+	}
+
+	public void removeResiduos(Transaction t, Long transaccionId) throws PersistenceException {
+		try (var remove = t.prepareStatement(UPDATE_RESIDUOS_REMOVE_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
+			remove.setLong(1, transaccionId);
+			remove.executeUpdate();
+		} catch (SQLException e) {
+			throw new PersistenceException("error removing residuos from transaccion", e);
+		}
+	}
+
+	public void removeResiduo(Transaction t, Long transaccionId, Long residuoId) throws PersistenceException, NotFoundException {
+		try (var remove = t.prepareStatement(UPDATE_RESIDUO_REMOVE_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
+			remove.setLong(1, residuoId);
+			remove.setLong(2, transaccionId);
+
+			int removed = remove.executeUpdate();
+			if (removed == 0) {
+				throw new NotFoundException("No existe el Residuo a actualizar o pertenece a otra transaccion.");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating the removing a Residuo from a Transaccion", e);
+		}
+	}
+
+	public void removeTransporte(Transaction t, Long id, Long transporteId) throws PersistenceException, NotFoundException {
+		try (var remove = t.prepareStatement(UPDATE_TRANSACCION_REMOVE_TRANSPORTE_ID, Statement.RETURN_GENERATED_KEYS)) {
+			remove.setLong(1, id);
+			remove.setLong(2, transporteId);
+
+			int removed = remove.executeUpdate();
+			if (removed == 0) {
+				throw new NotFoundException("No existe la Transaccion a actualizar o su transporteID es distinto al brindado");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating the removing a Residuo from a Transaccion", e);
+		}
+	}
 }

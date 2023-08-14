@@ -8,6 +8,7 @@ import org.circle8.entity.Transaccion;
 public class TransaccionPutRequest implements IRequest{
 	private final IRequest.Validation validation = new IRequest.Validation();
 
+	public Long id;
 	public ZonedDateTime fechaRetiro;
 
 	@Override
@@ -17,10 +18,4 @@ public class TransaccionPutRequest implements IRequest{
 		return validation;
 	}
 
-	public Transaccion toEntity() {
-		Transaccion t = new Transaccion();
-		t.id = 0L;
-		t.fechaRetiro = this.fechaRetiro;
-		return t;
-	}
 }

@@ -38,7 +38,7 @@ public class TransaccionPutFechaTest {
 					  .body(request)
 					  .put("/transaccion/10")
 					  .then()
-					  .statusCode(500);
+					  .statusCode(404);
 	}
 
 	@Test

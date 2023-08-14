@@ -4,8 +4,11 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.circle8.controller.request.transaccion.TransaccionPostRequest;
+import org.circle8.controller.request.transaccion.TransaccionPutRequest;
 import org.circle8.controller.response.TransaccionResponse;
 import org.circle8.entity.Transaccion;
+
+import lombok.val;
 
 public class TransaccionDto {
 	public Long id;
@@ -27,7 +30,7 @@ public class TransaccionDto {
 		t.transporte = transporte != null ? transporte.toEntity() : null;
 		t.puntoReciclaje = puntoReciclaje != null ? puntoReciclaje.toEntity() : null;
 		t.puntoReciclajeId = puntoReciclajeId;
-		t.residuos = residuos.stream().map(ResiduoDto::toEntity).toList();
+		t.residuos = residuos != null ? residuos.stream().map(ResiduoDto::toEntity).toList() : null;
 		return t;
 	}
 
@@ -42,6 +45,13 @@ public class TransaccionDto {
 		t.puntoReciclajeId = entity.puntoReciclajeId;
 		t.puntoReciclaje = PuntoReciclajeDto.from(entity.puntoReciclaje);
 		t.residuos = entity.residuos.stream().map(ResiduoDto::from).toList();
+		return t;
+	}
+
+	public static TransaccionDto from(TransaccionPutRequest req) {
+		val t = new TransaccionDto();
+		t.id = req.id;
+		t.fechaRetiro = req.fechaRetiro;
 		return t;
 	}
 
