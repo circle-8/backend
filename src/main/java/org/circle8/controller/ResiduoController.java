@@ -12,7 +12,6 @@ import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.ResiduoDto;
-import org.circle8.entity.Residuo;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.filter.ResiduosFilter;
