@@ -18,4 +18,6 @@ public class Zona {
 	public List<TipoResiduo> tipoResiduo;
 	public List<Recorrido> recorridos;
 	public List<PuntoResiduo> puntosResiduos;
+
+	public Zona(long id ) { this.id = id; }
 }

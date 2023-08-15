@@ -54,8 +54,10 @@ INSERT INTO public."Zona"("OrganizacionId", "Polyline", "Nombre")
 
 INSERT INTO public."RecicladorUrbano" ("UsuarioId", "OrganizacionId", "ZonaId") VALUES (3, 1, 1),(4, 2, NULL);
 
-INSERT INTO public."Recorrido"("FechaRetiro", "FechaInicio", "FechaFin", "RecicladorId", "ZonaId")
-	VALUES ('2023-07-03', '2023-07-03 10:00:00-00', '2023-07-03 11:00:00-00', 1, 1), ('2023-07-05', NULL, NULL, 1, 1);
+INSERT INTO public."Recorrido"("FechaRetiro", "FechaInicio", "FechaFin", "RecicladorId", "ZonaId", "LatitudInicio", "LongitudInicio", "LatitudFin", "LongitudFin")
+	VALUES
+	('2023-07-03', '2023-07-03 10:00:00-00', '2023-07-03 11:00:00-00', 1, 1, -34.658771, -58.577580, -34.665860, -58.591205),
+	('2023-07-05', NULL, NULL, 1, 1, -34.665860, -58.591205, -34.658771, -58.577580);
 
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Plástico');
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Papel');

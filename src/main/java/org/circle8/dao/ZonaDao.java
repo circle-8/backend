@@ -35,12 +35,12 @@ import lombok.val;
 public class ZonaDao extends Dao {
 
 	private static final Gson GSON = new Gson();
-	
+
 	private static final String INSERT_INTO_PUNTO_RESIDUO_ZONA = """
 			INSERT INTO "PuntoResiduo_Zona" ("PuntoResiduoId", "ZonaId")
 			VALUES (?, ?);
 			""";
-	
+
 	private static final String DELETE_PUNTO_ZONA = """
 			DELETE FROM "PuntoResiduo_Zona"
 			WHERE "PuntoResiduoId" = ? AND "ZonaId" = ?;
@@ -71,11 +71,11 @@ public class ZonaDao extends Dao {
 	private static final String SELECT_RECICLADOR = """
 			, reciUrb."UsuarioId" as usuarioRecicladorId
 			""";
-	
+
 	private static final String SELECT_CIUDADANO = """
 			, ciu."UsuarioId" as usuarioCiudadanoId
 			""";
-	
+
 	private static final String SELECT_PUNTO_RESIDUO = """
 			, pr."ID" AS puntoResiduoID , pr."CiudadanoId", pr."Latitud", pr."Longitud"
 			""";
@@ -88,20 +88,20 @@ public class ZonaDao extends Dao {
 			LEFT JOIN "Recorrido" AS rec on rec."ZonaId" = z."ID"
 			LEFT JOIN "RecicladorUrbano" AS reciUrb on reciUrb."ID" = rec."RecicladorId"
 			""";
-	
+
 	private static final String JOIN_RECICLADOR = """
 			LEFT JOIN "RecicladorUrbano" AS reci on z."ID" = reci."ZonaId"
 			""";
-	
+
 	private static final String JOIN_PUNTO_RESIDUO_ZONA = """
 			LEFT JOIN "PuntoResiduo_Zona" AS prz on z."ID" = prz."ZonaId"
 			""";
-	
+
 	private static final String JOIN_PUNTO_RESIDUO = """
 			LEFT JOIN "PuntoResiduo_Zona" AS prz2 on z."ID" = prz2."ZonaId"			
 			LEFT JOIN "PuntoResiduo" AS pr on pr."ID" = prz2."PuntoResiduoId"
 			""";
-	
+
 	private static final String JOIN_PUNTO_RESIDUO_CIUDADANO = """
 			LEFT JOIN "Ciudadano" AS ciu on ciu."ID" = pr."CiudadanoId"
 			""";
@@ -109,15 +109,15 @@ public class ZonaDao extends Dao {
 	private static final String WHERE_ORGANIZACION = """
 			AND z."OrganizacionId" = ?
 			""";
-	
+
 	private static final String WHERE_RECICLADOR = """
 			AND reci."ID" = ?
 			""";
-	
+
 	private static final String WHERE_PUNTO_RESIDUO = """
 			AND prz."PuntoResiduoId" = ?
 			""";
-	
+
 	private static final String WHERE_CIUDADANO = """
 			AND pr."CiudadanoId" = ?
 			""";
@@ -141,7 +141,7 @@ public class ZonaDao extends Dao {
 	ZonaDao(DataSource ds) {
 		super(ds);
 	}
-	
+
 	public void includePuntoResiduo(Transaction t,Long puntoResiduoId, Long zonaId) throws PersistenceException {
 		try ( val insert = t.prepareStatement(INSERT_INTO_PUNTO_RESIDUO_ZONA, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setLong(1, puntoResiduoId);
@@ -157,19 +157,19 @@ public class ZonaDao extends Dao {
 		} catch (SQLException e) {
 			if ( e.getMessage().contains("PuntoResiduo_Zona_pkey") )
 				throw new DuplicatedEntry("punto residuo zona already exist", e);
-			
+
 			throw new PersistenceException("error inserting punto de residuo in zona", e);
 		}
 	}
-	
+
 	public void excludePuntoResiduo(Transaction t,Long puntoResiduoId, Long zonaId) throws PersistenceException, NotFoundException {
 		try ( val delete =  t.prepareStatement(DELETE_PUNTO_ZONA) ) {
 			delete.setLong(1, puntoResiduoId);
 			delete.setLong(2, zonaId);
-			
+
 			if ( delete.executeUpdate() <= 0 )
 				throw new NotFoundException("No se encontro el punto en la zona para eliminar");
-		} catch (SQLException e) {			
+		} catch (SQLException e) {
 			throw new PersistenceException("error Deleting punto de residuo in zona", e);
 		}
 	}
@@ -177,7 +177,7 @@ public class ZonaDao extends Dao {
 	public Optional<Zona> get(Transaction t, ZonaFilter f, ZonaExpand x) throws PersistenceException {
 		try ( val select = createSelect(t, f, x) ) {
 			try ( var rs = select.executeQuery() ) {
-				return Optional.ofNullable(getZona(rs, f, x));
+				return Optional.ofNullable(getZona(rs, x));
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting solicitud", e);
@@ -189,12 +189,12 @@ public class ZonaDao extends Dao {
 			var select = createSelect(t, f, x);
 			var rs = select.executeQuery()
 		) {
-			return getList(rs, f, x);
+			return getList(rs, x);
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting zonas", e);
 		}
-	}	
-	
+	}
+
 	private PreparedStatement createSelect(
 		Transaction t,
 		ZonaFilter f,
@@ -211,23 +211,23 @@ public class ZonaDao extends Dao {
 			selectFields += SELECT_RECORRIDO + SELECT_RECICLADOR;
 			joinFields += JOIN_RECORRIDO;
 		}
-		
+
 		if(x.puntosResiduo) {
 			selectFields += SELECT_PUNTO_RESIDUO + SELECT_CIUDADANO;
 		}
-		
+
 		if(f.recicladorId != null) {
 			joinFields += JOIN_RECICLADOR;
 		}
-		
+
 		if(f.puntoResiduoId != null) {
 			joinFields += JOIN_PUNTO_RESIDUO_ZONA;
 		}
-		
+
 		if(f.ciudadanoId != null || x.puntosResiduo) {
 			joinFields += JOIN_PUNTO_RESIDUO;
 			if(x.puntosResiduo)
-				joinFields += JOIN_PUNTO_RESIDUO_CIUDADANO;				
+				joinFields += JOIN_PUNTO_RESIDUO_CIUDADANO;
 		}
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
@@ -247,17 +247,17 @@ public class ZonaDao extends Dao {
 		if ( f.hasTipo() ) {
 			appendListCondition(f.tiposResiduos, WHERE_TIPO_RESIDUO, b, parameters);
 		}
-		
+
 		if(f.recicladorId != null) {
 			b.append(WHERE_RECICLADOR);
 			parameters.add(f.recicladorId);
 		}
-		
+
 		if(f.puntoResiduoId != null) {
 			b.append(WHERE_PUNTO_RESIDUO);
 			parameters.add(f.puntoResiduoId);
 		}
-		
+
 		if(f.ciudadanoId != null) {
 			b.append(WHERE_CIUDADANO);
 			parameters.add(f.ciudadanoId);
@@ -270,12 +270,12 @@ public class ZonaDao extends Dao {
 		return p;
 	}
 
-	private Zona getZona(ResultSet rs, ZonaFilter f, ZonaExpand x) throws SQLException {
+	private Zona getZona(ResultSet rs, ZonaExpand x) throws SQLException {
 		Zona z = null;
 		boolean zonaCreada = false;
 		while (rs.next()) {
 			if (!zonaCreada) {
-				z = buildZona(rs, f, x);
+				z = buildZona(rs, x);
 				zonaCreada = true;
 			}
 			addTipoResiduo(rs, z);
@@ -285,13 +285,13 @@ public class ZonaDao extends Dao {
 		return z;
 	}
 
-	private List<Zona> getList(ResultSet rs, ZonaFilter f, ZonaExpand x) throws SQLException {
+	private List<Zona> getList(ResultSet rs, ZonaExpand x) throws SQLException {
 		var mapZonas = new HashMap<Long, Zona>();
 		while (rs.next()) {
 			val id = rs.getLong("ID");
 			Zona z = mapZonas.get(id);
 			if (z == null) {
-				z = buildZona(rs, f, x);
+				z = buildZona(rs, x);
 				mapZonas.put(id, z);
 			}
 			addTipoResiduo(rs, z);
@@ -301,20 +301,20 @@ public class ZonaDao extends Dao {
 		return mapZonas.values().stream().toList();
 	}
 
-	private Zona buildZona(ResultSet rs, ZonaFilter f, ZonaExpand x) throws SQLException {
+	private Zona buildZona(ResultSet rs, ZonaExpand x) throws SQLException {
 		var z = new Zona();
 		z.id = rs.getLong("ID");
 		z.nombre = rs.getString("Nombre");
 		z.polyline = getPolyline(rs.getString("Polyline"));
 		z.organizacionId = rs.getLong("OrganizacionId");
 		z.organizacion = buildOrganizacion(rs, x.organizacion);
-		z.tipoResiduo = new ArrayList<TipoResiduo>();
-		z.recorridos = new ArrayList<Recorrido>();
-		z.puntosResiduos = new ArrayList<PuntoResiduo>();
+		z.tipoResiduo = new ArrayList<>();
+		z.recorridos = new ArrayList<>();
+		z.puntosResiduos = new ArrayList<>();
 		return z;
 	}
 
-	private List<Punto> getPolyline(String poly) {
+	List<Punto> getPolyline(String poly) {
 		val l = new ArrayList<Punto>();
 		float[][] list = GSON.fromJson(poly, float[][].class);
 		for (float[] element : list) {
@@ -362,13 +362,13 @@ public class ZonaDao extends Dao {
 				z.recorridos.add(rec);
 		}
 	}
-	
+
 	private void addPuntoResiduo(ResultSet rs, boolean expand, Zona z) throws SQLException {
 		if(expand && rs.getInt("puntoResiduoID") != 0) {
 			val pr = new PuntoResiduo(rs.getLong("puntoResiduoID"), rs.getLong("CiudadanoId"));
 			pr.latitud = rs.getDouble("latitud");
 			pr.longitud = rs.getDouble("longitud");
-			pr.ciudadano = User.builder().id(rs.getLong("usuarioCiudadanoId")).build();			
+			pr.ciudadano = User.builder().id(rs.getLong("usuarioCiudadanoId")).build();
 			if(!z.puntosResiduos.contains(pr))
 				z.puntosResiduos.add(pr);
 		}

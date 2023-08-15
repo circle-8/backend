@@ -133,14 +133,12 @@ public class ResiduoDao extends Dao {
 
 	@NotNull
 	private static Residuo buildResiduo(ResultSet rs) throws SQLException {
-		val retiroTimestamp = rs.getTimestamp("FechaRetiro");
-		val limiteTimestamp = rs.getTimestamp("FechaLimiteRetiro");
 		return new Residuo(
 			rs.getLong("ID"),
 			rs.getLong("CiudadanoId"),
 			rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC),
-			retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null,
-			limiteTimestamp != null ? limiteTimestamp.toInstant().atZone(Dates.UTC) : null,
+			Dates.atUTC(rs.getTimestamp("FechaRetiro")),
+			Dates.atUTC(rs.getTimestamp("FechaLimiteRetiro")),
 			rs.getString("Descripcion"),
 			new PuntoResiduo(rs.getLong("PuntoResiduoId")),
 			new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")),

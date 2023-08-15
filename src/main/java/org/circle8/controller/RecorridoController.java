@@ -4,12 +4,22 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import com.google.inject.Inject;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResponse;
 import org.circle8.controller.response.RecorridoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.RetiroResponse;
+import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
+import org.circle8.expand.RecorridoExpand;
+import org.circle8.expand.SolicitudExpand;
+import org.circle8.service.RecorridoService;
 import org.circle8.utils.Dates;
 
 import com.google.inject.Singleton;
@@ -18,9 +28,17 @@ import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
 @Singleton
+@Slf4j
 public class RecorridoController {
 	private static final String ID_ZONA_PARAM = "id_zona";
 	private static final String ID_ORGANIZACION_PARAM = "id_organizacion";
+
+	private final RecorridoService service;
+
+	@Inject
+	public RecorridoController(RecorridoService service) {
+		this.service = service;
+	}
 
 	private final RecorridoResponse mock = RecorridoResponse.builder()
 		.fechaRetiro(LocalDate.of(2023, 1, 1))
@@ -37,9 +55,24 @@ public class RecorridoController {
 	 * GET /recorrido/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.build();
+		final long id;
+
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del recorrido debe ser numérico", "");
+		}
+
+		val expand = new RecorridoExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
+
+		try {
+			return this.service.get(id, expand).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request: id={}, expand={}] error approve solicitud", id, expand, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
