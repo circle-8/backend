@@ -32,7 +32,7 @@ public class ZonaService {
 			for(TipoResiduoDto tr : dto.tipoResiduo){
 				dao.saveTipos(t, entity.id, tr.id);
 			}
-			t.commit();			
+			t.commit();
 			val f = ZonaFilter.builder().id(entity.id).build();
 			val x = new ZonaExpand(true, false);
 			return get(f, x);
