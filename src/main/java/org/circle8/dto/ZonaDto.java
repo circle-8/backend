@@ -13,7 +13,7 @@ public class ZonaDto {
 	public OrganizacionDto organizacion;
 	public List<TipoResiduoDto> tipoResiduo;
 	public List<RecorridoDto> recorridos;
-	
+	public List<PuntoResiduoDto> puntosResiduos;	
 
 	public static ZonaDto from(Zona entity) {
 		if ( entity == null ) return null;
@@ -24,7 +24,10 @@ public class ZonaDto {
 		z.organizacionId = entity.organizacionId;
 		z.organizacion = OrganizacionDto.from(entity.organizacion);
 		z.tipoResiduo = entity.tipoResiduo.stream().map(TipoResiduoDto::from).toList();
-		z.recorridos = entity.recorridos != null ? entity.recorridos.stream().map(RecorridoDto::from).toList() : List.of();
+		z.recorridos = entity.recorridos != null ? 
+				entity.recorridos.stream().map(RecorridoDto::from).toList() : List.of();
+		z.puntosResiduos = entity.puntosResiduos != null ?
+				entity.puntosResiduos.stream().map(PuntoResiduoDto::from).toList() : List.of();
 		return z;
 	}
 	
@@ -37,7 +40,10 @@ public class ZonaDto {
 		zr.organizacionId = this.organizacionId;
 		zr.organizacion = this.organizacion != null ? this.organizacion.toResponse() : null;
 		zr.tipoResiduo = this.tipoResiduo.stream().map(TipoResiduoDto::toResponse).toList();
-		zr.recorridos = this.recorridos.stream().map(RecorridoDto::toResponse).toList();
+		zr.recorridos = (this.recorridos != null && !this.recorridos.isEmpty()) ?
+				this.recorridos.stream().map(RecorridoDto::toResponse).toList() : null;
+		zr.puntosResiduos = (this.puntosResiduos != null && !this.puntosResiduos.isEmpty()) ?
+				this.puntosResiduos.stream().map(PuntoResiduoDto::toResponse).toList() : null;
 		return zr;		
 	}
 }

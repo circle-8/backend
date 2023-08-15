@@ -9,11 +9,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import lombok.val;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
@@ -22,9 +20,11 @@ import org.circle8.exception.ForeingKeyException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.ResiduosFilter;
 import org.circle8.utils.Dates;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.inject.Inject;
-import org.jetbrains.annotations.NotNull;
+
+import lombok.val;
 
 public class ResiduoDao extends Dao {
 

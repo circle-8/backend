@@ -30,9 +30,16 @@ INSERT INTO public."Usuario"("NombreApellido", "Username", "Password", "Suscripc
         NULL,
         'RECICLADOR_URBANO',
         'reciclador2@email.com'
+    ),(
+        'Usuario 3',
+        'username3',
+        '$2a$10$vQ35vpn5y4RPXXNm4blxWer6NVn0Pl3GHmSn5XRr2VdGITgpn1j0G', -- 1234
+        NULL,
+        'CIUDADANO',
+        'existing3@email.com'
     );
 
-INSERT INTO public."Ciudadano" ("UsuarioId") VALUES (1),(2);
+INSERT INTO public."Ciudadano" ("UsuarioId") VALUES (1),(2),(5);
 
 INSERT INTO public."Organizacion"("RazonSocial", "UsuarioId") VALUES ('Usuario 1 SA', 1),('Usuario 2 SA', 2);
 
@@ -42,7 +49,7 @@ INSERT INTO public."Zona"("OrganizacionId", "Polyline", "Nombre")
 		'[[-34.634716, -58.558796], [-34.651657, -58.535603], [-34.67316, -58.559628], [-34.663677, -58.568333], [-34.650585, -58.585228], [-34.649334, -58.58329], [-34.643433, -58.583534], [-34.641556, -58.57158], [-34.63838, -58.57357]]',
 		'Zona 1'),(
 		2,
-		'[[-34.634716, -58.558796], [-34.651657, -58.535603], [-34.67316, -58.559628], [-34.663677, -58.568333], [-34.650585, -58.585228], [-34.649334, -58.58329], [-34.643433, -58.583534], [-34.641556, -58.57158], [-34.63838, -58.57357]]',
+		'[[-34.667407, -58.582951], [-34.666284, -58.573635],[-34.658771, -58.577580],[-34.665860, -58.591205]]',
 		'Zona 2');
 
 INSERT INTO public."RecicladorUrbano" ("UsuarioId", "OrganizacionId", "ZonaId") VALUES (3, 1, 1),(4, 2, NULL);
@@ -76,7 +83,10 @@ INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResidu
 INSERT INTO public."PuntoReciclaje_TipoResiduo" ("PuntoReciclajeId", "TipoResiduoId") VALUES (5, 4);
 
 INSERT INTO public."PuntoResiduo" ("CiudadanoId", "Latitud", "Longitud") VALUES (1, -34.6611203, -58.5422521);
-INSERT INTO public."PuntoResiduo" ("CiudadanoId", "Latitud", "Longitud") VALUES (2, -35.6611203, -58.5422521);
+INSERT INTO public."PuntoResiduo" ("CiudadanoId", "Latitud", "Longitud") VALUES (2, -34.66381, -58.581509);
+INSERT INTO public."PuntoResiduo" ("CiudadanoId", "Latitud", "Longitud") VALUES (3, -34.6611203, -58.5422521);
+
+INSERT INTO public."PuntoResiduo_Zona" ("PuntoResiduoId", "ZonaId")	VALUES (1, 1),(1, 2),(2, 1);
 
 INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, NULL, NULL, 'Prueba 1', NULL);
 INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, NULL, NULL, 'Residuo con limite', '2023-07-10 19:41:00-00');

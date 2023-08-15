@@ -90,7 +90,32 @@ public class ZonaListTest {
 			.body("data[0].recorridos[1].fechaFin", nullValue())
 			.body("data[0].recorridos[1].recicladorId", equalTo(1))
 			.body("data[0].recorridos[1].recicladorUri", equalTo("/user/3"))
-			.body("data[1].recorridos", hasSize(0))
+		;
+	}
+	
+	@Test
+	void testGetOkWithExpandPuntoResiduo() {
+		RestAssured.given()
+			.get("/zonas?expand=punto_residuo")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(2))
+			.body("data[0].puntosResiduos", notNullValue())
+			.body("data[0].puntosResiduos", hasSize(2))
+			.body("data[0].puntosResiduos[0].id", equalTo(1))
+			.body("data[0].puntosResiduos[0].latitud", equalTo(-34.6611203f))
+			.body("data[0].puntosResiduos[0].longitud", equalTo(-58.5422521f))
+			.body("data[0].puntosResiduos[0].ciudadanoId", equalTo(1))
+			.body("data[0].puntosResiduos[1].id", equalTo(2))
+			.body("data[0].puntosResiduos[1].latitud", equalTo(-34.66381f))
+			.body("data[0].puntosResiduos[1].longitud", equalTo(-58.581509f))
+			.body("data[0].puntosResiduos[1].ciudadanoId", equalTo(2))
+			.body("data[1].puntosResiduos", notNullValue())
+			.body("data[1].puntosResiduos", hasSize(1))
+			.body("data[1].puntosResiduos[0].id", equalTo(1))
+			.body("data[1].puntosResiduos[0].latitud", equalTo(-34.6611203f))
+			.body("data[1].puntosResiduos[0].longitud", equalTo(-58.5422521f))
+			.body("data[1].puntosResiduos[0].ciudadanoId", equalTo(1))
 		;
 	}
 	
@@ -138,6 +163,43 @@ public class ZonaListTest {
 	}
 	
 	@Test
+	void testWithFilterPuntoReciduoId() {
+		RestAssured.given()
+			.get("/zonas?punto_residuo_id=1")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(2))
+		;
+		
+		RestAssured.given()
+			.get("/zonas?punto_residuo_id=2")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(1))
+		;
+	}
+	
+	@Test
+	void testWithFilterPuntoReciduoIdNotFound() {
+		RestAssured.given()
+			.get("/zonas?punto_residuo_id=0")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(0))			
+		;
+	}
+	
+	@Test
+	void testWithInvalidPuntoReciduoId() {
+		RestAssured.given()
+			.get("/zonas?punto_residuo_id=a")
+			.then()
+			.statusCode(400)		
+		;
+	}
+	
+	
+	@Test
 	void testWithFilterRecicladorId() {
 		RestAssured.given()
 			.get("/zonas?reciclador_id=1")
@@ -161,6 +223,42 @@ public class ZonaListTest {
 	void testWithInvalidRecicladorId() {
 		RestAssured.given()
 			.get("/zonas?reciclador_id=a")
+			.then()
+			.statusCode(400)		
+		;
+	}
+	
+	@Test
+	void testWithFilterCiudadanoId() {
+		RestAssured.given()
+			.get("/zonas?ciudadano_id=1")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(2))
+		;
+		
+		RestAssured.given()
+			.get("/zonas?ciudadano_id=2")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(1))
+		;
+	}
+	
+	@Test
+	void testWithFilterCiudadanoIdNotFound() {
+		RestAssured.given()
+			.get("/zonas?ciudadano_id=0")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(0))			
+		;
+	}
+	
+	@Test
+	void testWithInvalidCiudadanoId() {
+		RestAssured.given()
+			.get("/zonas?ciudadano_id=a")
 			.then()
 			.statusCode(400)		
 		;
