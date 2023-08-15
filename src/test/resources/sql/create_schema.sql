@@ -352,3 +352,15 @@ ALTER TABLE IF EXISTS public."Zona"
     REFERENCES public."Organizacion" ("ID")
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
+    
+ALTER TABLE IF EXISTS public."Zona_TipoResiduo"
+    ADD CONSTRAINT "Zona_fkey" FOREIGN KEY ("ZonaId")
+    REFERENCES public."Zona" ("ID")
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+    
+ALTER TABLE IF EXISTS public."Zona_TipoResiduo"
+    ADD CONSTRAINT "TipoResiduo_fkey" FOREIGN KEY ("TipoResiduoId")
+    REFERENCES public."TipoResiduo" ("ID")
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;

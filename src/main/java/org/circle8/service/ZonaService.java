@@ -5,6 +5,7 @@ import java.util.List;
 import org.circle8.dao.ZonaDao;
 import org.circle8.dto.TipoResiduoDto;
 import org.circle8.dto.ZonaDto;
+import org.circle8.entity.TipoResiduo;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
@@ -29,13 +30,32 @@ public class ZonaService {
 		var entity = dto.toEntity();	
 		try (var t = dao.open()) {
 			entity = dao.save(t, organizacionId, entity);
-			for(TipoResiduoDto tr : dto.tipoResiduo){
+			for(TipoResiduo tr : entity.tipoResiduo){
 				dao.saveTipos(t, entity.id, tr.id);
 			}
 			t.commit();
 			val f = ZonaFilter.builder().id(entity.id).build();
 			val x = new ZonaExpand(true, false);
 			return get(f, x);
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al guardar la zona", e);
+		}
+	}
+	
+	public ZonaDto put(Long zonaId,Long organizacionId,ZonaDto dto) throws ServiceException {
+		var entity = dto.toEntity();	
+		try (var t = dao.open()) {
+			this.dao.deleteTipos(t, zonaId);
+			this.dao.update(t, zonaId, entity);
+			for(TipoResiduoDto tr : dto.tipoResiduo){
+				dao.saveTipos(t, zonaId, tr.id);
+			}
+			//TODO: validar puntos que puedan quedar afuera
+			t.commit();
+			val f = ZonaFilter.builder().id(zonaId).build();
+			val x = new ZonaExpand(true, false);
+			val zona = get(f, x);			
+			return zona;
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar la zona", e);
 		}

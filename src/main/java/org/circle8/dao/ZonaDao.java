@@ -45,6 +45,12 @@ public class ZonaDao extends Dao {
 			INSERT INTO "Zona_TipoResiduo"("ZonaId", "TipoResiduoId")
 			VALUES (?, ?);
 			""";
+	
+	private static final String UPDATE_ZONA = """
+			UPDATE public."Zona"
+			SET "Polyline"=?, "Nombre"=?
+			WHERE "ID"=?;
+			""";
 
 	private static final String SELECT_FMT = """
 			SELECT
@@ -106,6 +112,11 @@ public class ZonaDao extends Dao {
 		     WHERE str."ID" IN (%s)
 		)
 		""";
+	
+	private static final String DELETE_ZONA_TIPO = """
+			DELETE FROM "Zona_TipoResiduo"
+			WHERE "ZonaId" = ?;
+			""";
 
 
 	@Inject
@@ -136,17 +147,43 @@ public class ZonaDao extends Dao {
 		return zona;
 	}
 	
+	public Zona update(Transaction t,Long zonaId,Zona zona) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(UPDATE_ZONA) ) {
+			put.setString(1, getPolyline(zona.polyline));
+			put.setString(2, zona.nombre);
+			put.setLong(3, zonaId);
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe zona con id " + zonaId);
+		} catch ( SQLException e ) {
+				throw new PersistenceException("error inserting Zona", e);
+		}
+		return zona;
+	}
+	
 	public void saveTipos(Transaction t, long zonaId, long tipoResiduoId) throws PersistenceException, NotFoundException {
 		try ( var insert = t.prepareStatement(INSERT_ZONA_TIPO_RESIDUO, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setLong(1, zonaId);
 			insert.setLong(2, tipoResiduoId);
-
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
 				throw new NotFoundException("No existe el TipoResiduo a actualizar.");
 
-		} catch (SQLException e ) {			
+		} catch (SQLException e ) {	
+			if ( e.getMessage().contains("TipoResiduo_fkey"))
+				throw new NotFoundException("No existe el TipoResiduo a con id " + tipoResiduoId);
+			
 			throw new PersistenceException("error creating the relation between zona and tipoResiduo.", e);
+		}
+	}
+	
+	public void deleteTipos(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
+		try ( val delete =  t.prepareStatement(DELETE_ZONA_TIPO) ) {
+			delete.setLong(1, zonaId);
+			if ( delete.executeUpdate() <= 0 )
+				throw new NotFoundException("No se encontro zona para eliminar");
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Deleting tipos in zona", e);
 		}
 	}
 

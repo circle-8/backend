@@ -2,7 +2,7 @@ package org.circle8.dto;
 
 import java.util.List;
 
-import org.circle8.controller.request.zona.PostZonaRequest;
+import org.circle8.controller.request.zona.PostPutZonaRequest;
 import org.circle8.controller.response.ZonaResponse;
 import org.circle8.entity.Zona;
 
@@ -15,7 +15,7 @@ public class ZonaDto {
 	public List<TipoResiduoDto> tipoResiduo;
 	public List<RecorridoDto> recorridos;
 	
-	public static ZonaDto from(PostZonaRequest req) {
+	public static ZonaDto from(PostPutZonaRequest req) {
 		var dto = new ZonaDto();
 		dto.nombre = req.nombre;
 		dto.polyline = req.polyline.stream().map(PuntoDto::from).toList();

@@ -2,7 +2,7 @@ package org.circle8.controller;
 
 import java.util.List;
 
-import org.circle8.controller.request.zona.PostZonaRequest;
+import org.circle8.controller.request.zona.PostPutZonaRequest;
 import org.circle8.controller.request.zona.ZonaRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -101,11 +101,31 @@ public class ZonaController {
 	 * PUT /organizacion/{id_organizacion}/zona/{id}
 	 */
 	public ApiResponse put(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
-			.build();
+		final long organizacionId;
+		final long id;		
+		try {
+			organizacionId = Long.parseLong(ctx.pathParam("organizacion_id"));
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la organización y/o de la zona debe ser numérico", "");
+		}
+		
+		val req = ctx.bodyAsClass(PostPutZonaRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid()) {
+			return new ErrorResponse(valid);
+		}
+		
+		val dto = ZonaDto.from(req);
+		
+		try {
+			return service.put(id,organizacionId,dto).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error saving new PuntoReciclaje", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
@@ -131,7 +151,7 @@ public class ZonaController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la organización debe ser numérico", "");
 		}
 		
-		val req = ctx.bodyAsClass(PostZonaRequest.class);
+		val req = ctx.bodyAsClass(PostPutZonaRequest.class);
 		val valid = req.valid();
 		if ( !valid.valid()) {
 			return new ErrorResponse(valid);

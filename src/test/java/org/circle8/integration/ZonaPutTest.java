@@ -13,39 +13,35 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
-public class ZonaPostTest {
+public class ZonaPutTest {
 	
 	@Test
-	void testPostOk() {
+	void testPutOk() {
 		String body =  """
 				{
-				"nombre": "Haedo Norte",
+				"nombre": "Zona put 1",
 				"polyline": [
 				{"latitud":-34.6430956,"longitud":-58.5951324},
 			    {"latitud":-34.6432267,"longitud":-58.5948434},
 			    {"latitud":-34.6428927,"longitud":-58.5953719},
 			    {"latitud":-34.6429311,"longitud":-58.5953171}],
-			    "tiposResiduo": [1,2,3]
+			    "tiposResiduo": [1]
 			    }""";
 		
 		RestAssured.given()
 			.body(body)
-			.post("/organizacion/1/zona")
+			.put("/organizacion/1/zona/1")
 			.then()
 			.statusCode(200)
-			.body("id", notNullValue())
-			.body("nombre", equalTo("Haedo Norte"))
+			.body("id", equalTo(1))
+			.body("nombre", equalTo("Zona put 1"))
 			.body("polyline",is(not(hasSize(0))))
 			.body("organizacionUri", equalTo("/organizacion/1"))
 			.body("organizacionId", equalTo(1))
 			.body("organizacion", notNullValue())
-			.body("tipoResiduo",hasSize(3))
+			.body("tipoResiduo",hasSize(1))
 			.body("tipoResiduo[0].id", equalTo(1))
 			.body("tipoResiduo[0].nombre", equalTo("Plástico"))
-			.body("tipoResiduo[1].id", equalTo(2))
-			.body("tipoResiduo[1].nombre", equalTo("Papel"))
-			.body("tipoResiduo[2].id", equalTo(3))
-			.body("tipoResiduo[2].nombre", equalTo("Pilas"))
 		;
 	}
 	
@@ -53,7 +49,7 @@ public class ZonaPostTest {
 	void testInvalidTipoId() {
 		String body =  """
 				{
-				"nombre": "Haedo Norte",
+				"nombre": "Zona put 1",
 				"polyline": [
 				{"latitud":-34.6430956,"longitud":-58.5951324},
 			    {"latitud":-34.6432267,"longitud":-58.5948434},
@@ -64,7 +60,7 @@ public class ZonaPostTest {
 		
 		RestAssured.given()
 			.body(body)
-			.post("/organizacion/1/zona")
+			.put("/organizacion/1/zona/1")
 			.then()
 			.statusCode(404)
 		;
@@ -84,7 +80,7 @@ public class ZonaPostTest {
 		
 		RestAssured.given()
 			.body(body)
-			.post("/organizacion/1/zona")
+			.put("/organizacion/1/zona/1")
 			.then()
 			.statusCode(400)
 		;
@@ -103,7 +99,7 @@ public class ZonaPostTest {
 		
 		RestAssured.given()
 			.body(body)
-			.post("/organizacion/1/zona")
+			.put("/organizacion/1/zona/1")
 			.then()
 			.statusCode(400)
 		;
@@ -113,13 +109,13 @@ public class ZonaPostTest {
 	void testWithOutPolyline() {
 		String body =  """
 				{
-				"nombre": "Haedo Norte",				
+				"nombre": "Zona put 1",				
 			    "tiposResiduo": [1,2,3]
 			    }""";
 		
 		RestAssured.given()
 			.body(body)
-			.post("/organizacion/1/zona")
+			.put("/organizacion/1/zona/1")
 			.then()
 			.statusCode(400)
 		;
@@ -129,7 +125,7 @@ public class ZonaPostTest {
 	void testWithOutTipos() {
 		String body =  """
 				{
-				"nombre": "Haedo Norte",
+				"nombre": "Zona put 1",
 				"polyline": [
 				{"latitud":-34.6430956,"longitud":-58.5951324},
 			    {"latitud":-34.6432267,"longitud":-58.5948434},
@@ -139,7 +135,7 @@ public class ZonaPostTest {
 		
 		RestAssured.given()
 			.body(body)
-			.post("/organizacion/1/zona")
+			.put("/organizacion/1/zona/1")
 			.then()
 			.statusCode(400)
 		;
@@ -148,7 +144,7 @@ public class ZonaPostTest {
 	@Test
 	void testWithOutOrganizacionId() {
 		RestAssured.given()
-		.post("/organizacion//zona")
+		.put("/organizacion//zona/1")
 		.then()
 		.statusCode(404)
 		;
@@ -158,7 +154,26 @@ public class ZonaPostTest {
 	@Test
 	void testInvalidOrganizacionId() {
 		RestAssured.given()
-		.post("/organizacion/aa/zona")
+		.put("/organizacion/aa/zona/1")
+		.then()
+		.statusCode(400)
+		;
+	}
+	
+	@Test
+	void testWithZonaId() {
+		RestAssured.given()
+		.put("/organizacion/1/zona/")
+		.then()
+		.statusCode(404)
+		;
+	}
+	
+	
+	@Test
+	void testInvalidZonaId() {
+		RestAssured.given()
+		.put("/organizacion/1/zona/aa")
 		.then()
 		.statusCode(400)
 		;
