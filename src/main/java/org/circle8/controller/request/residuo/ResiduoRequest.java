@@ -3,9 +3,10 @@ package org.circle8.controller.request.residuo;
 import java.util.List;
 import java.util.Map;
 
-import lombok.ToString;
 import org.circle8.controller.request.IRequest;
 import org.circle8.utils.Parser;
+
+import lombok.ToString;
 
 @ToString
 public class ResiduoRequest implements IRequest {

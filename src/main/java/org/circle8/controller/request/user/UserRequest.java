@@ -1,11 +1,13 @@
 package org.circle8.controller.request.user;
 
-import com.google.common.base.Strings;
-import lombok.ToString;
+import java.util.Arrays;
+
 import org.circle8.controller.request.IRequest;
 import org.circle8.controller.response.TipoUsuarioResponse;
 
-import java.util.Arrays;
+import com.google.common.base.Strings;
+
+import lombok.ToString;
 
 @ToString
 public class UserRequest implements IRequest {

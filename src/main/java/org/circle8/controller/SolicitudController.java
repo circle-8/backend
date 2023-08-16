@@ -1,7 +1,6 @@
 package org.circle8.controller;
 
 import java.util.List;
-
 import org.circle8.controller.request.solicitud.SolicitudRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -21,7 +20,6 @@ import com.google.inject.Singleton;
 import io.javalin.http.Context;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-
 @Singleton
 @Slf4j
 public class SolicitudController {

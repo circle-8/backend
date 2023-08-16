@@ -1,5 +1,8 @@
 package org.circle8.controller;
 
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -12,8 +15,6 @@ import org.circle8.service.TipoResiduoService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
 import lombok.val;
 
 @Singleton

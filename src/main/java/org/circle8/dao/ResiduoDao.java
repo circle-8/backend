@@ -26,6 +26,8 @@ import com.google.inject.Inject;
 
 import lombok.val;
 
+import lombok.val;
+
 public class ResiduoDao extends Dao {
 
 	private static final String INSERT = """

@@ -1,5 +1,6 @@
 package org.circle8.dto;
 
+import org.circle8.controller.response.TransportistaResponse;
 import org.circle8.entity.Transportista;
 
 public class TransportistaDto {
@@ -12,5 +13,14 @@ public class TransportistaDto {
 		t.id = entity.id;
 		t.usuarioId = entity.usuarioId;
 		return t;
+	}
+
+	public TransportistaResponse toResponse() {
+		//TODO: implementar
+		return new TransportistaResponse();
+	}
+
+	public Transportista toEntity() {
+		return new Transportista(usuarioId);
 	}
 }

@@ -1,9 +1,10 @@
 package org.circle8.service;
 
-import com.google.inject.Singleton;
 import org.circle8.dao.Transaction;
 import org.circle8.entity.Suscripcion;
 import org.circle8.entity.User;
+
+import com.google.inject.Singleton;
 
 @Singleton
 public class SuscripcionService {

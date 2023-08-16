@@ -3,6 +3,7 @@ package org.circle8.dto;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+import org.circle8.controller.response.TransporteResponse;
 import org.circle8.entity.Transporte;
 
 public class TransporteDto {
@@ -30,6 +31,38 @@ public class TransporteDto {
 		t.transaccionId = entity.transaccionId;
 		t.pagoConfirmado = entity.pagoConfirmado;
 		t.entregaConfirmada = entity.entregaConfirmada;
+		return t;
+	}
+
+	public TransporteResponse toResponse() {
+		return new TransporteResponse(
+			id,
+			fechaAcordada,
+			fechaInicio,
+			fechaFin,
+			precioAcordado,
+			transportista != null ? "/user/" + transportista.usuarioId : null,
+			transportistaId,
+			transportista != null ? transportista.toResponse() : null,
+			"/transaccion/" + transaccionId,
+			transaccionId,
+			pagoConfirmado,
+			entregaConfirmada
+		);
+	}
+
+	public Transporte toEntity() {
+		var t = new Transporte();
+		t.id = id;
+		t.fechaAcordada = fechaAcordada;
+		t.fechaInicio = fechaInicio;
+		t.fechaFin = fechaFin;
+		t.precioAcordado = precioAcordado;
+		t.transportistaId = transportistaId;
+		t.transportista = transportista.toEntity();
+		t.transaccionId = transaccionId;
+		t.pagoConfirmado = pagoConfirmado;
+		t.entregaConfirmada = entregaConfirmada;
 		return t;
 	}
 }

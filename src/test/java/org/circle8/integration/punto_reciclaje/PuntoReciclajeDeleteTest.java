@@ -1,4 +1,4 @@
-package org.circle8.integration;
+package org.circle8.integration.punto_reciclaje;
 
 import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
@@ -11,7 +11,7 @@ class PuntoReciclajeDeleteTest {
 	@Test
 	void testDeleteOk() {
 		RestAssured.given()
-			.delete("/reciclador/1/punto_reciclaje/2")
+			.delete("/reciclador/1/punto_reciclaje/6")
 			.then()
 			.statusCode(200)
 		;

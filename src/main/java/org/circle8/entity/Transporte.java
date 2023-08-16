@@ -3,6 +3,13 @@ package org.circle8.entity;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Transporte {
 	public Long id;
 	public ZonedDateTime fechaAcordada;

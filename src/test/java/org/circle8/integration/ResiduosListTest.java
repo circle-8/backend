@@ -17,8 +17,8 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos")
 			.then()
-			.body("data", hasSize(6))
-			.body("data.id", contains(equalTo(1), equalTo(2), equalTo(3), equalTo(4), equalTo(5), equalTo(6)))
+			.body("data", hasSize(8))
+			.body("data.id", contains(equalTo(1), equalTo(2), equalTo(3), equalTo(4), equalTo(5), equalTo(6), equalTo(7), equalTo(8)))
 		;
 	}
 
@@ -70,8 +70,8 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos?retirado=false")
 			.then()
-			.body("data", hasSize(5))
-			.body("data.id", contains(equalTo(1), equalTo(2), equalTo(4), equalTo(5), equalTo(6)))
+			.body("data", hasSize(7))
+			.body("data.id", contains(equalTo(1), equalTo(2), equalTo(4), equalTo(5), equalTo(6), equalTo(7), equalTo(8)))
 		;
 	}
 
@@ -79,8 +79,8 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos?fecha_limite_retiro=2023-08-01T00:00:00.000Z")
 			.then()
-			.body("data", hasSize(5))
-			.body("data.id", contains(equalTo(1), equalTo(3), equalTo(4), equalTo(5), equalTo(6)))
+			.body("data", hasSize(7))
+			.body("data.id", contains(equalTo(1), equalTo(3), equalTo(4), equalTo(5), equalTo(6), equalTo(7), equalTo(8)))
 		;
 	}
 

@@ -1,11 +1,12 @@
 package org.circle8.controller.request.punto_residuo;
 
-import lombok.ToString;
+import java.util.List;
+import java.util.Map;
+
 import org.circle8.controller.request.IRequest;
 import org.circle8.utils.Parser;
 
-import java.util.List;
-import java.util.Map;
+import lombok.ToString;
 
 @ToString
 public class PuntosResiduosRequest implements IRequest {

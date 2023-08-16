@@ -1,9 +1,11 @@
 package org.circle8.controller.request.user;
 
+import org.circle8.controller.request.IRequest;
+
 import com.google.common.base.Strings;
+
 import lombok.ToString;
 import lombok.val;
-import org.circle8.controller.request.IRequest;
 
 @ToString
 public class RefreshTokenRequest implements IRequest {

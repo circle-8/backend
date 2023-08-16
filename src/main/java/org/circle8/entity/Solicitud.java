@@ -1,8 +1,8 @@
 package org.circle8.entity;
 
-import lombok.AllArgsConstructor;
-
 import java.time.ZonedDateTime;
+
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class Solicitud {

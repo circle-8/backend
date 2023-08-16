@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import io.javalin.http.Context;
+
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -26,9 +28,6 @@ import org.circle8.service.RecorridoService;
 import org.circle8.utils.Dates;
 
 import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
 
 @Singleton
 @Slf4j

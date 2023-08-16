@@ -11,16 +11,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class TransporteResponse implements ApiResponse {
-	public int id;
+	public Long id;
 	public ZonedDateTime fechaAcordada;
 	public ZonedDateTime fechaInicio;
 	public ZonedDateTime fechaFin;
 	public BigDecimal precioAcordado;
 	public String transportistaUri;
-	public Integer transportistaId;
+	public Long transportistaId;
 	public TransportistaResponse transportista;
 	public String transaccionUri;
-	public Integer transaccionId;
+	public Long transaccionId;
 	public boolean pagoConfirmado;
 	public boolean entregaConfirmada;
 

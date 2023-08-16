@@ -2,6 +2,8 @@ package org.circle8.controller;
 
 import java.util.List;
 
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import org.circle8.controller.request.zona.ZonaRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -17,11 +19,8 @@ import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 import org.circle8.service.ZonaService;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
+import com.google.inject.Inject;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 

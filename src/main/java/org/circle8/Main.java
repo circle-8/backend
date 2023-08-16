@@ -1,8 +1,9 @@
 package org.circle8;
 
+import org.circle8.route.Routes;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.circle8.route.Routes;
 
 
 public class Main {

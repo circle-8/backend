@@ -2,6 +2,9 @@ package org.circle8.controller;
 
 import java.util.List;
 
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajeRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.DiaResponse;
@@ -19,10 +22,8 @@ import org.circle8.service.PuntoReciclajeService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 
 @Singleton
 @Slf4j

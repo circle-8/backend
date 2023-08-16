@@ -1,12 +1,13 @@
 package org.circle8.dto;
 
-import lombok.val;
+import java.time.ZonedDateTime;
+import java.util.Objects;
+
 import org.circle8.controller.response.SolicitudResponse;
 import org.circle8.entity.EstadoSolicitud;
 import org.circle8.entity.Solicitud;
 
-import java.time.ZonedDateTime;
-import java.util.Objects;
+import lombok.val;
 
 public class SolicitudDto {
 	public long id;
