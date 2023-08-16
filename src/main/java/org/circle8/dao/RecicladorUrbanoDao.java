@@ -17,16 +17,16 @@ public class RecicladorUrbanoDao {
 			"UsuarioId", "OrganizacionId", "ZonaId")
 			VALUES (?, ?, ?);
 			""";
-	
+
 	private static final String INSERT_WITHOUT_ZONA = """
 			INSERT INTO public."RecicladorUrbano"(
 			"UsuarioId", "OrganizacionId")
 			VALUES (?, ?);
 			""";
-	
+
 
 	public Long save(Transaction t, User u) throws PersistenceException, NotFoundException {
-		try ( var insert = createInsert(t, u) ) {			
+		try ( var insert = createInsert(t, u) ) {
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
 				throw new SQLException("Creating the reciclador failed, no affected rows");
@@ -46,9 +46,9 @@ public class RecicladorUrbanoDao {
 				throw new PersistenceException("error inserting ciudadano", e);
 		}
 	}
-	
+
 	private PreparedStatement createInsert(Transaction t,User u) throws PersistenceException, SQLException {
-		val insert = u.zonaId != null ? INSERT : INSERT_WITHOUT_ZONA;		
+		val insert = u.zonaId != null ? INSERT : INSERT_WITHOUT_ZONA;
 		val ps = t.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
 		ps.setLong(1, u.id);
 		ps.setLong(2, u.organizacionId);

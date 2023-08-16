@@ -10,15 +10,20 @@ import org.circle8.entity.Residuo;
 import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
+import org.circle8.exception.ForeingKeyException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
 import org.circle8.utils.Dates;
 
 import javax.sql.DataSource;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,6 +60,14 @@ public class RecorridoDao extends Dao {
 		""";
 	private static final String JOIN_RECICLADOR = """
 		JOIN "Usuario" AS u ON u."ID" = rurb."UsuarioId"
+		""";
+
+	private static final String INSERT = """
+		INSERT INTO "Recorrido"(
+		    "FechaRetiro", "RecicladorId", "ZonaId",
+		    "LatitudInicio", "LongitudInicio",
+		    "LatitudFin", "LongitudFin"
+		) VALUES (?, ?, ?, ?, ?, ?, ?);
 		""";
 
 	private final ZonaDao zonaDao;
@@ -150,5 +163,33 @@ public class RecorridoDao extends Dao {
 			new Punto(rs.getFloat("LatitudFin"), rs.getFloat("LongitudFin")),
 			new ArrayList<>()
 		);
+	}
+
+	public Recorrido save(Transaction t, Recorrido r) throws PersistenceException {
+		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setDate(1, Date.valueOf(r.fechaRetiro));
+			insert.setLong(2, r.recicladorId);
+			insert.setLong(3, r.zonaId);
+			insert.setDouble(4, r.puntoInicio.latitud);
+			insert.setDouble(5, r.puntoInicio.longitud);
+			insert.setDouble(6, r.puntoFin.latitud);
+			insert.setDouble(7, r.puntoFin.longitud);
+
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new SQLException("Creating the recorrido failed, no affected rows");
+
+			try ( var rs = insert.getGeneratedKeys() ) {
+				if (rs.next()) r.id = rs.getLong(1);
+				else throw new SQLException("Creating the recorrido failed, no ID obtained");
+			}
+
+			return r;
+		} catch (SQLException e) {
+			if ( e.getMessage().contains("Recorrido_RecicladorId_fkey") )
+				throw new ForeingKeyException("No existe el reciclador", e);
+			else
+				throw new PersistenceException("error inserting recorrido", e);
+		}
 	}
 }

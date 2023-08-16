@@ -8,13 +8,13 @@ import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Recorrido;
 import org.circle8.entity.Retiro;
+import org.circle8.exception.ForeingKeyException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
 
-import java.util.Comparator;
 import java.util.List;
 
 public class RecorridoService {
@@ -67,5 +67,20 @@ public class RecorridoService {
 		val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
 		return earthRadiusKm * c;
+	}
+
+	public RecorridoDto save(RecorridoDto dto) throws ServiceException {
+		try( var t = dao.open(true) ) {
+			// TODO: Check reciclador has same zona (cuando esté el get de reciclador urbano)
+
+			val r = dao.save(t, dto.toEntity());
+			dto.id = r.id;
+
+			return dto;
+		} catch ( ForeingKeyException e ) {
+			throw new ServiceException(e.getMessage());
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al guardar el recorrido", e);
+		}
 	}
 }

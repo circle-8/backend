@@ -7,6 +7,7 @@ import java.util.List;
 import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.circle8.controller.request.recorrido.PostRecorridoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -15,10 +16,10 @@ import org.circle8.controller.response.PuntoResponse;
 import org.circle8.controller.response.RecorridoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.RetiroResponse;
+import org.circle8.dto.RecorridoDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
-import org.circle8.expand.SolicitudExpand;
 import org.circle8.service.RecorridoService;
 import org.circle8.utils.Dates;
 
@@ -30,8 +31,8 @@ import io.javalin.http.HttpStatus;
 @Singleton
 @Slf4j
 public class RecorridoController {
-	private static final String ID_ZONA_PARAM = "id_zona";
-	private static final String ID_ORGANIZACION_PARAM = "id_organizacion";
+	private static final String ZONA_ID_PARAM = "zona_id";
+	private static final String ORGANIZACION_ID_PARAM = "organizacion_id";
 
 	private final RecorridoService service;
 
@@ -76,28 +77,47 @@ public class RecorridoController {
 	}
 
 	/**
-	 * POST /organizacion/{id_organizacion}/zona/{id_zona}/recorrido
+	 * POST /organizacion/{organizacion_id}/zona/{zona_id}/recorrido
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock.toBuilder()
-			.zonaId(Long.parseLong(ctx.pathParam(ID_ZONA_PARAM)))
-			.zonaUri("/organizacion/"+ctx.pathParam(ID_ORGANIZACION_PARAM)+"/zona/"+ctx.pathParam(ID_ZONA_PARAM))
-			.build();
+		long zonaId;
+		long organizacionId;
+		try {
+			zonaId = Long.parseLong(ctx.pathParam(ZONA_ID_PARAM));
+			organizacionId = Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids de zona y organizacion deben ser numéricos", "");
+		}
+
+		val req = ctx.bodyAsClass(PostRecorridoRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+
+		var dto = RecorridoDto.from(req, zonaId, organizacionId);
+		try {
+			return service.save(dto).toResponse();
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error saving new recorrido", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
-	 * PUT /organizacion/{id_organizacion}/zona/{id_zona}/recorrido/{id}
+	 * PUT /organizacion/{organizacion_id}/zona/{zona_id}/recorrido/{id}
 	 */
 	public ApiResponse put(Context ctx) {
 		return mock.toBuilder()
 			.id(Integer.parseInt(ctx.pathParam("id")))
-			.zonaId(Long.parseLong(ctx.pathParam(ID_ZONA_PARAM)))
-			.zonaUri("/organizacion/"+ctx.pathParam(ID_ORGANIZACION_PARAM)+"/zona/"+ctx.pathParam(ID_ZONA_PARAM))
+			.zonaId(Long.parseLong(ctx.pathParam(ZONA_ID_PARAM)))
+			.zonaUri("/organizacion/"+ctx.pathParam(ORGANIZACION_ID_PARAM)+"/zona/"+ctx.pathParam(ZONA_ID_PARAM))
 			.build();
 	}
 
 	/**
-	 * DELETE /organizacion/{id_organizacion}/zona/{id_zona}/recorrido/{id}
+	 * DELETE /organizacion/{organizacion_id}/zona/{zona_id}/recorrido/{id}
 	 */
 	public ApiResponse delete(Context ctx) {
 		return new ApiResponse() {
