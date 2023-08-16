@@ -78,6 +78,10 @@ CREATE TABLE IF NOT EXISTS public."Recorrido"
     "FechaFin" timestamp with time zone,
     "RecicladorId" bigint NOT NULL,
     "ZonaId" bigint NOT NULL,
+    "LatitudInicio" double precision NOT NULL,
+    "LongitudInicio" double precision NOT NULL,
+    "LatitudFin" double precision NOT NULL,
+    "LongitudFin" double precision NOT NULL,
     CONSTRAINT "Recorrido_pkey" PRIMARY KEY ("ID")
 );
 
@@ -271,7 +275,7 @@ ALTER TABLE IF EXISTS public."RecicladorUrbano"
     REFERENCES public."Usuario" ("ID")
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
-    
+
 ALTER TABLE IF EXISTS public."RecicladorUrbano"
     ADD CONSTRAINT "RecicladorUrbano_OrganizacionId_fkey" FOREIGN KEY ("OrganizacionId")
     REFERENCES public."Organizacion" ("ID")

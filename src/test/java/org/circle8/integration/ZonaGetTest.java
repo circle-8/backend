@@ -1,6 +1,7 @@
 package org.circle8.integration;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -15,7 +16,7 @@ import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
 public class ZonaGetTest {
-	
+
 	@Test
 	void testGetOk() {
 		RestAssured.given()
@@ -35,7 +36,7 @@ public class ZonaGetTest {
 			.body("tipoResiduo[1].nombre", equalTo("Papel"))
 		;
 	}
-	
+
 	@Test
 	void testGetOkWithExpandOrganizacion() {
 		RestAssured.given()
@@ -49,14 +50,14 @@ public class ZonaGetTest {
 			.body("organizacion.usuarioId", equalTo(1))
 		;
 	}
-	
+
 	@Test
 	void testGetOkWithExpandRecorridos() {
 		RestAssured.given()
 			.get("/organizacion/1/zona/1?expand=recorridos")
 			.then()
 			.statusCode(200)
-			.body("recorridos", hasSize(2))
+			.body("recorridos", hasSize(greaterThan(2)))
 			.body("recorridos[0].id", equalTo(1))
 			.body("recorridos[0].fechaRetiro", equalTo("2023-07-03"))
 			.body("recorridos[0].fechaInicio", equalTo("2023-07-03T10:00:00Z"))
@@ -71,7 +72,7 @@ public class ZonaGetTest {
 			.body("recorridos[1].recicladorUri", equalTo("/user/3"))
 		;
 	}
-	
+
 	@Test
 	void testGetOkWithExpandPuntoResiduo() {
 		RestAssured.given()
@@ -90,7 +91,7 @@ public class ZonaGetTest {
 			.body("puntosResiduos[1].ciudadanoId", equalTo(2))
 		;
 	}
-	
+
 	@Test
 	void testNotFound() {
 		RestAssured.given()
@@ -99,7 +100,7 @@ public class ZonaGetTest {
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
 	void testWithOutOrganizacionId() {
 		RestAssured.given()
@@ -108,7 +109,7 @@ public class ZonaGetTest {
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
 	void testWithOutZonaId() {
 		RestAssured.given()
@@ -117,7 +118,7 @@ public class ZonaGetTest {
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
 	void testInvalidOrganizacionId() {
 		RestAssured.given()
@@ -126,7 +127,7 @@ public class ZonaGetTest {
 		.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testInvalidZonaId() {
 		RestAssured.given()

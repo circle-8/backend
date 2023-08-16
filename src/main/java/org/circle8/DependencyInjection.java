@@ -38,20 +38,26 @@ class DependencyInjection extends AbstractModule {
 		return new GsonBuilder()
 			.registerTypeAdapter(
 				LocalDateTime.class,
-				(JsonSerializer<LocalDateTime>) (o, type, jsonSerializationContext) -> 
+				(JsonSerializer<LocalDateTime>) (o, type, jsonSerializationContext) ->
 				new JsonPrimitive(o.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
 			)
 			.registerTypeAdapter(
 				LocalDate.class,
-				(JsonSerializer<LocalDate>) (o, type, jsonSerializationContext) -> 
+				(JsonSerializer<LocalDate>) (o, type, jsonSerializationContext) ->
 				new JsonPrimitive(o.format(DateTimeFormatter.ISO_LOCAL_DATE))
-			).registerTypeAdapter(
+			)
+			.registerTypeAdapter(
+				LocalDate.class,
+				(JsonDeserializer<LocalDate>) (o, type, jsonSerializationContext) ->
+					LocalDate.parse(o.getAsString(), DateTimeFormatter.ISO_LOCAL_DATE)
+			)
+			.registerTypeAdapter(
 				ZonedDateTime.class,
-				(JsonSerializer<ZonedDateTime>) (o, type, jsonSerializationContext) -> 
+				(JsonSerializer<ZonedDateTime>) (o, type, jsonSerializationContext) ->
 				new JsonPrimitive(o.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
 			).registerTypeAdapter(
 					ZonedDateTime.class,
-					(JsonDeserializer<ZonedDateTime>) (o, type, JsonDeserializationContext ) -> 
+					(JsonDeserializer<ZonedDateTime>) (o, type, jsonDeserializationContext ) ->
 					ZonedDateTime.parse(o.getAsString(),DateTimeFormatter.ISO_OFFSET_DATE_TIME)
 				)
 			.create();
