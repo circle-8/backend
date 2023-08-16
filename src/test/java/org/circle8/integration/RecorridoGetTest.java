@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
 @ExtendWith(ApiTestExtension.class)
-class GetRecorridoTest {
+class RecorridoGetTest {
 	@Test void testRecorridoWithoutResiduos() {
 		RestAssured.given()
 			.get("/recorrido/1")
