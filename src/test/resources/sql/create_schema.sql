@@ -1,8 +1,5 @@
 SET MODE PostgreSQL;
 
-CREATE TYPE public."TipoUsuario" AS ENUM
-    ('CIUDADANO', 'RECICLADOR_URBANO', 'ORGANIZACION', 'TRANSPORTISTA', 'RECICLADOR_PARTICULAR');
-
 CREATE TABLE IF NOT EXISTS public."Ciudadano"
 (
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
@@ -61,15 +58,17 @@ CREATE TABLE IF NOT EXISTS public."RecicladorUrbano"
 (
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY ,
     "UsuarioId" bigint NOT NULL,
+    "OrganizacionId" bigint NOT NULL,
+    "ZonaId" bigint,
     CONSTRAINT "RecicladorUrbano_pkey" PRIMARY KEY ("ID")
 );
 
 CREATE TABLE IF NOT EXISTS public."Recorrido"
 (
-    "ID" bigint NOT NULL,
+    "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
     "FechaRetiro" date NOT NULL,
     "FechaInicio" timestamp with time zone,
-    "FechaFin" time with time zone,
+    "FechaFin" timestamp with time zone,
     "RecicladorId" bigint NOT NULL,
     "ZonaId" bigint NOT NULL,
     CONSTRAINT "Recorrido_pkey" PRIMARY KEY ("ID")
@@ -143,7 +142,7 @@ CREATE TABLE IF NOT EXISTS public."Usuario"
     "Username" character varying(50) NOT NULL,
     "Password" character varying NOT NULL,
     "SuscripcionId" bigint,
-    "TipoUsuario" character varying(15) NOT NULL,
+    "TipoUsuario" character varying(25) NOT NULL,
     "Email" character varying NOT NULL,
     CONSTRAINT "Usuario_pkey" PRIMARY KEY ("ID"),
     CONSTRAINT "Usuario_Email_key" UNIQUE ("Email"),
@@ -155,7 +154,15 @@ CREATE TABLE IF NOT EXISTS public."Zona"
     "ID" bigint NOT NULL GENERATED ALWAYS AS IDENTITY ,
     "OrganizacionId" bigint NOT NULL,
     "Polyline" character varying NOT NULL,
+    "Nombre" character varying(50) NOT NULL,
     CONSTRAINT "Zona_pkey" PRIMARY KEY ("ID")
+);
+
+CREATE TABLE IF NOT EXISTS public."Zona_TipoResiduo"
+(
+    "ZonaId" bigint NOT NULL,
+    "TipoResiduoId" bigint NOT NULL,
+    CONSTRAINT "Zona_TipoResiduo_pkey" PRIMARY KEY ("ZonaId", "TipoResiduoId")
 );
 
 CREATE TABLE IF NOT EXISTS public."Solicitud"
@@ -169,6 +176,7 @@ CREATE TABLE IF NOT EXISTS public."Solicitud"
     "ResiduoId" bigint NOT NULL,
     "TransaccionId" bigint,
     "CiudadanoCancelaId" bigint,
+    "PuntoReciclajeId" bigint NOT NULL,
     CONSTRAINT "Solicitud_pkey" PRIMARY KEY ("ID"),
     CONSTRAINT "Solicitud_Estado_CiudadanoSolicitanteId_CiudadanoSolicitado_key" UNIQUE ("Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId"),
     CONSTRAINT "Solicitud_CiudadanoCancelaId_fkey" FOREIGN KEY ("CiudadanoCancelaId")
@@ -183,6 +191,10 @@ CREATE TABLE IF NOT EXISTS public."Solicitud"
         REFERENCES public."Ciudadano" ("ID")
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
+    CONSTRAINT "Solicitud_PuntoReciclajeId_fkey" FOREIGN KEY ("PuntoReciclajeId")
+            REFERENCES public."PuntoReciclaje" ("ID")
+            ON UPDATE NO ACTION
+            ON DELETE NO ACTION,
     CONSTRAINT "Solicitud_ResiduoId_fkey" FOREIGN KEY ("ResiduoId")
         REFERENCES public."Residuo" ("ID")
         ON UPDATE NO ACTION
@@ -241,7 +253,12 @@ ALTER TABLE IF EXISTS public."RecicladorUrbano"
     REFERENCES public."Usuario" ("ID")
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
-
+    
+ALTER TABLE IF EXISTS public."RecicladorUrbano"
+    ADD CONSTRAINT "RecicladorUrbano_OrganizacionId_fkey" FOREIGN KEY ("OrganizacionId")
+    REFERENCES public."Organizacion" ("ID")
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
 
 ALTER TABLE IF EXISTS public."Recorrido"
     ADD CONSTRAINT "Recorrido_RecicladorId_fkey" FOREIGN KEY ("RecicladorId")
@@ -251,7 +268,7 @@ ALTER TABLE IF EXISTS public."Recorrido"
 
 
 ALTER TABLE IF EXISTS public."Recorrido"
-    ADD CONSTRAINT "Recorrido_ZonaId_fkey" FOREIGN KEY ("ZonaId")
+   ADD CONSTRAINT "Recorrido_ZonaId_fkey" FOREIGN KEY ("ZonaId")
     REFERENCES public."Zona" ("ID")
     ON UPDATE NO ACTION
     ON DELETE NO ACTION

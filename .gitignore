@@ -39,3 +39,6 @@ build/
 
 ### IDEA ###
 .idea/
+
+## PROJECT ##
+deploy.sh

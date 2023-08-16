@@ -18,6 +18,7 @@ public class SolicitudDto {
 	public CiudadanoDto solicitado;
 	public ResiduoDto residuo;
 	public Long canceladorId;
+	public PuntoReciclajeDto puntoReciclaje;
 
 	public static SolicitudDto from(Solicitud entity) {
 		if ( entity == null ) return null;
@@ -30,6 +31,7 @@ public class SolicitudDto {
 		s.solicitado = CiudadanoDto.from(entity.solicitado);
 		s.residuo = ResiduoDto.from(entity.residuo);
 		s.canceladorId = entity.canceladorId;
+		s.puntoReciclaje = PuntoReciclajeDto.from(entity.puntoReciclaje);
 		return s;
 	}
 
@@ -44,7 +46,10 @@ public class SolicitudDto {
 			solicitado.toResponse(),
 			estado,
 			!Objects.equals(canceladorId, 0L) ? canceladorId : null,
-			residuo.toResponse()
+			residuo.toResponse(),
+			puntoReciclaje != null ? puntoReciclaje.id : null,
+			puntoReciclaje != null ? "/reciclador/" + puntoReciclaje.recicladorId + "/punto_reciclaje/" + puntoReciclaje.id : null,
+			puntoReciclaje != null ? puntoReciclaje.toResponse() : null
 		);
 	}
 }

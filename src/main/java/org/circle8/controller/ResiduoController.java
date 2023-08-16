@@ -15,8 +15,10 @@ import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.ResiduoDto;
+import org.circle8.entity.Residuo;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.filter.ResiduosFilter;
 import org.circle8.service.ResiduoService;
 import org.circle8.service.SolicitudService;
 import org.circle8.utils.Dates;
@@ -101,12 +103,16 @@ public class ResiduoController {
 	 * GET /residuos
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2).build()
-		);
-
-		return new ListResponse<>(0, 1, 2, null, null, l);
+		val filter = new ResiduosFilter(ctx.queryParamMap());
+		try {
+			val residuos = service.list(filter);
+			return new ListResponse<>(residuos.stream().map(ResiduoDto::toResponse).toList());
+		} catch (ServiceError e) {
+			log.error("[Request: filter={}] error fulfill", filter, e);
+			return new ErrorResponse(e);
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

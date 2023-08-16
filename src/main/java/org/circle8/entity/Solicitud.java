@@ -14,4 +14,5 @@ public class Solicitud {
 	public Ciudadano solicitado;
 	public Residuo residuo;
 	public Long canceladorId;
+	public PuntoReciclaje puntoReciclaje;
 }

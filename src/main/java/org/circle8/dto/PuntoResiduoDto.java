@@ -43,7 +43,7 @@ public class PuntoResiduoDto {
 		p.longitud = entity.longitud;
 		p.ciudadanoId = entity.ciudadanoId;
 		p.ciudadano = UserDto.from(entity.ciudadano);
-		p.residuos = entity.residuos.stream().map(ResiduoDto::from).toList();
+		p.residuos = entity.residuos != null ? entity.residuos.stream().map(ResiduoDto::from).toList() : List.of();
 		return p;
 	}
 

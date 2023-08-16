@@ -17,7 +17,7 @@ public class TransporteDto {
 	public Long transaccionId;
 	public boolean pagoConfirmado;
 	public boolean entregaConfirmada;
-	
+
 	public static TransporteDto from(Transporte entity) {
 		if ( entity == null ) return null;
 		var t = new TransporteDto();

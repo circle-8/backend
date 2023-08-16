@@ -8,8 +8,9 @@ public class CiudadanoDto {
 	public String username;
 	public String nombre;
 	public long usuarioId;
-	
+
 	public static CiudadanoDto from(Ciudadano entity) {
+		if ( entity == null ) return null;
 		var c = new CiudadanoDto();
 		c.id = entity.id;
 		c.username = entity.username;
@@ -17,7 +18,7 @@ public class CiudadanoDto {
 		c.usuarioId = entity.usuarioId;
 		return c;
 	}
-	
+
 	public CiudadanoResponse toResponse() {
 		return CiudadanoResponse.builder()
 				.id(this.id)

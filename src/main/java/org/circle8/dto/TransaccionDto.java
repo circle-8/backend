@@ -44,7 +44,7 @@ public class TransaccionDto {
 		t.transporte = TransporteDto.from(entity.transporte);
 		t.puntoReciclajeId = entity.puntoReciclajeId;
 		t.puntoReciclaje = PuntoReciclajeDto.from(entity.puntoReciclaje);
-		t.residuos = entity.residuos.stream().map(ResiduoDto::from).toList();
+		t.residuos = entity.residuos != null ? entity.residuos.stream().map(ResiduoDto::from).toList() : List.of();
 		return t;
 	}
 

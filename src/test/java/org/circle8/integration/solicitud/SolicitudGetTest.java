@@ -45,6 +45,18 @@ class SolicitudGetTest {
 	}
 
 	@Test
+	void testGetOKExpandPuntoReciclaje() {
+		RestAssured.given()
+			.get("/solicitud/1?expand=punto_reciclaje")
+			.then()
+			.statusCode(200)
+			.body("id", equalTo(1))
+			.body("puntoReciclaje.id", equalTo(5))
+			.body("puntoReciclaje.titulo", equalTo("Punto de Usuario 2"))
+		;
+	}
+
+	@Test
 	void testGetOKExpandResiduo() {
 		RestAssured.given()
 			.get("/solicitud/1?expand=residuo")

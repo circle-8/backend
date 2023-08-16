@@ -1,10 +1,15 @@
 package org.circle8.dao;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
@@ -14,9 +19,11 @@ import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
 import org.circle8.exception.ForeingKeyException;
 import org.circle8.exception.PersistenceException;
+import org.circle8.filter.ResiduosFilter;
 import org.circle8.utils.Dates;
 
 import com.google.inject.Inject;
+import org.jetbrains.annotations.NotNull;
 
 import lombok.val;
 
@@ -35,7 +42,34 @@ public class ResiduoDao extends Dao {
 		  FROM "Residuo" AS r
 		  JOIN "PuntoResiduo" AS pr ON pr."ID" = r."PuntoResiduoId"
 		  JOIN "TipoResiduo" AS tr ON tr."ID" = r."TipoResiduoId"
-		 WHERE r."ID" = ?
+		 WHERE 1=1
+		""";
+	private static final String WHERE_ID = """
+		AND r."ID" = ?
+		""";
+	private static final String WHERE_PUNTOS = """
+		AND r."PuntoResiduoId" IN ( %s )
+		""";
+	private static final String WHERE_CIUDADANO = """
+		AND pr."CiudadanoId" IN ( %s )
+		""";
+	private static final String WHERE_TIPOS = """
+		AND r."TipoResiduoId" IN ( %s )
+		""";
+	private static final String WHERE_TRANSACCION = """
+		AND r."TransaccionId" = ?
+		""";
+	private static final String WHERE_RECORRIDO = """
+		AND r."RecorridoId" = ?
+		""";
+	private static final String WHERE_RETIRADO = """
+		AND r."FechaRetiro" IS NOT NULL
+		""";
+	private static final String WHERE_NOT_RETIRADO = """
+		AND r."FechaRetiro" IS NULL
+		""";
+	private static final String WHERE_FECHA_LIMITE = """
+		AND ( r."FechaLimiteRetiro" >= ? OR r."FechaLimiteRetiro" IS NULL )
 		""";
 	private static final String UPDATE = """
 		UPDATE "Residuo"
@@ -55,7 +89,7 @@ public class ResiduoDao extends Dao {
 		super(ds);
 	}
 
-	public Residuo save(Transaction t,Residuo residuo) throws PersistenceException {
+	public Residuo save(Transaction t, Residuo residuo) throws PersistenceException {
 		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
 			insert.setLong(2, residuo.puntoResiduo.id);
@@ -86,29 +120,33 @@ public class ResiduoDao extends Dao {
 	}
 
 	public Optional<Residuo> get(Transaction t, long residuoId) throws PersistenceException {
-		try ( val ps = t.prepareStatement(SELECT) ) {
+		try ( val ps = t.prepareStatement(SELECT + WHERE_ID) ) {
 			ps.setLong(1, residuoId);
 
 			try ( val rs = ps.executeQuery() ) {
 				if ( !rs.next() ) return Optional.empty();
-
-				val retiroTimestamp = rs.getTimestamp("FechaRetiro");
-				val limiteTimestamp = rs.getTimestamp("FechaLimiteRetiro");
-				return Optional.of(new Residuo(
-					rs.getLong("ID"),
-					rs.getLong("CiudadanoId"),
-					rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC),
-					retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null,
-					limiteTimestamp != null ? limiteTimestamp.toInstant().atZone(Dates.UTC) : null,
-					rs.getString("Descripcion"),
-					new PuntoResiduo(rs.getLong("PuntoResiduoId")),
-					new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")),
-					new Transaccion(rs.getLong("TransaccionId"))
-				));
+				return Optional.of(buildResiduo(rs));
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error selecting residuo", e);
 		}
+	}
+
+	@NotNull
+	private static Residuo buildResiduo(ResultSet rs) throws SQLException {
+		val retiroTimestamp = rs.getTimestamp("FechaRetiro");
+		val limiteTimestamp = rs.getTimestamp("FechaLimiteRetiro");
+		return new Residuo(
+			rs.getLong("ID"),
+			rs.getLong("CiudadanoId"),
+			rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC),
+			retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null,
+			limiteTimestamp != null ? limiteTimestamp.toInstant().atZone(Dates.UTC) : null,
+			rs.getString("Descripcion"),
+			new PuntoResiduo(rs.getLong("PuntoResiduoId")),
+			new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")),
+			new Transaccion(rs.getLong("TransaccionId"))
+		);
 	}
 
 	public void update(Transaction t, Residuo r) throws PersistenceException {
@@ -134,5 +172,44 @@ public class ResiduoDao extends Dao {
 			else
 				throw new PersistenceException("error updating residuo", e);
 		}
+	}
+
+	public List<Residuo> list(ResiduosFilter f) throws PersistenceException {
+		try ( var t = open(true); var ps = createListSelect(t, f) ) {
+			try ( val rs = ps.executeQuery() ) {
+				return buildList(rs, ResiduoDao::buildResiduo);
+			}
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error selecting residuos list", e);
+		}
+	}
+
+	private PreparedStatement createListSelect(
+		Transaction t,
+		ResiduosFilter f
+	) throws SQLException, PersistenceException {
+		val conditions = new StringBuilder(SELECT);
+		List<Object> parameters = new ArrayList<>();
+
+		appendListCondition(f.puntosResiduo, WHERE_PUNTOS, conditions, parameters);
+		appendListCondition(f.ciudadanos, WHERE_CIUDADANO, conditions, parameters);
+		appendListCondition(f.tipos, WHERE_TIPOS, conditions, parameters);
+		appendCondition(f.transaccion, WHERE_TRANSACCION, conditions, parameters);
+		appendCondition(f.recorrido, WHERE_RECORRIDO, conditions, parameters);
+
+		if ( f.retirado != null ) {
+			conditions.append(f.retirado ? WHERE_RETIRADO : WHERE_NOT_RETIRADO);
+		}
+
+		if ( f.fechaLimiteRetiro != null ) {
+			conditions.append(WHERE_FECHA_LIMITE);
+			parameters.add(Timestamp.from(f.fechaLimiteRetiro.toInstant()));
+		}
+
+		val p = t.prepareStatement(conditions.toString());
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i+1, parameters.get(i));
+
+		return p;
 	}
 }

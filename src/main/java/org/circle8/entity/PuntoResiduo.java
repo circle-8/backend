@@ -18,4 +18,5 @@ public class PuntoResiduo {
 	public List<Residuo> residuos = List.of();
 
 	public PuntoResiduo(Long id) { this.id = id; }
+	public PuntoResiduo(Long id, Long ciudadanoId) { this.id = id; this.ciudadanoId = ciudadanoId; }
 }

@@ -8,16 +8,20 @@ import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import org.circle8.dto.Dia;
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.EstadoSolicitud;
+import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.Solicitud;
 import org.circle8.entity.TipoResiduo;
+import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
@@ -34,12 +38,13 @@ import lombok.val;
 public class SolicitudDao extends Dao {
 	private static final String INSERT_INTO_FMT = """
 		INSERT INTO public."Solicitud"(
-		    "FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId"
+		    "FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId", "PuntoReciclajeId"
 		) SELECT ?, -- Fecha creacion
 		         ?, -- Fecha modificacion = fecha creacion
 		         ?, -- estado PENDIENTE
 		         %s,
 		         %s,
+		         ?,
 		         ?
 		""";
 
@@ -48,7 +53,7 @@ public class SolicitudDao extends Dao {
 		""";
 
 	private static final String CIUDADANO_RESIDUO_FIELD = """
-		(SELECT "CiudadanoId" FROM "Residuo" r JOIN "PuntoResiduo" pr ON r."PuntoResiduoId" = pr."ID" WHERE r."ID" = ?)
+		(SELECT "CiudadanoId" FROM "Residuo" r JOIN "PuntoResiduo" sub_pr ON r."PuntoResiduoId" = sub_pr."ID" WHERE r."ID" = ?)
 		""";
 
 	private static final String WHERE_SOLICITANTE = """
@@ -70,6 +75,7 @@ public class SolicitudDao extends Dao {
 		  JOIN "Ciudadano" AS c1 ON c1."ID" = s."CiudadanoSolicitanteId"
 		  JOIN "Ciudadano" AS c2 ON c2."ID" = s."CiudadanoSolicitadoId"
 		  JOIN "Residuo" AS r ON r."ID" = s."ResiduoId"
+		  JOIN "PuntoReciclaje" AS prc ON prc."ID" = s."PuntoReciclajeId"
 		    %s
 		 WHERE 1 = 1
 		""";
@@ -77,7 +83,8 @@ public class SolicitudDao extends Dao {
 		s."ID", s."FechaCreacion", "FechaModificacion", "Estado",
 		"CiudadanoSolicitanteId", c1."UsuarioId" as SolicitanteUsuarioId,
 		"CiudadanoSolicitadoId", c2."UsuarioId" as SolicitadoUsuarioId,
-		"ResiduoId", "CiudadanoCancelaId", r."FechaLimiteRetiro"
+		"ResiduoId", "CiudadanoCancelaId", r."FechaLimiteRetiro",
+		s."PuntoReciclajeId", prc."CiudadanoId" AS "PuntoReciclajeCiudadanoId"
 		""";
 	private static final String SELECT_X_RESIDUOS = """
 		, r."FechaCreacion" AS ResiduoFechaCreacion, r."FechaLimiteRetiro", r."Descripcion",
@@ -88,6 +95,9 @@ public class SolicitudDao extends Dao {
 		, u1."Username" AS SolicitanteUsername, u1."NombreApellido" AS SolicitanteNombre
 		, u2."Username" AS SolicitadoUsername, u2."NombreApellido" AS SolicitadoNombre
 		""";
+	private static final String SELECT_X_PUNTO_RECICLAJE = """
+		, prc."Titulo", prc."Latitud", prc."Longitud", prc."DiasAbierto"
+		""";
 	private static final String JOIN_X_RESIDUO = """
 		JOIN "TipoResiduo" AS tr on tr."ID" = r."TipoResiduoId"
 		JOIN "PuntoResiduo" AS pr on pr."ID" = r."PuntoResiduoId"
@@ -95,6 +105,8 @@ public class SolicitudDao extends Dao {
 	private static final String JOIN_X_CIUDADANO = """
 		JOIN "Usuario" AS u1 ON u1."ID" = c1."UsuarioId"
 		JOIN "Usuario" AS u2 ON u2."ID" = c2."UsuarioId"
+		""";
+	private static final String JOIN_X_PUNTO_RECICLAJE = """
 		""";
 
 	private static final String PUT_APROBAR = """
@@ -157,6 +169,7 @@ public class SolicitudDao extends Dao {
 		ps.setLong(4, tipo.isRetiro() ? puntoReciclajeId : residuoId);
 		ps.setLong(5, tipo.isRetiro() ? residuoId : puntoReciclajeId);
 		ps.setLong(6, residuoId);
+		ps.setLong(7, puntoReciclajeId);
 
 		return ps;
 	}
@@ -199,6 +212,8 @@ public class SolicitudDao extends Dao {
 		val r = buildResiduo(rs, x.residuo);
 		val solicitante = buildSolicitante(rs, x.ciudadanos);
 		val solicitado = buildSolicitado(rs, x.ciudadanos);
+		val users = Map.of(solicitado.id, solicitado.usuarioId, solicitante.id, solicitante.usuarioId);
+		val puntoReciclaje = buildPuntoReciclaje(rs, x.puntoReciclaje, users);
 
 		return new Solicitud(
 			rs.getLong("ID"),
@@ -208,7 +223,8 @@ public class SolicitudDao extends Dao {
 			solicitante,
 			solicitado,
 			r,
-			rs.getLong("CiudadanoCancelaId")
+			rs.getLong("CiudadanoCancelaId"),
+			puntoReciclaje
 		);
 	}
 
@@ -224,7 +240,7 @@ public class SolicitudDao extends Dao {
 			.fechaCreacion(rs.getTimestamp("ResiduoFechaCreacion").toInstant().atZone(Dates.UTC))
 			.fechaLimiteRetiro(limitDate)
 			.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
-			.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId"))) // para evitar recursividad dentro de residuo
+			.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId"), rs.getLong("ResiduoCiudadanoId"))) // para evitar recursividad dentro de residuo
 			.descripcion(rs.getString("Descripcion"))
 			.build();
 	}
@@ -250,6 +266,27 @@ public class SolicitudDao extends Dao {
 			rs.getString("SolicitadoUsername"),
 			rs.getString("SolicitadoNombre"),
 			rs.getLong("SolicitadoUsuarioId")
+		);
+	}
+
+	private PuntoReciclaje buildPuntoReciclaje(
+		ResultSet rs,
+		boolean expand,
+		Map<Long, Long> users
+	) throws SQLException {
+		val ciudadanoId = rs.getLong("PuntoReciclajeCiudadanoId");
+		if ( !expand ) return new PuntoReciclaje(rs.getLong("PuntoReciclajeId"), ciudadanoId);
+
+		val usuarioId = users.get(ciudadanoId);
+		return new PuntoReciclaje(
+			rs.getLong("PuntoReciclajeId"),
+			rs.getString("Titulo"),
+			rs.getDouble("Latitud"),
+			rs.getDouble("Longitud"),
+			Dia.getDia(rs.getString("DiasAbierto")),
+			List.of(),
+			ciudadanoId,
+			User.builder().id(usuarioId).build()
 		);
 	}
 
@@ -288,10 +325,12 @@ public class SolicitudDao extends Dao {
 		var selectFields = SELECT_SIMPLE;
 		if ( x.residuo ) selectFields += SELECT_X_RESIDUOS;
 		if ( x.ciudadanos ) selectFields += SELECT_X_CIUDADANOS;
+		if ( x.puntoReciclaje ) selectFields += SELECT_X_PUNTO_RECICLAJE;
 
 		var joinFields = "";
 		if ( x.residuo ) joinFields += JOIN_X_RESIDUO;
 		if ( x.ciudadanos ) joinFields += JOIN_X_CIUDADANO;
+		if ( x.puntoReciclaje ) joinFields += JOIN_X_PUNTO_RECICLAJE;
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 		var b = new StringBuilder(sql);

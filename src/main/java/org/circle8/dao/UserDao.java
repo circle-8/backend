@@ -13,9 +13,24 @@ import org.circle8.exception.PersistenceException;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.sql.ResultSet;
 
 @Singleton
 public class UserDao extends Dao {
+	
+	private static final String INSERT = """
+			INSERT INTO "Usuario"(
+			  "NombreApellido", "Username", "Password", "TipoUsuario", "Email")
+			  VALUES (?, ?, ?, ?, ?)
+			  """;
+	
+	private static final String SELECT_GET = """
+			   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId"
+		     FROM "Usuario" u
+		LEFT JOIN "Ciudadano" c on c."UsuarioId" = u."ID"
+		LEFT JOIN "RecicladorUrbano" r on r."UsuarioId" = u."ID"
+		    WHERE "Username" = ?
+		    """;
 
 	@Inject
 	public UserDao(DataSource ds) {
@@ -23,12 +38,7 @@ public class UserDao extends Dao {
 	}
 
 	public User save(Transaction t, User user) throws PersistenceException {
-		var insertSQL = """
-			INSERT INTO "Usuario"(
-			  "NombreApellido", "Username", "Password", "TipoUsuario", "Email")
-			  VALUES (?, ?, ?, ?, ?)""";
-
-		try ( var insert = t.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS) ) {
+		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
 			insert.setString(1, user.nombre);
 			insert.setString(2, user.username);
 			insert.setString(3, user.hashedPassword);
@@ -58,31 +68,33 @@ public class UserDao extends Dao {
 	}
 
 	public Optional<User> get(String username) throws PersistenceException {
-		var selectSQL = """
-   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId
-     FROM "Usuario" u
-LEFT JOIN "Ciudadano" c on c."UsuarioId" = u."ID"
-    WHERE "Username" = ?""";
-
-		try ( var t = open(true); var select = t.prepareStatement(selectSQL) ) {
+		try ( var t = open(true); var select = t.prepareStatement(SELECT_GET) ) {
 			select.setString(1, username);
-
 			try ( var rs = select.executeQuery() ) {
 				if ( !rs.next() )
 					return Optional.empty();
-
-				return Optional.of(User.builder()
-					.id(rs.getLong("Id"))
-					.username(rs.getString("Username"))
-					.hashedPassword(rs.getString("Password"))
-					.nombre(rs.getString("NombreApellido"))
-					.email(rs.getString("Email"))
-					.tipo(TipoUsuario.valueOf(rs.getString("TipoUsuario")))
-					.ciudadanoId(rs.getLong("CiudadanoId"))
-					.build());
+				return Optional.of(buildUser(rs));
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting user", e);
 		}
+	}
+	
+	private User buildUser(ResultSet rs) throws SQLException {
+		var u = new User();
+		u.id = rs.getLong("Id");
+		u.username = rs.getString("Username");
+		u.hashedPassword = rs.getString("Password");
+		u.nombre = rs.getString("NombreApellido");
+		u.tipo = TipoUsuario.valueOf(rs.getString("TipoUsuario"));
+		if(TipoUsuario.CIUDADANO.equals(u.tipo))
+			u.ciudadanoId = rs.getLong("CiudadanoId");
+		else if(TipoUsuario.RECICLADOR_URBANO.equals(u.tipo)) {
+			u.recicladorUrbanoId = rs.getLong("RecicladorId");
+			u.organizacionId = rs.getLong("OrganizacionId");
+			u.zonaId = rs.getLong("ZonaId") != 0 ?
+					rs.getLong("ZonaId") : null;
+		}		
+		return u;
 	}
 }

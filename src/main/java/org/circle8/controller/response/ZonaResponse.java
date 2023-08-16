@@ -10,11 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class ZonaResponse implements ApiResponse {
-	public int id;
+	public long id;
 	public String nombre;
 	public List<PuntoResponse> polyline;
 	public String organizacionUri;
-	public Integer organizacionId;
+	public Long organizacionId;
 	public OrganizacionResponse organizacion;
 	public List<TipoResiduoResponse> tipoResiduo;
+	public List<RecorridoResponse> recorridos;
 }
