@@ -74,6 +74,13 @@ public class ZonaDao extends Dao {
 			    %s
 			 WHERE 1 = 1
 			""";
+	
+	private static final String SELECT_PUNTOS_IN_ZONA = """
+			SELECT pr."ID",pr."CiudadanoId", pr."Latitud", pr."Longitud"
+			FROM "PuntoResiduo_Zona" pz
+			LEFT JOIN "PuntoResiduo" AS pr on pr."ID" = pz."PuntoResiduoId"
+			WHERE pz."ZonaId" = ?;
+			""";
 
 	private static final String SELECT_SIMPLE = """
 			z."ID", z."OrganizacionId", z."Polyline", z."Nombre", ztr."TipoResiduoId" , tr."Nombre" as tipoResiduoNombre
@@ -227,7 +234,7 @@ public class ZonaDao extends Dao {
 		} catch (SQLException e) {			
 			throw new PersistenceException("error Deleting tipos in zona", e);
 		}
-	}
+	}	
 
 	public void includePuntoResiduo(Transaction t,Long puntoResiduoId, Long zonaId) throws PersistenceException {
 		try ( val insert = t.prepareStatement(INSERT_INTO_PUNTO_RESIDUO_ZONA, Statement.RETURN_GENERATED_KEYS) ) {
@@ -281,6 +288,34 @@ public class ZonaDao extends Dao {
 			throw new PersistenceException("error getting zonas", e);
 		}
 	}
+	
+	public List<PuntoResiduo> getPuntosResiduo(Transaction t, Long zonaId) throws PersistenceException {
+		try(var select = createSelectListPuntos(t, zonaId);
+			var rs = select.executeQuery()) {
+			var puntos = new ArrayList<PuntoResiduo>();
+			while (rs.next()) {
+				val punto = PuntoResiduo.builder()
+						.id(rs.getLong("ID"))
+						.ciudadanoId(rs.getLong("CiudadanoId"))
+						.latitud(rs.getDouble("Latitud"))
+						.longitud(rs.getDouble("Longitud"))
+						.build();
+				puntos.add(punto);				
+			}
+			return puntos;
+		} catch (Exception e) {
+			throw new PersistenceException("error getting puntos in zona", e);
+		}
+	}
+	
+	private PreparedStatement createSelectListPuntos(
+			Transaction t,
+			Long zonaId
+		) throws PersistenceException, SQLException {
+			var p = t.prepareStatement(SELECT_PUNTOS_IN_ZONA);
+			p.setLong(1, zonaId);
+			return p;
+		}
 
 	private PreparedStatement createSelect(
 		Transaction t,

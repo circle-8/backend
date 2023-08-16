@@ -42,7 +42,7 @@ public class ZonaService {
 			}
 			t.commit();
 			val f = ZonaFilter.builder().id(entity.id).build();
-			val x = new ZonaExpand(true, false,false);
+			val x = new ZonaExpand(true, false, false);
 			return get(f, x);
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar la zona", e);
@@ -54,17 +54,24 @@ public class ZonaService {
 		try (var t = dao.open()) {
 			this.dao.deleteTipos(t, zonaId);
 			this.dao.update(t, zonaId, entity);
+			val puntosActuales = dao.getPuntosResiduo(t, zonaId);
+			
 			for(TipoResiduoDto tr : dto.tipoResiduo){
 				dao.saveTipos(t, zonaId, tr.id);
 			}
-			//TODO: validar puntos que puedan quedar afuera
+			
+			for(PuntoResiduo punto : puntosActuales) {
+				if(!acceptPunto(entity.polyline, punto))
+					this.dao.excludePuntoResiduo(t, punto.id, zonaId);
+					//TODO: notificar al cliente que lo sacaron de la zona, nice to have
+			}			
+			
 			t.commit();
 			val f = ZonaFilter.builder().id(zonaId).build();
-			val x = new ZonaExpand(true, false,false);
-			val zona = get(f, x);			
-			return zona;
+			val x = new ZonaExpand(true, false, true);		
+			return get(f, x);
 		} catch (PersistenceException e) {
-			throw new ServiceError("Ha ocurrido un error al guardar la zona", e);
+			throw new ServiceError("Ha ocurrido un error al actualizar la zona", e);
 		}
 	}
 	
