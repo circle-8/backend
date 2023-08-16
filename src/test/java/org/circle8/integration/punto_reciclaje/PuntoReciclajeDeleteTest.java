@@ -11,7 +11,7 @@ class PuntoReciclajeDeleteTest {
 	@Test
 	void testDeleteOk() {
 		RestAssured.given()
-			.delete("/reciclador/1/punto_reciclaje/2")
+			.delete("/reciclador/1/punto_reciclaje/6")
 			.then()
 			.statusCode(200)
 		;

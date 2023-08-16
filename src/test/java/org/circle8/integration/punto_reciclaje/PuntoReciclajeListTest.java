@@ -19,7 +19,7 @@ class PuntoReciclajeListTest {
 			.get("/puntos_reciclaje")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(3))
+			.body("data", hasSize(4))
 			.body("data[0].id", equalTo(1))
 			.body("data[0].latitud", equalTo(-34.6519877f))
 			.body("data[0].longitud", equalTo(-58.5850894f))
@@ -44,7 +44,7 @@ class PuntoReciclajeListTest {
 			.get("/puntos_reciclaje?dias=4&dias=5&dias=6") // Viernes, Sábado, Domingo
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(1))
+			.body("data", hasSize(2))
 			.body("data[0].id", equalTo(1))
 		;
 	}
@@ -69,7 +69,7 @@ class PuntoReciclajeListTest {
 			.get("/puntos_reciclaje?latitud=-34.65&longitud=-58.58&radio=1")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(3))
+			.body("data", hasSize(4))
 			.body("data[0].id", equalTo(1))
 			.body("data[1].id", equalTo(2))
 			.body("data[2].id", equalTo(5))
@@ -82,7 +82,7 @@ class PuntoReciclajeListTest {
 			.get("/puntos_reciclaje?latitud=-34.65&longitud=-58.58&radio=1&tipos_residuo=2&tipos_residuo=4&dias=3&reciclador_id=1")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(2))
+			.body("data", hasSize(3))
 			.body("data[0].id", equalTo(1))
 		;
 	}

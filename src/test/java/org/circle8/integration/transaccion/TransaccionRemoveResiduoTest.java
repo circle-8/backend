@@ -13,7 +13,7 @@ public class TransaccionRemoveResiduoTest {
 	@Test
 	void testDeleteOk() {
 		RestAssured.given()
-					  .delete("/transaccion/1/residuo/1")
+					  .delete("/transaccion/1/residuo/7")
 					  .then()
 					  .statusCode(200)
 		;
@@ -67,7 +67,7 @@ public class TransaccionRemoveResiduoTest {
 	@Test
 	void testWhithInexistingResiduoId() {
 		RestAssured.given()
-					  .delete("/transaccion/1/residuo/7")
+					  .delete("/transaccion/1/residuo/10")
 					  .then()
 					  .statusCode(404)
 		;
