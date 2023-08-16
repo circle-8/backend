@@ -8,9 +8,6 @@ import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
-import org.circle8.controller.response.PuntoResponse;
-import org.circle8.controller.response.TipoResiduoResponse;
-import org.circle8.controller.response.ZonaResponse;
 import org.circle8.dto.ZonaDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
@@ -36,31 +33,6 @@ public class ZonaController {
 		this.service = zonaService;
 	}
 	
-	private  static final String ORGANIZACION_ID_PARAM = "organizacion_id";
-	public static final String ORGANIZACION_URI_BASE = "/organizacion/";
-
-	private final ZonaResponse mock = ZonaResponse.builder()
-		.id(1)
-		.nombre("Zona 1")
-		.polyline(List.of(
-			new PuntoResponse(-34.6347176f,-58.5587959f),
-			new PuntoResponse(-34.6516556f,-58.5356009f),
-			new PuntoResponse(-34.6731596f,-58.5596279f),
-			new PuntoResponse(-34.6636766f,-58.5683339f),
-			new PuntoResponse(-34.6505856f,-58.5852295f),
-			new PuntoResponse(-34.6493356f,-58.5832919f),
-			new PuntoResponse(-34.6434332f,-58.5835331f),
-			new PuntoResponse(-34.6415567f,-58.5715792f),
-			new PuntoResponse(-34.6383786f,-58.5735709f)
-		))
-		.organizacionUri("/organizacion/1")
-		.organizacionId(1L)
-		.tipoResiduo(List.of(
-			new TipoResiduoResponse(1, "ORGANICO"),
-			new TipoResiduoResponse(2, "PLASTICO")
-		))
-		.build();
-
 	/**
 	 * GET /organizacion/{organizacion_id}/zona/{id}
 	 */
@@ -170,25 +142,39 @@ public class ZonaController {
 	}
 
 	/**
-	 * POST /punto_residuo/{id_punto_residuo}/zona/{id}
+	 * POST /punto_residuo/{punto_residuo_id}/zona/{id}
 	 */
 	public ApiResponse includePuntoResiduo(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
-			.build();
+		return doIncludeExclude(ctx, true);
 	}
 
 	/**
 	 * DELETE /punto_residuo/{id_punto_residuo}/zona/{id}
 	 */
 	public ApiResponse excludePuntoResiduo(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
-			.build();
+		return doIncludeExclude(ctx, false);
+	}
+	
+	private ApiResponse doIncludeExclude(Context ctx,boolean isInclude) {
+		final long puntoResiduoId;
+		final long zonaId;
+		try {
+			puntoResiduoId = Long.parseLong(ctx.pathParam("punto_residuo_id"));
+			zonaId = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
+		}
+		
+		try {
+			val dto = isInclude ?
+					this.service.includePuntoResiduo(puntoResiduoId, zonaId) : 
+						this.service.excludePuntoResiduo(puntoResiduoId, zonaId);
+			return dto.toResponse();
+		} catch (ServiceError e) {
+			return new ErrorResponse(e);
+		} catch (ServiceException e) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
@@ -203,6 +189,8 @@ public class ZonaController {
 		val filter = ZonaFilter.builder()
 				.organizacionId(req.organizacionId)
 				.recicladorId(req.recicladorId)
+				.ciudadanoId(req.ciudadanoId)
+				.puntoResiduoId(req.puntoResiduoId)
 				.tiposResiduos(req.tiposResiduo)
 				.build();
 		

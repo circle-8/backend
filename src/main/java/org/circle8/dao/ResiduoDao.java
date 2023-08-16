@@ -9,22 +9,22 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import lombok.val;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
-import org.circle8.exception.ForeingKeyException;
+import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.ResiduosFilter;
 import org.circle8.utils.Dates;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.inject.Inject;
-import org.jetbrains.annotations.NotNull;
+
+import lombok.val;
 
 public class ResiduoDao extends Dao {
 
@@ -108,9 +108,9 @@ public class ResiduoDao extends Dao {
 			}
 		} catch (SQLException e) {
 			if ( e.getMessage().contains("Residuo_TipoResiduoId_fkey") )
-				throw new ForeingKeyException("No existe el tipo de residuo con id " + residuo.tipoResiduo.id, e);
+				throw new ForeignKeyException("No existe el tipo de residuo con id " + residuo.tipoResiduo.id, e);
 			else if(e.getMessage().contains("Residuo_PuntoResiduoId_fkey"))
-				throw new ForeingKeyException("No existe el punto residuo con id " + residuo.puntoResiduo.id, e);
+				throw new ForeignKeyException("No existe el punto residuo con id " + residuo.puntoResiduo.id, e);
 			else
 				throw new PersistenceException("error inserting residuo", e);
 		}
@@ -133,14 +133,12 @@ public class ResiduoDao extends Dao {
 
 	@NotNull
 	private static Residuo buildResiduo(ResultSet rs) throws SQLException {
-		val retiroTimestamp = rs.getTimestamp("FechaRetiro");
-		val limiteTimestamp = rs.getTimestamp("FechaLimiteRetiro");
 		return new Residuo(
 			rs.getLong("ID"),
 			rs.getLong("CiudadanoId"),
 			rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC),
-			retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null,
-			limiteTimestamp != null ? limiteTimestamp.toInstant().atZone(Dates.UTC) : null,
+			Dates.atUTC(rs.getTimestamp("FechaRetiro")),
+			Dates.atUTC(rs.getTimestamp("FechaLimiteRetiro")),
 			rs.getString("Descripcion"),
 			new PuntoResiduo(rs.getLong("PuntoResiduoId")),
 			new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")),
@@ -165,9 +163,9 @@ public class ResiduoDao extends Dao {
 				throw new SQLException("Updating the residuo failed, no affected rows");
 		} catch (SQLException e) {
 			if ( e.getMessage().contains("Residuo_TipoResiduoId_fkey") )
-				throw new ForeingKeyException("No existe el tipo de residuo con id " + r.tipoResiduo.id, e);
+				throw new ForeignKeyException("No existe el tipo de residuo con id " + r.tipoResiduo.id, e);
 			else if(e.getMessage().contains("Residuo_PuntoResiduoId_fkey"))
-				throw new ForeingKeyException("No existe el punto residuo con id " + r.puntoResiduo.id, e);
+				throw new ForeignKeyException("No existe el punto residuo con id " + r.puntoResiduo.id, e);
 			else
 				throw new PersistenceException("error updating residuo", e);
 		}

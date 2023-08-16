@@ -137,9 +137,9 @@ public class Routes {
 			// RECORRIDO
 			.get("/recorridos", result(recorridoController::list))
 			.get("/recorrido/{id}", result(recorridoController::get))
-			.post("/organizacion/{id_organizacion}/zona/{id_zona}/recorrido", result(recorridoController::post))
-			.put("/organizacion/{id_organizacion}/zona/{id_zona}/recorrido/{id}", result(recorridoController::put))
-			.delete("/organizacion/{id_organizacion}/zona/{id_zona}/recorrido/{id}", result(recorridoController::delete))
+			.post("/organizacion/{organizacion_id}/zona/{zona_id}/recorrido", result(recorridoController::post))
+			.put("/organizacion/{organizacion_id}/zona/{zona_id}/recorrido/{id}", result(recorridoController::put))
+			.delete("/organizacion/{organizacion_id}/zona/{zona_id}/recorrido/{id}", result(recorridoController::delete))
 			.post("/recorrido/{id}/inicio", result(recorridoController::inicio))
 			.post("/recorrido/{id}/fin", result(recorridoController::fin))
 			// Transporte

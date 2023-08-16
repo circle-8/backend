@@ -1,5 +1,6 @@
 package org.circle8.dao;
 
+import lombok.val;
 import org.circle8.exception.PersistenceException;
 import org.intellij.lang.annotations.MagicConstant;
 
@@ -8,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 /**
  * Wrapper for {@link Connection} which can be used across services and DAOs
@@ -32,6 +34,19 @@ public class Transaction implements AutoCloseable {
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error creating statement", e);
 		}
+	}
+
+	public PreparedStatement prepareStatement(final String sql, List<Object> params) throws PersistenceException {
+		val p = this.prepareStatement(sql);
+
+		try {
+			for (int i = 0; i < params.size(); i++)
+				p.setObject(i + 1, params.get(i));
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error setting parameters for prepared statement", e);
+		}
+
+		return p;
 	}
 
 	public PreparedStatement prepareStatement(final String sql) throws PersistenceException {

@@ -18,4 +18,5 @@ public class ZonaResponse implements ApiResponse {
 	public OrganizacionResponse organizacion;
 	public List<TipoResiduoResponse> tipoResiduo;
 	public List<RecorridoResponse> recorridos;
+	public List<PuntoResiduoResponse> puntosResiduos;
 }
