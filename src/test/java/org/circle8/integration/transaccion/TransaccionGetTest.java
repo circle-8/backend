@@ -59,7 +59,7 @@ public class TransaccionGetTest {
 					  .body("residuos", hasSize(3))
 					  .body("residuos[0].id", equalTo(1))
 					  .body("residuos[1].id", equalTo(3))
-					  .body("residuos[2].id", equalTo(5))
+					  .body("residuos[2].id", equalTo(6))
 		;
 	}
 
