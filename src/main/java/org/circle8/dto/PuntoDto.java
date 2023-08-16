@@ -14,7 +14,11 @@ public class PuntoDto {
 		p.longitud = entity.longitud;
 		return p;
 	}
-	
+
+	public Punto toEntity() {
+		return new Punto(this.latitud, this.longitud);
+	}
+
 	public PuntoResponse toResponse() {
 		return new PuntoResponse(latitud, longitud);
 	}

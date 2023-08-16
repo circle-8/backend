@@ -18,7 +18,7 @@ public class TransaccionListTest {
 					  .get("/transacciones")
 					  .then()
 					  .statusCode(200)
-					  .body("data", hasSize(3))
+					  .body("data", hasSize(4))
 					  .body("data[0].id", equalTo(1))
 		;
 	}
@@ -50,9 +50,13 @@ public class TransaccionListTest {
 					  .get("/transacciones?punto_reciclaje=1")
 					  .then()
 					  .statusCode(200)
-					  .body("data", hasSize(2))
+					  .body("data", hasSize(3))
 					  .body("data[0].puntoReciclajeId", equalTo(1))
+					  .body("data[0].id", equalTo(1))
 					  .body("data[1].puntoReciclajeId", equalTo(1))
+					  .body("data[1].id", equalTo(3))
+					  .body("data[2].puntoReciclajeId", equalTo(1))
+					  .body("data[2].id", equalTo(4))
 		;
 	}
 
@@ -62,7 +66,7 @@ public class TransaccionListTest {
 					  .get("/transacciones?punto_reciclaje=1&punto_reciclaje=2")
 					  .then()
 					  .statusCode(200)
-					  .body("data", hasSize(3))
+					  .body("data", hasSize(4))
 					  .body("data[0].puntoReciclajeId", equalTo(1))
 					  .body("data[1].puntoReciclajeId", equalTo(2))
 					  .body("data[2].puntoReciclajeId", equalTo(1))

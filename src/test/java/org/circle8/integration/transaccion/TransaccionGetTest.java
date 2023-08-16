@@ -56,9 +56,10 @@ public class TransaccionGetTest {
 					  .body("fechaRetiro", equalTo("2023-01-02T08:00:00Z"))
 					  .body("transporteId", equalTo(1))
 					  .body("puntoReciclajeId", equalTo(1))
-					  .body("residuos", hasSize(2))
+					  .body("residuos", hasSize(3))
 					  .body("residuos[0].id", equalTo(1))
-					  .body("residuos[1].id", equalTo(4))
+					  .body("residuos[1].id", equalTo(3))
+					  .body("residuos[2].id", equalTo(5))
 		;
 	}
 

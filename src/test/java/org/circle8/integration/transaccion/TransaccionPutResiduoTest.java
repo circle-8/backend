@@ -32,7 +32,7 @@ public class TransaccionPutResiduoTest {
 	@Test
 	void testResiduoNotExist() {
 		RestAssured.given()
-					  .put("/transaccion/2/residuo/5")
+					  .put("/transaccion/2/residuo/50")
 					  .then()
 					  .statusCode(500);
 	}

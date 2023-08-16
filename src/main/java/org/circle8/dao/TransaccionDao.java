@@ -180,6 +180,7 @@ public class TransaccionDao extends Dao {
 		val f = TransaccionFilter.builder().id(id).build();
 		try (val ps = createSelect(t, f, expand)) {
 			ps.setLong(1, id);
+			val a = ps.toString();
 			try (val rs = ps.executeQuery()) {
 				if (!rs.next()) {
 					return Optional.empty();
@@ -274,7 +275,7 @@ public class TransaccionDao extends Dao {
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 		var conditions = new StringBuilder(sql);
-		List<Object> parameters = new ArrayList<>();
+		List<Long> parameters = new ArrayList<>();
 
 		if (f.id != null) {
 			conditions.append(WHERE_ID);
@@ -295,7 +296,7 @@ public class TransaccionDao extends Dao {
 
 		var p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
-			p.setObject(i + 1, parameters.get(i));
+			p.setLong(i + 1, parameters.get(i));
 		return p;
 	}
 

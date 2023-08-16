@@ -17,7 +17,7 @@ public class TransaccionPostTest {
 					  .post("/transaccion?punto_reciclaje=2&residuo=3&residuo=4")
 					  .then()
 					  .statusCode(200)
-					  .body("id", equalTo(4))
+					  .body("id", equalTo(5))
 					  .body("puntoReciclajeId", equalTo(2))
 					  .body("residuos[0].id", equalTo(3))
 					  .body("residuos[1].id", equalTo(4));

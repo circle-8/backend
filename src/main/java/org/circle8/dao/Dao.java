@@ -1,17 +1,19 @@
 package org.circle8.dao;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.sql.DataSource;
 
 import org.circle8.exception.PersistenceException;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
 import lombok.val;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Singleton
 abstract class Dao {

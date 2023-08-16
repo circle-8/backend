@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 
 import org.circle8.dao.ResiduoDao;
 import org.circle8.dto.ResiduoDto;
-import org.circle8.exception.ForeingKeyException;
+import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
@@ -29,7 +29,7 @@ public class ResiduoService {
 			var residuo = dao.save(t, dto.toEntity());
 			dto.id = residuo.id;
 			return dto;
-		} catch ( ForeingKeyException e ) {
+		} catch ( ForeignKeyException e ) {
 			throw new ServiceException(e.getMessage());
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar el residuo", e);
@@ -47,7 +47,7 @@ public class ResiduoService {
 			dao.update(t, r);
 
 			return ResiduoDto.from(r);
-		} catch ( ForeingKeyException e ) {
+		} catch ( ForeignKeyException e ) {
 			throw new NotFoundException(e.getMessage());
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar el residuo", e);
