@@ -10,7 +10,7 @@ import org.circle8.entity.Residuo;
 import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
-import org.circle8.exception.ForeingKeyException;
+import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
@@ -22,8 +22,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -68,6 +66,12 @@ public class RecorridoDao extends Dao {
 		    "LatitudInicio", "LongitudInicio",
 		    "LatitudFin", "LongitudFin"
 		) VALUES (?, ?, ?, ?, ?, ?, ?);
+		""";
+
+	private static final String DELETE = """
+		DELETE FROM "Recorrido"
+		 WHERE "ID" = ?
+		   AND "ZonaId" = ?
 		""";
 
 	private final ZonaDao zonaDao;
@@ -187,9 +191,24 @@ public class RecorridoDao extends Dao {
 			return r;
 		} catch (SQLException e) {
 			if ( e.getMessage().contains("Recorrido_RecicladorId_fkey") )
-				throw new ForeingKeyException("No existe el reciclador", e);
+				throw new ForeignKeyException("No existe el reciclador", e);
 			else
 				throw new PersistenceException("error inserting recorrido", e);
+		}
+	}
+
+	public void delete(Transaction t, long id, long zonaId) throws PersistenceException {
+		try ( val delete = t.prepareStatement(DELETE) ) {
+			delete.setLong(1, id);
+			delete.setLong(2, zonaId);
+
+			if (delete.executeUpdate() <= 0 )
+				throw new SQLException("deleting the recorrido failed, no affected rows");
+
+		} catch (SQLException e) {
+			if ( e.getMessage().contains("Residuo_RecorridoId_fkey") )
+				throw new ForeignKeyException("El recorrido ya cuenta con residuos, no puede ser eliminado");
+			throw new PersistenceException("error deleting recorrido", e);
 		}
 	}
 }

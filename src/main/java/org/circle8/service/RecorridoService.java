@@ -8,7 +8,7 @@ import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Recorrido;
 import org.circle8.entity.Retiro;
-import org.circle8.exception.ForeingKeyException;
+import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
@@ -77,10 +77,20 @@ public class RecorridoService {
 			dto.id = r.id;
 
 			return dto;
-		} catch ( ForeingKeyException e ) {
+		} catch ( ForeignKeyException e ) {
 			throw new ServiceException(e.getMessage());
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al guardar el recorrido", e);
+		}
+	}
+
+	public void delete(long id, long zonaId) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			dao.delete(t, id, zonaId);
+		} catch ( ForeignKeyException e ) {
+			throw new ServiceException(e.getMessage(), e);
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al eliminar el recorrido", e);
 		}
 	}
 }

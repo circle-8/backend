@@ -16,7 +16,9 @@ import org.circle8.controller.response.PuntoResponse;
 import org.circle8.controller.response.RecorridoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.RetiroResponse;
+import org.circle8.controller.response.SuccessResponse;
 import org.circle8.dto.RecorridoDto;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
@@ -120,12 +122,25 @@ public class RecorridoController {
 	 * DELETE /organizacion/{organizacion_id}/zona/{zona_id}/recorrido/{id}
 	 */
 	public ApiResponse delete(Context ctx) {
-		return new ApiResponse() {
-			@Override
-			public HttpStatus status() {
-				return HttpStatus.ACCEPTED;
-			}
-		};
+		long id;
+		long zonaId;
+		long organizacionId;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			zonaId = Long.parseLong(ctx.pathParam(ZONA_ID_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids de zona y organizacion deben ser numéricos", "");
+		}
+
+		try{
+			this.service.delete(id, zonaId);
+			return new SuccessResponse();
+		} catch ( ServiceError e ) {
+			log.error("[id:{}, zonaId:{}] error deleting recorrido", id, zonaId, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

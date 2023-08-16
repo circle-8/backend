@@ -16,7 +16,7 @@ import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
-import org.circle8.exception.ForeingKeyException;
+import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.ResiduosFilter;
 import org.circle8.utils.Dates;
@@ -108,9 +108,9 @@ public class ResiduoDao extends Dao {
 			}
 		} catch (SQLException e) {
 			if ( e.getMessage().contains("Residuo_TipoResiduoId_fkey") )
-				throw new ForeingKeyException("No existe el tipo de residuo con id " + residuo.tipoResiduo.id, e);
+				throw new ForeignKeyException("No existe el tipo de residuo con id " + residuo.tipoResiduo.id, e);
 			else if(e.getMessage().contains("Residuo_PuntoResiduoId_fkey"))
-				throw new ForeingKeyException("No existe el punto residuo con id " + residuo.puntoResiduo.id, e);
+				throw new ForeignKeyException("No existe el punto residuo con id " + residuo.puntoResiduo.id, e);
 			else
 				throw new PersistenceException("error inserting residuo", e);
 		}
@@ -163,9 +163,9 @@ public class ResiduoDao extends Dao {
 				throw new SQLException("Updating the residuo failed, no affected rows");
 		} catch (SQLException e) {
 			if ( e.getMessage().contains("Residuo_TipoResiduoId_fkey") )
-				throw new ForeingKeyException("No existe el tipo de residuo con id " + r.tipoResiduo.id, e);
+				throw new ForeignKeyException("No existe el tipo de residuo con id " + r.tipoResiduo.id, e);
 			else if(e.getMessage().contains("Residuo_PuntoResiduoId_fkey"))
-				throw new ForeingKeyException("No existe el punto residuo con id " + r.puntoResiduo.id, e);
+				throw new ForeignKeyException("No existe el punto residuo con id " + r.puntoResiduo.id, e);
 			else
 				throw new PersistenceException("error updating residuo", e);
 		}
