@@ -68,6 +68,10 @@ public class SolicitudDao extends Dao {
 		AND s."ID" = ?
 		""";
 
+	private static final String WHERE_RESIDUO_ID = """
+		AND s."ResiduoId" = ?
+		""";
+
 	private static final String SELECT_FMT = """
 		SELECT
 		       %s
@@ -174,9 +178,8 @@ public class SolicitudDao extends Dao {
 		return ps;
 	}
 
-	public List<Solicitud> list(SolicitudFilter f, SolicitudExpand x) throws PersistenceException{
+	public List<Solicitud> list(Transaction t, SolicitudFilter f, SolicitudExpand x) throws PersistenceException {
 		try (
-			var t = open(true);
 			var select = createSelect(t, f, x);
 			var rs = select.executeQuery()
 		) {
@@ -188,6 +191,12 @@ public class SolicitudDao extends Dao {
 			return l;
 		} catch (SQLException e) {
 			throw new PersistenceException("error getting punto reciclaje", e);
+		}
+	}
+
+	public List<Solicitud> list(SolicitudFilter f, SolicitudExpand x) throws PersistenceException {
+		try ( var t = open(true) ) {
+			return list(t, f, x);
 		}
 	}
 
@@ -333,23 +342,14 @@ public class SolicitudDao extends Dao {
 		if ( x.puntoReciclaje ) joinFields += JOIN_X_PUNTO_RECICLAJE;
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
+
 		var b = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
 
-		if ( f.id != null ) {
-			b.append(WHERE_ID);
-			parameters.add(f.id);
-		}
-
-		if ( f.solicitanteId != null ) {
-			b.append(WHERE_SOLICITANTE);
-			parameters.add(f.solicitanteId);
-		}
-
-		if ( f.solicitadoId != null ) {
-			b.append(WHERE_SOLICITADO);
-			parameters.add(f.solicitadoId);
-		}
+		appendCondition(f.id, WHERE_ID, b, parameters);
+		appendCondition(f.solicitanteId, WHERE_SOLICITANTE, b, parameters);
+		appendCondition(f.solicitadoId, WHERE_SOLICITADO, b, parameters);
+		appendCondition(f.residuoId, WHERE_RESIDUO_ID, b, parameters);
 
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++)

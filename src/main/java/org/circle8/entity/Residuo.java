@@ -20,4 +20,5 @@ public class Residuo {
 	public PuntoResiduo puntoResiduo;
 	public TipoResiduo tipoResiduo;
 	public Transaccion transaccion;
+	public Recorrido recorrido;
 }

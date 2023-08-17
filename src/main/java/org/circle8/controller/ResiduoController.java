@@ -118,7 +118,21 @@ public class ResiduoController {
 	 * POST /residuo/{id}/reciclaje
 	 */
 	public ApiResponse reciclaje(Context ctx) {
-		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id debe ser numérico", e.getMessage());
+		}
+
+		try {
+			return service.addToRecorrido(id).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request: id={}] error residuo to reciclaje", id, e);
+			return new ErrorResponse(e);
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

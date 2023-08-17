@@ -13,6 +13,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.circle8.entity.PuntoResiduo;
+import org.circle8.entity.Recorrido;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
@@ -39,7 +40,7 @@ public class ResiduoDao extends Dao {
 		SELECT r."ID", "FechaCreacion", "FechaRetiro", "FechaLimiteRetiro", "Descripcion",
 		       "TipoResiduoId", tr."Nombre" AS TipoResiduoNombre,
 		       "PuntoResiduoId", pr."CiudadanoId",
-		       "TransaccionId"
+		       "TransaccionId", "RecorridoId"
 		  FROM "Residuo" AS r
 		  JOIN "PuntoResiduo" AS pr ON pr."ID" = r."PuntoResiduoId"
 		  JOIN "TipoResiduo" AS tr ON tr."ID" = r."TipoResiduoId"
@@ -144,7 +145,8 @@ public class ResiduoDao extends Dao {
 			rs.getString("Descripcion"),
 			new PuntoResiduo(rs.getLong("PuntoResiduoId")),
 			new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")),
-			new Transaccion(rs.getLong("TransaccionId"))
+			new Transaccion(rs.getLong("TransaccionId")),
+			new Recorrido(rs.getLong("RecorridoId"))
 		);
 	}
 
@@ -155,9 +157,9 @@ public class ResiduoDao extends Dao {
 			ps.setLong(3, r.puntoResiduo.id);
 			ps.setLong(4, r.tipoResiduo.id);
 			ps.setObject(5, r.transaccion != null && r.transaccion.id != 0 ? r.transaccion.id : null);
-			ps.setObject(6, null); // TODO: cuando este recorrido, deberia ir aca
+			ps.setObject(6, r.recorrido != null && r.recorrido.id != 0 ? r.recorrido.id : null);
 			ps.setString(7, r.descripcion);
-			ps.setTimestamp(8, r.fechaLimiteRetiro != null ? Timestamp.from(r.fechaRetiro.toInstant()) : null);
+			ps.setTimestamp(8, r.fechaLimiteRetiro != null ? Timestamp.from(r.fechaLimiteRetiro.toInstant()) : null);
 			ps.setLong(9, r.id);
 
 			int updates = ps.executeUpdate();
@@ -168,6 +170,10 @@ public class ResiduoDao extends Dao {
 				throw new ForeignKeyException("No existe el tipo de residuo con id " + r.tipoResiduo.id, e);
 			else if(e.getMessage().contains("Residuo_PuntoResiduoId_fkey"))
 				throw new ForeignKeyException("No existe el punto residuo con id " + r.puntoResiduo.id, e);
+			else if(e.getMessage().contains("Residuo_RecorridoId_fkey"))
+				throw new ForeignKeyException("No existe el recorrido con id " + r.recorrido.id, e);
+			else if(e.getMessage().contains("Residuo_TransaccionId_fkey"))
+				throw new ForeignKeyException("No existe la transaccion con id " + r.transaccion.id, e);
 			else
 				throw new PersistenceException("error updating residuo", e);
 		}

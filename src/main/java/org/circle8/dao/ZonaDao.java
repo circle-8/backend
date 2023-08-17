@@ -184,10 +184,16 @@ public class ZonaDao extends Dao {
 		}
 	}
 
-	public List<Zona> list(ZonaFilter f, ZonaExpand x) throws PersistenceException{
-		try (var t = open(true);
-			var select = createSelect(t, f, x);
-			var rs = select.executeQuery()
+	public List<Zona> list(ZonaFilter f, ZonaExpand x) throws PersistenceException {
+		try ( var t = open(true) ) {
+			return list(t, f, x);
+		}
+	}
+
+	public List<Zona> list(Transaction t, ZonaFilter f, ZonaExpand x) throws PersistenceException {
+		try (
+			 var select = createSelect(t, f, x);
+			 var rs = select.executeQuery()
 		) {
 			return getList(rs, x);
 		} catch (SQLException e) {
