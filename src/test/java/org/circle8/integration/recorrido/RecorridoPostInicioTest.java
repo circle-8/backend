@@ -1,5 +1,7 @@
 package org.circle8.integration.recorrido;
 
+import static org.hamcrest.Matchers.equalTo;
+
 import io.restassured.RestAssured;
 
 import org.circle8.ApiTestExtension;
@@ -23,6 +25,8 @@ public class RecorridoPostInicioTest {
 					  .post("/recorrido/1/inicio")
 					  .then()
 					  .statusCode(200)
+					  .body("puntoInicio.latitud", equalTo(-34.6675123F))
+					  .body("puntoInicio.longitud", equalTo(-58.5721607F))
 		;
 	}
 

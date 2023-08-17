@@ -3,6 +3,8 @@ package org.circle8.dao;
 import com.google.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.val;
+
+import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Recorrido;
@@ -85,6 +87,25 @@ public class RecorridoDao extends Dao {
 		UPDATE public."Recorrido" AS r
 			SET "LatitudFin"= ? , "LongitudFin"= ?
 			WHERE r."ID" = ?;
+		""";
+
+	private static final String UPDATE = """
+		UPDATE public."Recorrido" AS r
+		%s
+		WHERE r."ID" = ?
+		AND r."ZonaId" = ?;
+		""";
+
+	private static final String SET_FECHA_RETIRO_ALSO = """
+		, "FechaRetiro"= ?
+		""";
+
+	private static final String SET_RECICLADOR = """
+		SET "RecicladorId"= ?
+		""";
+
+	private static final String SET_FECHA_RETIRO_ONLY = """
+		SET "FechaRetiro"= ?
 		""";
 
 	private final ZonaDao zonaDao;
@@ -176,8 +197,8 @@ public class RecorridoDao extends Dao {
 			rs.getLong("ZonaId"),
 			rs.getLong("OrganizacionId"),
 			z,
-			new Punto(rs.getFloat("LatitudInicio"), rs.getFloat("LongitudInicio")),
-			new Punto(rs.getFloat("LatitudFin"), rs.getFloat("LongitudFin")),
+			new Punto(rs.getDouble("LatitudInicio"), rs.getDouble("LongitudInicio")),
+			new Punto(rs.getDouble("LatitudFin"), rs.getDouble("LongitudFin")),
 			new ArrayList<>()
 		);
 	}
@@ -254,5 +275,41 @@ public class RecorridoDao extends Dao {
 		} catch (SQLException e) {
 			throw new PersistenceException("error updating recorrido", e);
 		}
+	}
+
+	public void putSave(Transaction t, RecorridoDto dto) throws PersistenceException, NotFoundException {
+		try (var put = createPut(t, dto)){
+			if(put.executeUpdate() <= 0){
+				throw new NotFoundException("updating the recorrido failed, no affected rows");
+			}
+		} catch (SQLException e) {
+			if(e.getMessage().contains("Recorrido_RecicladorId_fkey"))
+				throw new PersistenceException("El recicladorId ingresado no existe en la tabla", e);
+			throw new PersistenceException("error updating recorrido", e);
+      }
+   }
+
+	private PreparedStatement createPut(Transaction t, RecorridoDto dto) throws PersistenceException, SQLException {
+		val put = new StringBuilder();
+		List<Object> parameters = new ArrayList<>();
+		if(dto.recicladorId != null){
+			put.append(SET_RECICLADOR);
+			parameters.add(dto.recicladorId);
+			if(dto.fechaRetiro != null){
+				put.append(SET_FECHA_RETIRO_ALSO);
+				parameters.add(dto.fechaRetiro);
+			}
+		}
+		else{
+			put.append(SET_FECHA_RETIRO_ONLY);
+			parameters.add(dto.fechaRetiro);
+		}
+		parameters.add(dto.id);
+		parameters.add(dto.zonaId);
+		val sql = String.format(UPDATE, put);
+		var p = t.prepareStatement(sql);
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+		return p;
 	}
 }

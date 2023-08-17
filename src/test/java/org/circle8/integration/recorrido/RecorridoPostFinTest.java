@@ -1,5 +1,7 @@
 package org.circle8.integration.recorrido;
 
+import static org.hamcrest.Matchers.equalTo;
+
 import io.restassured.RestAssured;
 
 import org.circle8.ApiTestExtension;
@@ -11,7 +13,7 @@ public class RecorridoPostFinTest {
 
 	private static final String REQUEST =  """
 			{
-				"latitud": "-34.6675104",
+				"latitud": "-34.6675123",
 				"longitud": "-58.5721607"
 			}""";
 
@@ -22,6 +24,8 @@ public class RecorridoPostFinTest {
 					  .post("/recorrido/1/fin")
 					  .then()
 					  .statusCode(200)
+					  .body("puntoFin.latitud", equalTo(-34.6675123F))
+					  .body("puntoFin.longitud", equalTo(-58.5721607F))
 		;
 	}
 

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.circle8.controller.request.recorrido.PostRecorridoRequest;
 import org.circle8.controller.request.recorrido.PuntoRequest;
+import org.circle8.controller.request.recorrido.PutRecorridoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -108,11 +109,31 @@ public class RecorridoController {
 	 * PUT /organizacion/{organizacion_id}/zona/{zona_id}/recorrido/{id}
 	 */
 	public ApiResponse put(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.zonaId(Long.parseLong(ctx.pathParam(ZONA_ID_PARAM)))
-			.zonaUri("/organizacion/"+ctx.pathParam(ORGANIZACION_ID_PARAM)+"/zona/"+ctx.pathParam(ZONA_ID_PARAM))
-			.build();
+		long id;
+		long zonaId;
+		long organizacionId;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+			zonaId = Long.parseLong(ctx.pathParam(ZONA_ID_PARAM));
+			organizacionId = Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids de zona y organizacion deben ser numéricos", "");
+		}
+
+		val req = ctx.bodyAsClass(PutRecorridoRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+
+		var dto = RecorridoDto.from(req, zonaId, organizacionId, id);
+		try {
+			return service.putSave(dto).toResponse();
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error saving new recorrido", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
@@ -157,8 +178,7 @@ public class RecorridoController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
 		try {
-			service.saveInicio(PuntoDto.from(req), id);
-			return new SuccessResponse();
+			return service.updateInicio(PuntoDto.from(req), id).toResponse();
 		} catch (NotFoundException e) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceError e ) {
@@ -186,8 +206,7 @@ public class RecorridoController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
 		try {
-			service.saveFin(PuntoDto.from(req), id);
-			return new SuccessResponse();
+			return service.updateFin(PuntoDto.from(req), id).toResponse();
 		} catch (NotFoundException e) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceError e ) {

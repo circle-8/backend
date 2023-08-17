@@ -2,6 +2,7 @@ package org.circle8.dto;
 
 
 import org.circle8.controller.request.recorrido.PostRecorridoRequest;
+import org.circle8.controller.request.recorrido.PutRecorridoRequest;
 import org.circle8.controller.response.RecorridoResponse;
 import org.circle8.entity.Recorrido;
 
@@ -49,6 +50,16 @@ public class RecorridoDto {
 		r.organizacionId = organizacionId;
 		r.puntoInicio = PuntoDto.from(req.puntoInicio);
 		r.puntoFin = PuntoDto.from(req.puntoFin);
+		return r;
+	}
+
+	public static RecorridoDto from(PutRecorridoRequest req, long zonaId, long organizacionId, long id) {
+		var r = new RecorridoDto();
+		r.id = id;
+		r.fechaRetiro = req.fechaRetiro;
+		r.recicladorId = req.recicladorId;
+		r.zonaId = zonaId;
+		r.organizacionId = organizacionId;
 		return r;
 	}
 

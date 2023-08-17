@@ -16,6 +16,7 @@ import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecorridoService {
@@ -95,20 +96,34 @@ public class RecorridoService {
 		}
 	}
 
-	public void saveInicio(PuntoDto punto, long id) throws ServiceException {
+	public RecorridoDto updateInicio(PuntoDto punto, long id) throws ServiceException {
 		try ( val t = dao.open(true) ) {
 			dao.saveInicio(t, punto.toEntity(), id);
+			return RecorridoDto.from(dao.get(t, id, new RecorridoExpand(new ArrayList<>())).
+				orElseThrow(() -> new NotFoundException("No existe el recorrido")));
 		} catch (PersistenceException e) {
-			throw new ServiceError("Ha ocurrido un error al eliminar el recorrido", e);
+			throw new ServiceError("Ha ocurrido un error al actualizar la fechaInicio del recorrido", e);
       }
 
    }
 
-	public void saveFin(PuntoDto punto, long id) throws ServiceException {
+	public RecorridoDto updateFin(PuntoDto punto, long id) throws ServiceException {
 		try ( val t = dao.open(true) ) {
 			dao.saveFin(t, punto.toEntity(), id);
+			return RecorridoDto.from(dao.get(t, id, new RecorridoExpand(new ArrayList<>())).
+				orElseThrow(() -> new NotFoundException("No existe el recorrido")));
 		} catch (PersistenceException e) {
-			throw new ServiceError("Ha ocurrido un error al eliminar el recorrido", e);
+			throw new ServiceError("Ha ocurrido un error al actualizar la fechaFin del recorrido", e);
+		}
+	}
+
+	public RecorridoDto putSave(RecorridoDto dto) throws ServiceException{
+		try ( val t = dao.open(true) ) {
+			dao.putSave(t, dto);
+			return RecorridoDto.from(dao.get(t, dto.id, new RecorridoExpand(new ArrayList<>())).
+				orElseThrow(() -> new NotFoundException("No existe el recorrido")));
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al actualizar el recorrido", e);
 		}
 	}
 }
