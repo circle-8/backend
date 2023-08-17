@@ -11,6 +11,7 @@ import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
 import org.circle8.exception.ForeignKeyException;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
@@ -72,6 +73,18 @@ public class RecorridoDao extends Dao {
 		DELETE FROM "Recorrido"
 		 WHERE "ID" = ?
 		   AND "ZonaId" = ?
+		""";
+
+	private static final String UPDATE_INICIO = """
+		UPDATE public."Recorrido" AS r
+			SET "LatitudInicio"= ? , "LongitudInicio"= ?
+			WHERE r."ID" = ?;
+		""";
+
+	private static final String UPDATE_FIN = """
+		UPDATE public."Recorrido" AS r
+			SET "LatitudFin"= ? , "LongitudFin"= ?
+			WHERE r."ID" = ?;
 		""";
 
 	private final ZonaDao zonaDao;
@@ -209,6 +222,37 @@ public class RecorridoDao extends Dao {
 			if ( e.getMessage().contains("Residuo_RecorridoId_fkey") )
 				throw new ForeignKeyException("El recorrido ya cuenta con residuos, no puede ser eliminado");
 			throw new PersistenceException("error deleting recorrido", e);
+		}
+	}
+
+	public void saveInicio(Transaction t , Punto punto, long id) throws PersistenceException, NotFoundException {
+		try ( var update = t.prepareStatement(UPDATE_INICIO) ) {
+			update.setDouble(1, punto.latitud);
+			update.setDouble(2, punto.longitud);
+			update.setLong(3, id);
+
+			if(update.executeUpdate() <= 0){
+				throw new NotFoundException("updating the recorrido failed, no affected rows");
+			}
+
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating recorrido", e);
+      }
+
+   }
+
+	public void saveFin(Transaction t, Punto punto, long id) throws PersistenceException, NotFoundException {
+		try ( var update = t.prepareStatement(UPDATE_FIN) ) {
+			update.setDouble(1, punto.latitud);
+			update.setDouble(2, punto.longitud);
+			update.setLong(3, id);
+
+			if(update.executeUpdate() <= 0){
+				throw new NotFoundException("updating the recorrido failed, no affected rows");
+			}
+
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating recorrido", e);
 		}
 	}
 }

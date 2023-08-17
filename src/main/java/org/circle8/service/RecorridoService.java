@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import lombok.val;
 import org.circle8.dao.RecorridoDao;
 import org.circle8.dao.Transaction;
+import org.circle8.dto.PuntoDto;
 import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Recorrido;
@@ -90,6 +91,23 @@ public class RecorridoService {
 		} catch ( ForeignKeyException e ) {
 			throw new ServiceException(e.getMessage(), e);
 		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al eliminar el recorrido", e);
+		}
+	}
+
+	public void saveInicio(PuntoDto punto, long id) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			dao.saveInicio(t, punto.toEntity(), id);
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al eliminar el recorrido", e);
+      }
+
+   }
+
+	public void saveFin(PuntoDto punto, long id) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			dao.saveFin(t, punto.toEntity(), id);
+		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al eliminar el recorrido", e);
 		}
 	}

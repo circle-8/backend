@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.circle8.controller.request.recorrido.PostRecorridoRequest;
+import org.circle8.controller.request.recorrido.PuntoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -19,7 +20,9 @@ import org.circle8.controller.response.RecorridoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.RetiroResponse;
 import org.circle8.controller.response.SuccessResponse;
+import org.circle8.dto.PuntoDto;
 import org.circle8.dto.RecorridoDto;
+import org.circle8.entity.Punto;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
@@ -146,21 +149,58 @@ public class RecorridoController {
 	 * POST /recorrido/{id}/inicio
 	 */
 	public ApiResponse inicio(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaInicio(ZonedDateTime.now(Dates.UTC))
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del recorrido debe ser numérico", "");
+		}
+
+		val req = ctx.bodyAsClass(PuntoRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+
+		try {
+			service.saveInicio(PuntoDto.from(req), id);
+			return new SuccessResponse();
+		} catch (NotFoundException e) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceError e ) {
+			log.error("[id:{}, zonaId:{}] error updating recorrido", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch (ServiceException e) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
 	 * POST /recorrido/{id}/fin
 	 */
 	public ApiResponse fin(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.fechaInicio(ZonedDateTime.now(Dates.UTC).minusHours(1))
-			.fechaFin(ZonedDateTime.now(Dates.UTC))
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del recorrido debe ser numérico", "");
+		}
+
+		val req = ctx.bodyAsClass(PuntoRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+
+		try {
+			service.saveFin(PuntoDto.from(req), id);
+			return new SuccessResponse();
+		} catch (NotFoundException e) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceError e ) {
+			log.error("[id:{}, zonaId:{}] error updating recorrido", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch (ServiceException e) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
