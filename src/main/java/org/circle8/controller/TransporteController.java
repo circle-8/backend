@@ -1,24 +1,22 @@
 package org.circle8.controller;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.List;
-
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.TransporteResponse;
 import org.circle8.utils.Dates;
 
-import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 @Singleton
 public class TransporteController {
 	private final static TransporteResponse mock = TransporteResponse.builder()
-		.id(1)
+		.id(1L)
 		.fechaAcordada(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
-		.transaccionId(1)
+		.transaccionId(1L)
 		.transportistaUri("/transportista/1")
 		.build();
 
@@ -28,7 +26,7 @@ public class TransporteController {
 	public ApiResponse list(Context ctx) {
 		final var l = List.of(
 			mock,
-			mock.toBuilder().id(2).build()
+			mock.toBuilder().id(2L).build()
 		);
 
 		return new ListResponse<>(0, 1, 2, null, null, l);
@@ -38,7 +36,7 @@ public class TransporteController {
 	 * GET /transporte/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
+		return mock.toBuilder().id(Long.parseLong(ctx.pathParam("id"))).build();
 	}
 
 	/**
@@ -46,7 +44,7 @@ public class TransporteController {
 	 */
 	public ApiResponse setPrecio(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
+			.id(Long.parseLong(ctx.pathParam("id")))
 			.precioAcordado(BigDecimal.TEN)
 			.build();
 	}
@@ -56,7 +54,7 @@ public class TransporteController {
 	 */
 	public ApiResponse inicio(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
+			.id(Long.parseLong(ctx.pathParam("id")))
 			.fechaInicio(ZonedDateTime.now(Dates.UTC))
 			.build();
 	}
@@ -66,7 +64,7 @@ public class TransporteController {
 	 */
 	public ApiResponse fin(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
+			.id(Long.parseLong(ctx.pathParam("id")))
 			.fechaInicio(ZonedDateTime.now(Dates.UTC).minusHours(1))
 			.fechaFin(ZonedDateTime.now(Dates.UTC))
 			.build();
@@ -77,7 +75,7 @@ public class TransporteController {
 	 */
 	public ApiResponse confirmarPago(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
+			.id(Long.parseLong(ctx.pathParam("id")))
 			.pagoConfirmado(true)
 			.build();
 	}
@@ -87,7 +85,7 @@ public class TransporteController {
 	 */
 	public ApiResponse confirmarEntrega(Context ctx) {
 		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
+			.id(Long.parseLong(ctx.pathParam("id")))
 			.entregaConfirmada(true)
 			.build();
 	}

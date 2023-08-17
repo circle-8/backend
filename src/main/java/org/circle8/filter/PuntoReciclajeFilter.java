@@ -1,9 +1,9 @@
 package org.circle8.filter;
 
-import java.util.List;
-
 import lombok.Builder;
 import org.circle8.dto.Dia;
+
+import java.util.List;
 
 @Builder
 public class PuntoReciclajeFilter {
@@ -19,7 +19,7 @@ public class PuntoReciclajeFilter {
 	public boolean hasDias() {
 		return dias != null && !dias.isEmpty();
 	}
-	
+
 	public boolean hasReciclador() {
 		return reciclador_id != null;
 	}
@@ -31,7 +31,7 @@ public class PuntoReciclajeFilter {
 	public boolean hasArea() {
 		return latitud != null && longitud != null && radio != null;
 	}
-	
+
 	public boolean isPuntoVerde() {
 		return isPuntoVerde;
 	}

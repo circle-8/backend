@@ -1,14 +1,13 @@
 package org.circle8.utils;
 
+import jakarta.annotation.Nullable;
+import org.circle8.controller.request.IRequest.Validation;
+
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
-
-import org.circle8.controller.request.IRequest.Validation;
-
-import jakarta.annotation.Nullable;
 
 public class Parser {
 	@Nullable

@@ -1,7 +1,13 @@
 package org.circle8.controller;
 
-import java.util.List;
-
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
+import io.javalin.http.Cookie;
+import io.javalin.http.SameSite;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.configuration2.Configuration;
 import org.circle8.controller.request.user.RefreshTokenRequest;
 import org.circle8.controller.request.user.TokenRequest;
@@ -20,15 +26,7 @@ import org.circle8.exception.ServiceException;
 import org.circle8.security.JwtService;
 import org.circle8.service.UserService;
 
-import com.google.common.base.Strings;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import io.javalin.http.Cookie;
-import io.javalin.http.SameSite;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 @Singleton
 @Slf4j

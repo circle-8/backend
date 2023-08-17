@@ -28,6 +28,7 @@ import io.javalin.http.Context;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+
 @Singleton
 @Slf4j
 public class RecorridoController {
@@ -122,7 +123,6 @@ public class RecorridoController {
 	public ApiResponse delete(Context ctx) {
 		long id;
 		long zonaId;
-		long organizacionId;
 		try {
 			id = Long.parseLong(ctx.pathParam("id"));
 			zonaId = Long.parseLong(ctx.pathParam(ZONA_ID_PARAM));

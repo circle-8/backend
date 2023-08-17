@@ -1,11 +1,10 @@
 package org.circle8.dto;
 
-import org.circle8.controller.response.TipoResiduoResponse;
-import org.circle8.entity.TipoResiduo;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.circle8.controller.response.TipoResiduoResponse;
+import org.circle8.entity.TipoResiduo;
 
 @NoArgsConstructor
 @AllArgsConstructor

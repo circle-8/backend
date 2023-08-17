@@ -1,12 +1,12 @@
 package org.circle8.dto;
 
-import java.util.List;
-
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajePostRequest;
 import org.circle8.controller.response.DiaResponse;
 import org.circle8.controller.response.PuntoReciclajeResponse;
 import org.circle8.controller.response.PuntoVerdeResponse;
 import org.circle8.entity.PuntoReciclaje;
+
+import java.util.List;
 
 public class PuntoReciclajeDto {
 	public long id;

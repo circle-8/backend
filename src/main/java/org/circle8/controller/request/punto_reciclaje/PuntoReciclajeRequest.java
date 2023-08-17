@@ -1,12 +1,11 @@
 package org.circle8.controller.request.punto_reciclaje;
 
-import java.util.List;
-import java.util.Map;
-
+import jakarta.annotation.Nullable;
 import lombok.ToString;
 import org.circle8.controller.request.IRequest;
 
-import jakarta.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 @ToString
 public class PuntoReciclajeRequest implements IRequest {

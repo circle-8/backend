@@ -1,12 +1,12 @@
 package org.circle8.dto;
 
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import org.circle8.controller.request.residuo.PostResiduoRequest;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.entity.Residuo;
+
+import java.time.ZonedDateTime;
+import java.util.List;
 
 public class ResiduoDto {
 	public long id;
@@ -76,10 +76,11 @@ public class ResiduoDto {
 	public Residuo toEntity() {
 		//Son los atributos necesarios para hacer el POST
 		return Residuo.builder()
+				.id(this.id)
 				.fechaLimiteRetiro(this.fechaLimiteRetiro)
 				.descripcion(this.descripcion)
-				.puntoResiduo(this.puntoResiduo.toEntity())
-				.tipoResiduo(this.tipoResiduo.toEntity())
+				.puntoResiduo(this.puntoResiduo != null ? this.puntoResiduo.toEntity() : null)
+				.tipoResiduo(this.tipoResiduo != null ? this.tipoResiduo.toEntity() : null)
 				.build();
 	}
 }

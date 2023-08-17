@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ZonaController {
 	private ZonaService service;
-	
+
 	@Inject
 	public ZonaController(ZonaService zonaService) {
 		this.service = zonaService;
@@ -38,27 +38,27 @@ public class ZonaController {
 	 */
 	public ApiResponse get(Context ctx) {
 		final long organizacionId;
-		final long id;		
+		final long id;
 		try {
 			organizacionId = Long.parseLong(ctx.pathParam("organizacion_id"));
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la organización y/o de la zona debe ser numérico", "");
 		}
-		
+
 		val req = new ZonaRequest(ctx.queryParamMap());
 		val valid = req.valid();
 		if (!valid.valid())
 			return new ErrorResponse(valid);
-		
+
 		val filter = ZonaFilter.builder()
 				.id(id)
 				.organizacionId(organizacionId)
 				.tiposResiduos(req.tiposResiduo)
 				.build();
-		
+
 		val expand = new ZonaExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
-		
+
 		try {
 			return this.service.get(filter, expand).toResponse();
 		} catch ( ServiceError e ) {
@@ -154,7 +154,7 @@ public class ZonaController {
 	public ApiResponse excludePuntoResiduo(Context ctx) {
 		return doIncludeExclude(ctx, false);
 	}
-	
+
 	private ApiResponse doIncludeExclude(Context ctx,boolean isInclude) {
 		final long puntoResiduoId;
 		final long zonaId;
@@ -164,10 +164,10 @@ public class ZonaController {
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
 		}
-		
+
 		try {
 			val dto = isInclude ?
-					this.service.includePuntoResiduo(puntoResiduoId, zonaId) : 
+					this.service.includePuntoResiduo(puntoResiduoId, zonaId) :
 						this.service.excludePuntoResiduo(puntoResiduoId, zonaId);
 			return dto.toResponse();
 		} catch (ServiceError e) {
@@ -185,7 +185,7 @@ public class ZonaController {
 		val valid = req.valid();
 		if (!valid.valid())
 			return new ErrorResponse(valid);
-		
+
 		val filter = ZonaFilter.builder()
 				.organizacionId(req.organizacionId)
 				.recicladorId(req.recicladorId)
@@ -193,9 +193,9 @@ public class ZonaController {
 				.puntoResiduoId(req.puntoResiduoId)
 				.tiposResiduos(req.tiposResiduo)
 				.build();
-		
+
 		val expand = new ZonaExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
-		
+
 		try {
 			val zonas = this.service.list(filter, expand);
 			return new ListResponse<>(zonas.stream().map(ZonaDto::toResponse).toList());

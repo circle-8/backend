@@ -1,18 +1,20 @@
 package org.circle8.entity;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
 public class Recorrido {
 	public long id;
 	public LocalDate fechaRetiro;
@@ -26,6 +28,8 @@ public class Recorrido {
 	public Punto puntoInicio;
 	public Punto puntoFin;
 	public List<Retiro> puntos;
+
+	public Recorrido(long id ) { this.id = id; }
 
 	@Override public int hashCode() { return Objects.hash(id); }
 	@Override

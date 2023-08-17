@@ -1,8 +1,15 @@
 package org.circle8.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 import java.time.ZonedDateTime;
 import java.util.List;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Transaccion {
 	public long id;
 	public ZonedDateTime fechaCreacion;
