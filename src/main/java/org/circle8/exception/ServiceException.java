@@ -1,9 +1,8 @@
 package org.circle8.exception;
 
+import lombok.Getter;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.IErrorResponse;
-
-import lombok.Getter;
 
 public class ServiceException extends Exception implements IErrorResponse {
 	@Getter

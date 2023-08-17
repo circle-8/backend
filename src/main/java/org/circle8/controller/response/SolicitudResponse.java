@@ -1,10 +1,9 @@
 package org.circle8.controller.response;
 
-import org.circle8.entity.EstadoSolicitud;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.circle8.entity.EstadoSolicitud;
 
 @AllArgsConstructor
 @NoArgsConstructor

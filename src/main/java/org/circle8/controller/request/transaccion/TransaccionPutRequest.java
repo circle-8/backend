@@ -1,9 +1,8 @@
 package org.circle8.controller.request.transaccion;
 
-import java.time.ZonedDateTime;
-
 import org.circle8.controller.request.IRequest;
-import org.circle8.entity.Transaccion;
+
+import java.time.ZonedDateTime;
 
 public class TransaccionPutRequest implements IRequest{
 	private final IRequest.Validation validation = new IRequest.Validation();

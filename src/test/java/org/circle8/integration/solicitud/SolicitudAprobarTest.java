@@ -1,18 +1,17 @@
 package org.circle8.integration.solicitud;
 
-import static org.hamcrest.Matchers.equalTo;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(ApiTestExtension.class)
 public class SolicitudAprobarTest {
 
 	@Test
-	void testAProbarOk() {		
+	void testAProbarOk() {
 		RestAssured.given()
 		.put("/solicitud/1/aprobar")
 		.then()
@@ -20,18 +19,18 @@ public class SolicitudAprobarTest {
 		.body("estado", equalTo("APROBADA"))
 		;
 	}
-	
+
 	@Test
-	void testNotFoundSolicitudID() {		
+	void testNotFoundSolicitudID() {
 		RestAssured.given()
 		.put("/solicitud/0/aprobar")
 		.then()
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
-	void testWithOutSolicitudID() {		
+	void testWithOutSolicitudID() {
 		RestAssured.given()
 		.put("/solicitud//aprobar")
 		.then()

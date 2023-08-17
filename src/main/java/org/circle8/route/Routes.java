@@ -1,15 +1,16 @@
 package org.circle8.route;
 
-import java.lang.reflect.Type;
-import java.util.function.Function;
-
+import com.google.common.base.Strings;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.inject.Inject;
 import io.javalin.Javalin;
 import io.javalin.http.ContentType;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import io.javalin.http.HttpStatus;
 import io.javalin.json.JsonMapper;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.Configuration;
 import org.circle8.controller.PlanController;
 import org.circle8.controller.PuntoReciclajeController;
@@ -30,12 +31,8 @@ import org.circle8.controller.response.ErrorResponse;
 import org.circle8.security.JwtService;
 import org.jetbrains.annotations.NotNull;
 
-import com.google.common.base.Strings;
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.inject.Inject;
-
-import lombok.extern.slf4j.Slf4j;
+import java.lang.reflect.Type;
+import java.util.function.Function;
 
 @Slf4j
 public class Routes {

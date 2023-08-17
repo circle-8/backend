@@ -1,10 +1,9 @@
 package org.circle8.entity;
 
-import org.circle8.dto.TipoUsuario;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.circle8.dto.TipoUsuario;
 
 @AllArgsConstructor
 @NoArgsConstructor

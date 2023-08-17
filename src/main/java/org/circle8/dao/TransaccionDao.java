@@ -1,19 +1,7 @@
 package org.circle8.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.sql.DataSource;
-
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.PuntoResiduo;
@@ -28,9 +16,18 @@ import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
 import org.circle8.utils.Dates;
 
-import com.google.inject.Inject;
-
-import lombok.val;
+import javax.sql.DataSource;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class TransaccionDao extends Dao {
 

@@ -1,10 +1,8 @@
 package org.circle8.controller.response;
 
 import io.javalin.http.HttpStatus;
-
-import org.circle8.controller.request.IRequest;
-
 import lombok.AllArgsConstructor;
+import org.circle8.controller.request.IRequest;
 
 @AllArgsConstructor
 public class ErrorResponse implements ApiResponse {

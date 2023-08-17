@@ -1,8 +1,8 @@
 package org.circle8.filter;
 
-import java.util.List;
-
 import lombok.Builder;
+
+import java.util.List;
 
 @Builder
 public class PuntoResiduoFilter {

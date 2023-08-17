@@ -1,15 +1,14 @@
 package org.circle8.dto;
 
-import java.util.List;
-
-import org.circle8.controller.request.punto_residuo.PostPutPuntoResiduoRequest;
-import org.circle8.controller.response.PuntoResiduoResponse;
-import org.circle8.entity.PuntoResiduo;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.val;
+import org.circle8.controller.request.punto_residuo.PostPutPuntoResiduoRequest;
+import org.circle8.controller.response.PuntoResiduoResponse;
+import org.circle8.entity.PuntoResiduo;
+
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor

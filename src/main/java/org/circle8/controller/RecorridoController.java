@@ -1,12 +1,8 @@
 package org.circle8.controller;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import io.javalin.http.Context;
-
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.circle8.controller.request.recorrido.PostRecorridoRequest;
@@ -22,15 +18,14 @@ import org.circle8.controller.response.RetiroResponse;
 import org.circle8.controller.response.SuccessResponse;
 import org.circle8.dto.PuntoDto;
 import org.circle8.dto.RecorridoDto;
-import org.circle8.entity.Punto;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.service.RecorridoService;
-import org.circle8.utils.Dates;
 
-import com.google.inject.Singleton;
+import java.time.LocalDate;
+import java.util.List;
 
 @Singleton
 @Slf4j

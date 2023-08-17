@@ -1,12 +1,12 @@
 package org.circle8.integration.transaccion;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-
 import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 
 @ExtendWith(ApiTestExtension.class)
 public class TransaccionGetTest {

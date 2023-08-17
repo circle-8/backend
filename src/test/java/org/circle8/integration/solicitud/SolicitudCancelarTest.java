@@ -1,18 +1,17 @@
 package org.circle8.integration.solicitud;
 
-import static org.hamcrest.Matchers.equalTo;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(ApiTestExtension.class)
 public class SolicitudCancelarTest {
 
 	@Test
-	void testCancelarOk() {		
+	void testCancelarOk() {
 		RestAssured.given()
 		.put("/solicitud/1/cancelar?ciudadanoCancelaId=1")
 		.then()
@@ -21,36 +20,36 @@ public class SolicitudCancelarTest {
 		.body("canceladorId", equalTo(1))
 		;
 	}
-	
+
 	@Test
-	void testNotFoundSolicitudID() {		
+	void testNotFoundSolicitudID() {
 		RestAssured.given()
 		.put("/solicitud/0/cancelar?ciudadanoCancelaId=1")
 		.then()
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
-	void testWithOutSolicitudID() {		
+	void testWithOutSolicitudID() {
 		RestAssured.given()
 		.put("/solicitud//cancelar?ciudadanoCancelaId=1")
 		.then()
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
-	void testWithOutciudadanoCancelaID() {		
+	void testWithOutciudadanoCancelaID() {
 		RestAssured.given()
 		.put("/solicitud/1/cancelar")
 		.then()
 		.statusCode(400)
 		;
 	}
-	
+
 	@Test
-	void testWithInvalidciudadanoCancelaID() {		
+	void testWithInvalidciudadanoCancelaID() {
 		RestAssured.given()
 		.put("/solicitud/1/cancelar?ciudadanoCancelaId=aa")
 		.then()

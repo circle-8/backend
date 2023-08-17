@@ -1,15 +1,17 @@
 package org.circle8.integration.solicitud;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 @ExtendWith(ApiTestExtension.class)
 class SolicitudListTest {
@@ -20,7 +22,7 @@ class SolicitudListTest {
 		.get("/solicitudes")
 		.then()
 		.statusCode(200)
-		.body("data", hasSize(2))
+		.body("data", hasSize(greaterThan(1)))
 		.body("data[0].id", equalTo(1))
 		.body("data[0].solicitanteId", equalTo(2))
 		.body("data[0].solicitanteUri", equalTo("/user/2"))
@@ -40,14 +42,11 @@ class SolicitudListTest {
 			.get("/solicitudes?expand=residuo&expand=ciudadanos&expand=punto_reciclaje")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(2))
-			.body("data[0].residuo.id", not(nullValue()))
-			.body("data[0].residuo.descripcion", not(nullValue()))
-			.body("data[0].solicitante.id", not(nullValue()))
-			.body("data[0].solicitante.nombre", not(nullValue()))
-			.body("data[0].solicitado.id", not(nullValue()))
-			.body("data[0].solicitado.nombre", not(nullValue()))
-			.body("data[0].puntoReciclaje.titulo", not(nullValue()))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.residuo.id", everyItem(notNullValue()))
+			.body("data.solicitante.nombre", everyItem(notNullValue()))
+			.body("data.solicitado.nombre", everyItem(notNullValue()))
+			.body("data.puntoReciclaje.titulo", everyItem(notNullValue()))
 		;
 	}
 

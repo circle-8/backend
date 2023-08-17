@@ -1,16 +1,8 @@
 package org.circle8.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import javax.sql.DataSource;
-
+import com.google.gson.Gson;
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.Organizacion;
 import org.circle8.entity.Punto;
@@ -27,10 +19,15 @@ import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 import org.circle8.utils.Dates;
 
-import com.google.gson.Gson;
-import com.google.inject.Inject;
-
-import lombok.val;
+import javax.sql.DataSource;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class ZonaDao extends Dao {
 
@@ -98,7 +95,7 @@ public class ZonaDao extends Dao {
 			""";
 
 	private static final String JOIN_PUNTO_RESIDUO = """
-			LEFT JOIN "PuntoResiduo_Zona" AS prz2 on z."ID" = prz2."ZonaId"			
+			LEFT JOIN "PuntoResiduo_Zona" AS prz2 on z."ID" = prz2."ZonaId"
 			LEFT JOIN "PuntoResiduo" AS pr on pr."ID" = prz2."PuntoResiduoId"
 			""";
 
@@ -184,10 +181,16 @@ public class ZonaDao extends Dao {
 		}
 	}
 
-	public List<Zona> list(ZonaFilter f, ZonaExpand x) throws PersistenceException{
-		try (var t = open(true);
-			var select = createSelect(t, f, x);
-			var rs = select.executeQuery()
+	public List<Zona> list(ZonaFilter f, ZonaExpand x) throws PersistenceException {
+		try ( var t = open(true) ) {
+			return list(t, f, x);
+		}
+	}
+
+	public List<Zona> list(Transaction t, ZonaFilter f, ZonaExpand x) throws PersistenceException {
+		try (
+			 var select = createSelect(t, f, x);
+			 var rs = select.executeQuery()
 		) {
 			return getList(rs, x);
 		} catch (SQLException e) {

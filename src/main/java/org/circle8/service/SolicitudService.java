@@ -1,7 +1,7 @@
 package org.circle8.service;
 
-import java.util.List;
-
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dao.ResiduoDao;
 import org.circle8.dao.SolicitudDao;
@@ -17,9 +17,7 @@ import org.circle8.exception.ServiceException;
 import org.circle8.expand.SolicitudExpand;
 import org.circle8.filter.SolicitudFilter;
 
-import com.google.inject.Inject;
-
-import lombok.val;
+import java.util.List;
 
 public class SolicitudService {
 	private final SolicitudDao dao;

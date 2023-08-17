@@ -1,25 +1,22 @@
 package org.circle8.security;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import lombok.val;
+import org.apache.commons.configuration2.Configuration;
+import org.circle8.dto.UserDto;
+
 import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-
-import org.apache.commons.configuration2.Configuration;
-import org.circle8.dto.UserDto;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import lombok.val;
 
 @Singleton
 public class JwtService {

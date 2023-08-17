@@ -1,7 +1,6 @@
 package org.circle8.integration.transaccion;
 
 import io.restassured.RestAssured;
-
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

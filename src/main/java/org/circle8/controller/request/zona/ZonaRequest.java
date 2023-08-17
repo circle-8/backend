@@ -1,11 +1,11 @@
 package org.circle8.controller.request.zona;
 
-import java.util.List;
-import java.util.Map;
-
 import lombok.ToString;
 import org.circle8.controller.request.IRequest;
 import org.circle8.utils.Parser;
+
+import java.util.List;
+import java.util.Map;
 
 @ToString
 public class ZonaRequest implements IRequest {
@@ -18,7 +18,7 @@ public class ZonaRequest implements IRequest {
 	public List<Integer> tiposResiduo;
 
 	public ZonaRequest(Map<String, List<String>> queryParams) {
-		this.organizacionId = Parser.parseLong(validation, queryParams, "organizacion_id");	
+		this.organizacionId = Parser.parseLong(validation, queryParams, "organizacion_id");
 		this.recicladorId = Parser.parseLong(validation, queryParams, "reciclador_id");
 		this.ciudadanoId = Parser.parseLong(validation, queryParams, "ciudadano_id");
 		this.puntoResiduoId = Parser.parseLong(validation, queryParams, "punto_residuo_id");

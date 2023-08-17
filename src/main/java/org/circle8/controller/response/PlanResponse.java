@@ -1,10 +1,10 @@
 package org.circle8.controller.response;
 
-import java.math.BigDecimal;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,11 +1,11 @@
 package org.circle8.entity;
 
-import java.util.List;
-import java.util.Objects;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
+import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,7 +20,7 @@ public class PuntoResiduo {
 
 	public PuntoResiduo(Long id) { this.id = id; }
 	public PuntoResiduo(Long id, Long ciudadanoId) { this.id = id; this.ciudadanoId = ciudadanoId; }
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
