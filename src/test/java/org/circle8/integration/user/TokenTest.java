@@ -1,4 +1,4 @@
-package org.circle8.integration;
+package org.circle8.integration.user;
 
 import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
@@ -36,7 +36,7 @@ class TokenTest {
 			.body("refreshToken", is(not(empty())))
 			;
 	}
-	
+
 	@Test
 	void testValidReciclador() {
 		var request = """
@@ -61,7 +61,7 @@ class TokenTest {
 			.body("refreshToken", is(not(empty())))
 			;
 	}
-	
+
 	@Test
 	void testValidRecicladorWithOutZona() {
 		var request = """

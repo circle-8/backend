@@ -1,12 +1,12 @@
 package org.circle8.dto;
 
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import org.circle8.controller.request.residuo.PostResiduoRequest;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.entity.Residuo;
+
+import java.time.ZonedDateTime;
+import java.util.List;
 
 public class ResiduoDto {
 	public long id;

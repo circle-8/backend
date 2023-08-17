@@ -1,12 +1,11 @@
 package org.circle8.integration.transaccion;
 
-import static org.hamcrest.Matchers.equalTo;
-
 import io.restassured.RestAssured;
-
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(ApiTestExtension.class)
 public class TransaccionPutResiduoTest {

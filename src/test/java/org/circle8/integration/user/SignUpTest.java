@@ -1,4 +1,4 @@
-package org.circle8.integration;
+package org.circle8.integration.user;
 
 import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
@@ -7,8 +7,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.sql.DataSource;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(ApiTestExtension.class)
 class SignUpTest {
@@ -46,7 +52,7 @@ class SignUpTest {
 			assertTrue(ps.executeQuery().next());
 		}
 	}
-	
+
 	@Test
 	void testNewReciclador() throws Exception {
 		var request = """
@@ -123,7 +129,7 @@ class SignUpTest {
 			.body("message", stringContainsInOrder("email", "registrado"))
 		;
 	}
-	
+
 	@Test
 	void testWithOutUserName() {
 		var request = """
@@ -139,9 +145,9 @@ class SignUpTest {
 			.then()
 			.statusCode(400)
 		;
-	}	
-	
-	
+	}
+
+
 	@Test
 	void testWithOutPassword() {
 		var request = """
@@ -158,7 +164,7 @@ class SignUpTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testWithOutNombre() {
 		var request = """
@@ -175,7 +181,7 @@ class SignUpTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testWithOutEmail() {
 		var request = """
@@ -192,7 +198,7 @@ class SignUpTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testWithOutTipo() {
 		var request = """
@@ -209,7 +215,7 @@ class SignUpTest {
 			.statusCode(500)
 		;
 	}
-	
+
 	@Test
 	void testWithOutRazonSocial() {
 		var request = """
@@ -227,7 +233,7 @@ class SignUpTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testInvalidTipoPorRazonSocial() {
 		var request = """
@@ -246,7 +252,7 @@ class SignUpTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testWithOutOrganizacionId() {
 		var request = """
@@ -264,7 +270,7 @@ class SignUpTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testInvalidTipoPorOrganizacionId() {
 		var request = """
@@ -283,7 +289,7 @@ class SignUpTest {
 			.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testInvalidPorTipoZonaId() {
 		var request = """

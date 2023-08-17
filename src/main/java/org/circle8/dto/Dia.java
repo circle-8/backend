@@ -1,10 +1,10 @@
 package org.circle8.dto;
 
-import java.util.List;
-import java.util.stream.IntStream;
-
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+import java.util.stream.IntStream;
 
 public enum Dia {
 	@SerializedName("0") LUNES,

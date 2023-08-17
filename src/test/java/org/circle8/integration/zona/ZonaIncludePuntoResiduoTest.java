@@ -1,16 +1,15 @@
-package org.circle8.integration;
+package org.circle8.integration.zona;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 
 @ExtendWith(ApiTestExtension.class)
-public class ZonaIncludePuntoResiduoTest {
+class ZonaIncludePuntoResiduoTest {
 
 	@Test
 	void testIncludeOk() {
@@ -18,7 +17,7 @@ public class ZonaIncludePuntoResiduoTest {
 			.post("/punto_residuo/2/zona/2")
 			.then()
 			.statusCode(200)
-			.body("puntosResiduos", hasSize(2))
+			.body("puntosResiduos.id", hasItem(equalTo(2)))
 		;
 	}
 

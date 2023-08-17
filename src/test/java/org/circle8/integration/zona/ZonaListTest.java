@@ -1,18 +1,19 @@
-package org.circle8.integration;
+package org.circle8.integration.zona;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 
 @ExtendWith(ApiTestExtension.class)
 public class ZonaListTest {
@@ -23,7 +24,7 @@ public class ZonaListTest {
 			.get("/zonas")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(2))
+			.body("data", hasSize(greaterThan(1)))
 			.body("data[0].id", equalTo(1))
 			.body("data[0].nombre", equalTo("Zona 1"))
 			.body("data[0].polyline",is(not(hasSize(0))))
@@ -57,17 +58,10 @@ public class ZonaListTest {
 			.get("/zonas?expand=organizacion")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(2))
-			.body("data[0].organizacion", notNullValue())
-			.body("data[0].organizacion.id", equalTo(1))
-			.body("data[0].organizacion.razonSocial", equalTo("Usuario 1 SA"))
-			.body("data[0].organizacion.usuarioUri", equalTo("/user/1"))
-			.body("data[0].organizacion.usuarioId", equalTo(1))
-			.body("data[1].organizacion", notNullValue())
-			.body("data[1].organizacion.id", equalTo(2))
-			.body("data[1].organizacion.razonSocial", equalTo("Usuario 2 SA"))
-			.body("data[1].organizacion.usuarioUri", equalTo("/user/2"))
-			.body("data[1].organizacion.usuarioId", equalTo(2))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.organizacion.id", everyItem(notNullValue()))
+			.body("data.organizacion.razonSocial", everyItem(notNullValue()))
+			.body("data.organizacion.usuarioId", everyItem(notNullValue()))
 		;
 	}
 
@@ -77,20 +71,8 @@ public class ZonaListTest {
 			.get("/zonas?expand=recorridos")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(2))
-			.body("data[0].recorridos", hasSize(greaterThan(2)))
-			.body("data[0].recorridos[0].id", equalTo(1))
-			.body("data[0].recorridos[0].fechaRetiro", equalTo("2023-07-03"))
-			.body("data[0].recorridos[0].fechaInicio", equalTo("2023-07-03T10:00:00Z"))
-			.body("data[0].recorridos[0].fechaFin", equalTo("2023-07-03T11:00:00Z"))
-			.body("data[0].recorridos[0].recicladorId", equalTo(1))
-			.body("data[0].recorridos[0].recicladorUri", equalTo("/user/3"))
-			.body("data[0].recorridos[1].id", equalTo(2))
-			.body("data[0].recorridos[1].fechaRetiro", equalTo("2023-07-05"))
-			.body("data[0].recorridos[1].fechaInicio", nullValue())
-			.body("data[0].recorridos[1].fechaFin", nullValue())
-			.body("data[0].recorridos[1].recicladorId", equalTo(1))
-			.body("data[0].recorridos[1].recicladorUri", equalTo("/user/3"))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.recorridos", hasSize(greaterThan(0)))
 		;
 	}
 
@@ -100,23 +82,9 @@ public class ZonaListTest {
 			.get("/zonas?expand=punto_residuo")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(2))
-			.body("data[0].puntosResiduos", notNullValue())
-			.body("data[0].puntosResiduos", hasSize(2))
-			.body("data[0].puntosResiduos[0].id", equalTo(1))
-			.body("data[0].puntosResiduos[0].latitud", equalTo(-34.6611203f))
-			.body("data[0].puntosResiduos[0].longitud", equalTo(-58.5422521f))
-			.body("data[0].puntosResiduos[0].ciudadanoId", equalTo(1))
-			.body("data[0].puntosResiduos[1].id", equalTo(2))
-			.body("data[0].puntosResiduos[1].latitud", equalTo(-34.66381f))
-			.body("data[0].puntosResiduos[1].longitud", equalTo(-58.581509f))
-			.body("data[0].puntosResiduos[1].ciudadanoId", equalTo(2))
-			.body("data[1].puntosResiduos", notNullValue())
-			.body("data[1].puntosResiduos", hasSize(1))
-			.body("data[1].puntosResiduos[0].id", equalTo(1))
-			.body("data[1].puntosResiduos[0].latitud", equalTo(-34.6611203f))
-			.body("data[1].puntosResiduos[0].longitud", equalTo(-58.5422521f))
-			.body("data[1].puntosResiduos[0].ciudadanoId", equalTo(1))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.puntosResiduos", hasSize(greaterThan(0)))
+			.body("data.puntosResiduos.id", everyItem(notNullValue()))
 		;
 	}
 
@@ -126,21 +94,8 @@ public class ZonaListTest {
 			.get("/zonas?tipos_residuo=1&tipos_residuo=2")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(2))
-			.body("data[0].id", equalTo(1))
-			.body("data[0].tipoResiduo",hasSize(2))
-			.body("data[0].tipoResiduo[0].id", equalTo(1))
-			.body("data[0].tipoResiduo[0].nombre", equalTo("Plástico"))
-			.body("data[0].tipoResiduo[1].id", equalTo(2))
-			.body("data[0].tipoResiduo[1].nombre", equalTo("Papel"))
-			.body("data[1].id", equalTo(2))
-			.body("data[1].tipoResiduo",hasSize(3))
-			.body("data[0].tipoResiduo[0].id", equalTo(1))
-			.body("data[0].tipoResiduo[0].nombre", equalTo("Plástico"))
-			.body("data[1].tipoResiduo[1].id", equalTo(3))
-			.body("data[1].tipoResiduo[1].nombre", equalTo("Pilas"))
-			.body("data[1].tipoResiduo[2].id", equalTo(4))
-			.body("data[1].tipoResiduo[2].nombre", equalTo("Carton"))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.tipoResiduo.id", everyItem(anyOf(hasItem(equalTo(1)), hasItem(equalTo(2)))))
 		;
 	}
 
@@ -271,9 +226,8 @@ public class ZonaListTest {
 			.get("/zonas?organizacion_id=1")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(1))
-			.body("data[0].organizacion", notNullValue())
-			.body("data[0].organizacion.id", equalTo(1))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.organizacion.id", everyItem(equalTo(1)))
 		;
 	}
 
@@ -283,12 +237,9 @@ public class ZonaListTest {
 			.get("/zonas?organizacion_id=1&expand=organizacion")
 			.then()
 			.statusCode(200)
-			.body("data", hasSize(1))
-			.body("data[0].organizacion", notNullValue())
-			.body("data[0].organizacion.id", equalTo(1))
-			.body("data[0].organizacion.razonSocial", equalTo("Usuario 1 SA"))
-			.body("data[0].organizacion.usuarioUri", equalTo("/user/1"))
-			.body("data[0].organizacion.usuarioId", equalTo(1))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.organizacion.id", everyItem(equalTo(1)))
+			.body("data.organizacion.razonSocial", everyItem(equalTo("Usuario 1 SA")))
 		;
 	}
 

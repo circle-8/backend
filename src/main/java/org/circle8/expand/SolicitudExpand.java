@@ -1,9 +1,9 @@
 package org.circle8.expand;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.ToString;
+
+import java.util.List;
 
 @AllArgsConstructor
 @ToString

@@ -1,11 +1,13 @@
 package org.circle8.expand;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.ToString;
 
+import java.util.List;
+
 @AllArgsConstructor
+@Builder
 @ToString
 public class ZonaExpand {
 	public static final ZonaExpand EMPTY = new ZonaExpand(false, false, false);

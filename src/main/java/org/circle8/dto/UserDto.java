@@ -1,14 +1,13 @@
 package org.circle8.dto;
 
-import org.circle8.controller.request.user.UserRequest;
-import org.circle8.controller.response.TipoUsuarioResponse;
-import org.circle8.controller.response.UserResponse;
-import org.circle8.entity.User;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.val;
+import org.circle8.controller.request.user.UserRequest;
+import org.circle8.controller.response.TipoUsuarioResponse;
+import org.circle8.controller.response.UserResponse;
+import org.circle8.entity.User;
 
 @NoArgsConstructor
 @AllArgsConstructor

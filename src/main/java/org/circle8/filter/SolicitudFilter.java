@@ -7,4 +7,5 @@ public class SolicitudFilter {
 	public Long id;
 	public Long solicitanteId;
 	public Long solicitadoId;
+	public Long residuoId;
 }
