@@ -8,6 +8,7 @@ import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
+import org.circle8.controller.response.SuccessResponse;
 import org.circle8.dto.ZonaDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
@@ -19,7 +20,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,7 +70,7 @@ public class ZonaController {
 	}
 
 	/**
-	 * PUT /organizacion/{id_organizacion}/zona/{id}
+	 * PUT /organizacion/{organizacion_id}/zona/{id}
 	 */
 	public ApiResponse put(Context ctx) {
 		final long organizacionId;
@@ -91,7 +91,7 @@ public class ZonaController {
 		val dto = ZonaDto.from(req);
 		
 		try {
-			return service.put(id,organizacionId,dto).toResponse();
+			return service.put(organizacionId,id,dto).toResponse();
 		} catch ( ServiceError e ) {
 			log.error("[Request:{}] error saving new PuntoReciclaje", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -101,15 +101,27 @@ public class ZonaController {
 	}
 
 	/**
-	 * DELETE /organizacion/{id_organizacion}/zona/{id}
+	 * DELETE /organizacion/{organizacion_id}/zona/{id}
 	 */
 	public ApiResponse delete(Context ctx) {
-		return new ApiResponse() {
-			@Override
-			public HttpStatus status() {
-				return HttpStatus.ACCEPTED;
-			}
-		};
+		long organizacion_id;
+		long zonaId;
+		try {
+			organizacion_id = Long.parseLong(ctx.pathParam("organizacion_id"));
+			zonaId = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids de zona y organizacion deben ser numéricos", "");
+		}
+
+		try{
+			this.service.delete(organizacion_id, zonaId);
+			return new SuccessResponse();
+		} catch ( ServiceError e ) {
+			log.error("[organizacion_id:{}, id:{}] error deleting zona", organizacion_id, zonaId, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS public."Recorrido"
     "FechaInicio" timestamp with time zone,
     "FechaFin" timestamp with time zone,
     "RecicladorId" bigint NOT NULL,
-    "ZonaId" bigint NOT NULL,
+    "ZonaId" bigint,
     "LatitudInicio" double precision NOT NULL,
     "LongitudInicio" double precision NOT NULL,
     "LatitudFin" double precision NOT NULL,

@@ -1,4 +1,4 @@
-package org.circle8.integration;
+package org.circle8.integration.zona;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -13,35 +13,39 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
-public class ZonaPutTest {
+public class ZonaPostTest {
 	
 	@Test
-	void testPutOk() {
+	void testPostOk() {
 		String body =  """
 				{
-				"nombre": "Zona put 1",
+				"nombre": "Haedo Norte",
 				"polyline": [
 				{"latitud":-34.6430956,"longitud":-58.5951324},
 			    {"latitud":-34.6432267,"longitud":-58.5948434},
 			    {"latitud":-34.6428927,"longitud":-58.5953719},
 			    {"latitud":-34.6429311,"longitud":-58.5953171}],
-			    "tiposResiduo": [1]
+			    "tiposResiduo": [1,2,3]
 			    }""";
 		
 		RestAssured.given()
 			.body(body)
-			.put("/organizacion/1/zona/1")
+			.post("/organizacion/1/zona")
 			.then()
 			.statusCode(200)
-			.body("id", equalTo(1))
-			.body("nombre", equalTo("Zona put 1"))
+			.body("id", notNullValue())
+			.body("nombre", equalTo("Haedo Norte"))
 			.body("polyline",is(not(hasSize(0))))
 			.body("organizacionUri", equalTo("/organizacion/1"))
 			.body("organizacionId", equalTo(1))
 			.body("organizacion", notNullValue())
-			.body("tipoResiduo",hasSize(1))
+			.body("tipoResiduo",hasSize(3))
 			.body("tipoResiduo[0].id", equalTo(1))
 			.body("tipoResiduo[0].nombre", equalTo("Plástico"))
+			.body("tipoResiduo[1].id", equalTo(2))
+			.body("tipoResiduo[1].nombre", equalTo("Papel"))
+			.body("tipoResiduo[2].id", equalTo(3))
+			.body("tipoResiduo[2].nombre", equalTo("Pilas"))
 		;
 	}
 	
@@ -49,7 +53,7 @@ public class ZonaPutTest {
 	void testInvalidTipoId() {
 		String body =  """
 				{
-				"nombre": "Zona put 1",
+				"nombre": "Haedo Norte",
 				"polyline": [
 				{"latitud":-34.6430956,"longitud":-58.5951324},
 			    {"latitud":-34.6432267,"longitud":-58.5948434},
@@ -60,7 +64,7 @@ public class ZonaPutTest {
 		
 		RestAssured.given()
 			.body(body)
-			.put("/organizacion/1/zona/1")
+			.post("/organizacion/1/zona")
 			.then()
 			.statusCode(404)
 		;
@@ -80,7 +84,7 @@ public class ZonaPutTest {
 		
 		RestAssured.given()
 			.body(body)
-			.put("/organizacion/1/zona/1")
+			.post("/organizacion/1/zona")
 			.then()
 			.statusCode(400)
 		;
@@ -99,7 +103,7 @@ public class ZonaPutTest {
 		
 		RestAssured.given()
 			.body(body)
-			.put("/organizacion/1/zona/1")
+			.post("/organizacion/1/zona")
 			.then()
 			.statusCode(400)
 		;
@@ -109,13 +113,13 @@ public class ZonaPutTest {
 	void testWithOutPolyline() {
 		String body =  """
 				{
-				"nombre": "Zona put 1",				
+				"nombre": "Haedo Norte",				
 			    "tiposResiduo": [1,2,3]
 			    }""";
 		
 		RestAssured.given()
 			.body(body)
-			.put("/organizacion/1/zona/1")
+			.post("/organizacion/1/zona")
 			.then()
 			.statusCode(400)
 		;
@@ -125,7 +129,7 @@ public class ZonaPutTest {
 	void testWithOutTipos() {
 		String body =  """
 				{
-				"nombre": "Zona put 1",
+				"nombre": "Haedo Norte",
 				"polyline": [
 				{"latitud":-34.6430956,"longitud":-58.5951324},
 			    {"latitud":-34.6432267,"longitud":-58.5948434},
@@ -135,7 +139,7 @@ public class ZonaPutTest {
 		
 		RestAssured.given()
 			.body(body)
-			.put("/organizacion/1/zona/1")
+			.post("/organizacion/1/zona")
 			.then()
 			.statusCode(400)
 		;
@@ -144,7 +148,7 @@ public class ZonaPutTest {
 	@Test
 	void testWithOutOrganizacionId() {
 		RestAssured.given()
-		.put("/organizacion//zona/1")
+		.post("/organizacion//zona")
 		.then()
 		.statusCode(404)
 		;
@@ -154,26 +158,7 @@ public class ZonaPutTest {
 	@Test
 	void testInvalidOrganizacionId() {
 		RestAssured.given()
-		.put("/organizacion/aa/zona/1")
-		.then()
-		.statusCode(400)
-		;
-	}
-	
-	@Test
-	void testWithZonaId() {
-		RestAssured.given()
-		.put("/organizacion/1/zona/")
-		.then()
-		.statusCode(404)
-		;
-	}
-	
-	
-	@Test
-	void testInvalidZonaId() {
-		RestAssured.given()
-		.put("/organizacion/1/zona/aa")
+		.post("/organizacion/aa/zona")
 		.then()
 		.statusCode(400)
 		;

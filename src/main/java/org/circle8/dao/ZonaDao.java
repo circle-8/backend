@@ -58,12 +58,7 @@ public class ZonaDao extends Dao {
 	private static final String INSERT_INTO_PUNTO_RESIDUO_ZONA = """
 			INSERT INTO "PuntoResiduo_Zona" ("PuntoResiduoId", "ZonaId")
 			VALUES (?, ?);
-			""";
-
-	private static final String DELETE_PUNTO_ZONA = """
-			DELETE FROM "PuntoResiduo_Zona"
-			WHERE "PuntoResiduoId" = ? AND "ZonaId" = ?;
-			""";
+			""";	
 
 	private static final String SELECT_FMT = """
 			SELECT
@@ -162,11 +157,25 @@ public class ZonaDao extends Dao {
 		)
 		""";
 	
+	private static final String DELETE_ZONA = """
+			DELETE FROM "Zona"
+			WHERE "ID" = ? AND "OrganizacionId" = ?;
+			""";
+	
 	private static final String DELETE_ZONA_TIPO = """
 			DELETE FROM "Zona_TipoResiduo"
 			WHERE "ZonaId" = ?;
 			""";
+	
+	private static final String DELETE_PUNTOS_ZONA = """
+			DELETE FROM "PuntoResiduo_Zona"
+			WHERE "ZonaId" = ?;
+			""";
 
+	private static final String DELETE_PUNTO_ZONA = """
+			DELETE FROM "PuntoResiduo_Zona"
+			WHERE "PuntoResiduoId" = ? AND "ZonaId" = ?;
+			""";
 
 	@Inject
 	ZonaDao(DataSource ds) {
@@ -226,11 +235,31 @@ public class ZonaDao extends Dao {
 		}
 	}
 	
+	public void delete(Transaction t, Long organizacionId, Long zonaId) throws NotFoundException, PersistenceException {
+		try ( val delete =  t.prepareStatement(DELETE_ZONA) ) {
+			delete.setLong(1, zonaId);
+			delete.setLong(2, organizacionId);
+			if ( delete.executeUpdate() <= 0 )
+				throw new NotFoundException("No se encontro la zona a eliminar");
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Deleting tipos in zona", e);
+		}		
+	}
+	
 	public void deleteTipos(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
 		try ( val delete =  t.prepareStatement(DELETE_ZONA_TIPO) ) {
 			delete.setLong(1, zonaId);
-			if ( delete.executeUpdate() <= 0 )
-				throw new NotFoundException("No se encontro zona para eliminar");
+			if ( delete.executeUpdate() < 0 )
+				throw new NotFoundException("No se encontro zona a eliminar sus tipos de residuos");
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Deleting tipos in zona", e);
+		}
+	}	
+	
+	public void deletePuntos(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
+		try ( val delete =  t.prepareStatement(DELETE_PUNTOS_ZONA) ) {
+			delete.setLong(1, zonaId);
+			delete.executeUpdate();
 		} catch (SQLException e) {			
 			throw new PersistenceException("error Deleting tipos in zona", e);
 		}
@@ -260,7 +289,6 @@ public class ZonaDao extends Dao {
 		try ( val delete =  t.prepareStatement(DELETE_PUNTO_ZONA) ) {
 			delete.setLong(1, puntoResiduoId);
 			delete.setLong(2, zonaId);
-
 			if ( delete.executeUpdate() <= 0 )
 				throw new NotFoundException("No se encontro el punto en la zona para eliminar");
 		} catch (SQLException e) {
@@ -511,5 +539,5 @@ public class ZonaDao extends Dao {
 			if(!z.puntosResiduos.contains(pr))
 				z.puntosResiduos.add(pr);
 		}
-	}
+	}	
 }
