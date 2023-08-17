@@ -1,15 +1,14 @@
 package org.circle8.integration.user;
 
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.circle8.controller.response.TokenResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 @ExtendWith(ApiTestExtension.class)
 class RefreshTokenTest {

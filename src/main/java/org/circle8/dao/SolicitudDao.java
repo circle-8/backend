@@ -1,18 +1,7 @@
 package org.circle8.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.sql.DataSource;
-
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.dto.Dia;
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.EstadoSolicitud;
@@ -31,9 +20,17 @@ import org.circle8.service.SolicitudService;
 import org.circle8.utils.Dates;
 import org.jetbrains.annotations.NotNull;
 
-import com.google.inject.Inject;
-
-import lombok.val;
+import javax.sql.DataSource;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class SolicitudDao extends Dao {
 	private static final String INSERT_INTO_FMT = """

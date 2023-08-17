@@ -1,16 +1,7 @@
 package org.circle8.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.sql.DataSource;
-
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.dto.TipoUsuario;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
@@ -22,9 +13,15 @@ import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
 import org.circle8.utils.Dates;
 
-import com.google.inject.Inject;
-
-import lombok.val;
+import javax.sql.DataSource;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 
 public class PuntoResiduoDao extends Dao {

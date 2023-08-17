@@ -1,9 +1,7 @@
 package org.circle8.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.dao.PuntoResiduoDao;
 import org.circle8.dao.Transaction;
 import org.circle8.dao.ZonaDao;
@@ -19,9 +17,9 @@ import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 
-import com.google.inject.Inject;
-
-import lombok.val;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class ZonaService {
 

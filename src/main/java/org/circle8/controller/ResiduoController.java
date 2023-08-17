@@ -1,11 +1,11 @@
 package org.circle8.controller;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
-
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.circle8.controller.request.residuo.PostResiduoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -22,11 +22,8 @@ import org.circle8.service.ResiduoService;
 import org.circle8.service.SolicitudService;
 import org.circle8.utils.Dates;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 @Singleton
 @Slf4j
@@ -139,10 +136,21 @@ public class ResiduoController {
 	 * DELETE /residuo/{id}/reciclaje
 	 */
 	public ApiResponse deleteReciclaje(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.recorridoUri("").recorridoId(null)
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id debe ser numérico", e.getMessage());
+		}
+
+		try {
+			return service.deleteFromRecorrido(id).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request: id={}] error residuo delete from reciclaje", id, e);
+			return new ErrorResponse(e);
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

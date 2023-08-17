@@ -1,16 +1,8 @@
 package org.circle8.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import javax.sql.DataSource;
-
+import com.google.gson.Gson;
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.Organizacion;
 import org.circle8.entity.Punto;
@@ -27,10 +19,15 @@ import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 import org.circle8.utils.Dates;
 
-import com.google.gson.Gson;
-import com.google.inject.Inject;
-
-import lombok.val;
+import javax.sql.DataSource;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class ZonaDao extends Dao {
 

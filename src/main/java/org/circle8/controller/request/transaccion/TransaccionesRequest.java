@@ -1,10 +1,10 @@
 package org.circle8.controller.request.transaccion;
 
-import java.util.List;
-import java.util.Map;
-
 import org.circle8.controller.request.IRequest;
 import org.circle8.utils.Parser;
+
+import java.util.List;
+import java.util.Map;
 
 public class TransaccionesRequest {
 

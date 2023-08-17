@@ -1,7 +1,6 @@
 package org.circle8.service;
 
-import java.util.List;
-
+import com.google.inject.Inject;
 import org.circle8.dao.PuntoResiduoDao;
 import org.circle8.dto.PuntoResiduoDto;
 import org.circle8.exception.NotFoundException;
@@ -11,7 +10,7 @@ import org.circle8.exception.ServiceException;
 import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.filter.PuntoResiduoFilter;
 
-import com.google.inject.Inject;
+import java.util.List;
 
 public class PuntoResiduoService {
 	private final PuntoResiduoDao dao;

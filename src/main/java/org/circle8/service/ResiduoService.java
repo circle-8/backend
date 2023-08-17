@@ -1,8 +1,7 @@
 package org.circle8.service;
 
-import java.time.ZonedDateTime;
-
-import org.circle8.controller.response.ApiResponse;
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.dao.ResiduoDao;
 import org.circle8.dao.SolicitudDao;
 import org.circle8.dao.Transaction;
@@ -22,10 +21,8 @@ import org.circle8.filter.ResiduosFilter;
 import org.circle8.filter.SolicitudFilter;
 import org.circle8.filter.ZonaFilter;
 import org.circle8.utils.Dates;
-import com.google.inject.Inject;
 
-import lombok.val;
-
+import java.time.ZonedDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -126,6 +123,23 @@ public class ResiduoService {
 			return ResiduoDto.from(r);
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al agregar residuo a recorrido", e);
+		}
+	}
+
+	public ResiduoDto deleteFromRecorrido(long id) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			var r = find(t, id);
+			if ( r.recorrido == null || r.recorrido.id == 0 )
+				throw new ServiceException("El residuo no es parte de un recorrido");
+			if ( r.fechaRetiro != null )
+				throw new ServiceException("El residuo ya ha sido retirado previamente");
+
+			r.recorrido = null;
+			dao.update(t, r);
+
+			return ResiduoDto.from(r);
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al borrar residuo del recorrido", e);
 		}
 	}
 }

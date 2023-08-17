@@ -1,18 +1,17 @@
 package org.circle8.integration.punto_residuo;
 
-import static org.hamcrest.Matchers.emptyOrNullString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 @ExtendWith(ApiTestExtension.class)
 public class PuntoResiduoPostTest {
-	
+
 	private static final String REQUEST =  """
 			{
 				"latitud": "-34.6675104",
@@ -20,7 +19,7 @@ public class PuntoResiduoPostTest {
 			}""";
 
 	@Test
-	void testPostOk() {		
+	void testPostOk() {
 		RestAssured.given()
 		.body(REQUEST)
 		.post("/ciudadano/1/punto_residuo")
@@ -29,9 +28,9 @@ public class PuntoResiduoPostTest {
 		.body("id", is(not(emptyOrNullString())))
 		;
 	}
-	
+
 	@Test
-	void testWithOutLatitud() {	
+	void testWithOutLatitud() {
 		String request = """
 			{
 				"longitud": "-58.5721607"
@@ -43,7 +42,7 @@ public class PuntoResiduoPostTest {
 		.statusCode(400)
 		;
 	}
-	
+
 	@Test
 	void testWithOutLongitud() {
 		String request = """
@@ -57,18 +56,18 @@ public class PuntoResiduoPostTest {
 		.statusCode(400)
 		;
 	}
-	
+
 	@Test
-	void testWithOutParams() {		
+	void testWithOutParams() {
 		RestAssured.given()
 		.post("/ciudadano/1/punto_residuo")
 		.then()
 		.statusCode(500)
 		;
 	}
-	
+
 	@Test
-	void testNotFoundCiudadanoID() {		
+	void testNotFoundCiudadanoID() {
 		RestAssured.given()
 		.body(REQUEST)
 		.post("/ciudadano/0/punto_residuo")
@@ -76,9 +75,9 @@ public class PuntoResiduoPostTest {
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
-	void testInvalidCiudadanoID() {		
+	void testInvalidCiudadanoID() {
 		RestAssured.given()
 		.body(REQUEST)
 		.post("/ciudadano/dasda/punto_residuo")
@@ -86,9 +85,9 @@ public class PuntoResiduoPostTest {
 		.statusCode(400)
 		;
 	}
-	
+
 	@Test
-	void testWithOutCiudadanoID() {		
+	void testWithOutCiudadanoID() {
 		RestAssured.given()
 		.body(REQUEST)
 		.post("/ciudadano//punto_residuo")

@@ -5,11 +5,8 @@ import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
 
 @ExtendWith(ApiTestExtension.class)
 class ZonaIncludePuntoResiduoTest {

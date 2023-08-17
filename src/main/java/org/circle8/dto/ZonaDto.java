@@ -1,9 +1,9 @@
 package org.circle8.dto;
 
-import java.util.List;
-
 import org.circle8.controller.response.ZonaResponse;
 import org.circle8.entity.Zona;
+
+import java.util.List;
 
 public class ZonaDto {
 	public long id;

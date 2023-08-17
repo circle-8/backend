@@ -1,29 +1,27 @@
 package org.circle8.dao;
 
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Optional;
-
-import javax.sql.DataSource;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import org.circle8.dto.TipoUsuario;
 import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import javax.sql.DataSource;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Optional;
 
 @Singleton
 public class UserDao extends Dao {
-	
+
 	private static final String INSERT = """
 			INSERT INTO "Usuario"(
 			  "NombreApellido", "Username", "Password", "TipoUsuario", "Email")
 			  VALUES (?, ?, ?, ?, ?)
 			  """;
-	
+
 	private static final String SELECT_GET = """
 			   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId"
 		     FROM "Usuario" u
@@ -79,7 +77,7 @@ public class UserDao extends Dao {
 			throw new PersistenceException("error getting user", e);
 		}
 	}
-	
+
 	private User buildUser(ResultSet rs) throws SQLException {
 		var u = new User();
 		u.id = rs.getLong("Id");
@@ -94,7 +92,7 @@ public class UserDao extends Dao {
 			u.organizacionId = rs.getLong("OrganizacionId");
 			u.zonaId = rs.getLong("ZonaId") != 0 ?
 					rs.getLong("ZonaId") : null;
-		}		
+		}
 		return u;
 	}
 }

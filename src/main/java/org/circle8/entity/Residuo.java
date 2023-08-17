@@ -1,11 +1,11 @@
 package org.circle8.entity;
 
 
-import java.time.ZonedDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+import java.time.ZonedDateTime;
 
 @Builder
 @AllArgsConstructor

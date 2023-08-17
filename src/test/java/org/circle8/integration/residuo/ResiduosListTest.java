@@ -2,13 +2,10 @@ package org.circle8.integration.residuo;
 
 import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
@@ -23,7 +20,7 @@ import static org.hamcrest.Matchers.nullValue;
 		RestAssured.given()
 			.get("/residuos")
 			.then()
-			.body("data", hasSize(12))
+			.body("data", hasSize(13))
 		;
 	}
 

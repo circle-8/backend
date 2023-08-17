@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(ApiTestExtension.class)
 class ResiduoPostReciclajeTest {
@@ -72,11 +75,22 @@ class ResiduoPostReciclajeTest {
 		;
 	}
 
-	@Test void testResiduoWithCancelledSolicitudOK() {
+	@Test void testResiduoWithCancelledSolicitudOK() throws Exception {
 		RestAssured.given()
 			.post("/residuo/12/reciclaje")
 			.then()
 			.statusCode(200)
 		;
+
+		var ds = ApiTestExtension.Dep.getDatasource();
+		var checkDeleteRecorrido = "SELECT \"RecorridoId\" FROM public.\"Residuo\" WHERE \"ID\" = ?";
+		try ( var conn = ds.getConnection(); var ps = conn.prepareStatement(checkDeleteRecorrido) ) {
+			ps.setLong(1, 12);
+
+			var rs = ps.executeQuery();
+			assertTrue(rs.next());
+			assertNotNull(rs.getObject("RecorridoId"));
+			assertNotEquals(0, rs.getLong("RecorridoId"));
+		}
 	}
 }

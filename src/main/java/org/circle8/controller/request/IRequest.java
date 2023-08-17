@@ -1,9 +1,9 @@
 package org.circle8.controller.request;
 
+import lombok.ToString;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import lombok.ToString;
 
 public interface IRequest {
 	@ToString
