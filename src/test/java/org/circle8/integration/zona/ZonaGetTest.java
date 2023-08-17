@@ -1,4 +1,4 @@
-package org.circle8.integration;
+package org.circle8.integration.zona;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;

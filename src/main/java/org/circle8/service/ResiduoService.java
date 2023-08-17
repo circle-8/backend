@@ -96,7 +96,7 @@ public class ResiduoService {
 			if ( r.transaccion != null && r.transaccion.id != 0 )
 				throw new ServiceException("El residuo ya es parte de una transacción");
 			if ( r.recorrido != null && r.recorrido.id != 0 )
-				throw new ServiceException("El residuo ya es parte de una recorrido");
+				throw new ServiceException("El residuo ya es parte de un recorrido");
 
 			/* residuo no debe tener solicitudes pendientes */
 			var solicitudes = solicitudDao.list(
@@ -113,14 +113,14 @@ public class ResiduoService {
 				.stream()
 				.filter(z -> z.tipoResiduo.contains(r.tipoResiduo))
 				.findAny()
-				.orElseThrow(() -> new NotFoundException("El punto de residuo no tiene asociada una zona de reciclaje para este tipo de residuo"));
+				.orElseThrow(() -> new ServiceException("El punto de residuo no tiene asociada una zona de reciclaje para este tipo de residuo"));
 
 			/* la zona debe tener un proximo recorrido activo */
 			r.recorrido = zonaWithTipo.recorridos
 				.stream()
 				.filter(rec -> rec.fechaInicio == null) // Todavia no ha comenzado
 				.min(Comparator.comparing(Recorrido::getFechaRetiro))
-				.orElseThrow(() -> new NotFoundException("La zona no posee un recorrido pendiente"));
+				.orElseThrow(() -> new ServiceException("La zona no posee un recorrido pendiente"));
 
 			dao.update(t, r);
 			return ResiduoDto.from(r);

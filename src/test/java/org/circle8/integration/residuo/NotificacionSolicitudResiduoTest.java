@@ -1,4 +1,4 @@
-package org.circle8.integration;
+package org.circle8.integration.residuo;
 
 import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;

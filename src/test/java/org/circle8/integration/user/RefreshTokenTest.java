@@ -1,4 +1,4 @@
-package org.circle8.integration;
+package org.circle8.integration.user;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;

@@ -98,7 +98,7 @@ public class ZonaDao extends Dao {
 			""";
 
 	private static final String JOIN_PUNTO_RESIDUO = """
-			LEFT JOIN "PuntoResiduo_Zona" AS prz2 on z."ID" = prz2."ZonaId"			
+			LEFT JOIN "PuntoResiduo_Zona" AS prz2 on z."ID" = prz2."ZonaId"
 			LEFT JOIN "PuntoResiduo" AS pr on pr."ID" = prz2."PuntoResiduoId"
 			""";
 

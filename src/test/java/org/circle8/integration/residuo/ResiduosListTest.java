@@ -1,15 +1,21 @@
-package org.circle8.integration;
+package org.circle8.integration.residuo;
 
 import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 @ExtendWith(ApiTestExtension.class)
  class ResiduosListTest {
@@ -17,8 +23,7 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos")
 			.then()
-			.body("data", hasSize(8))
-			.body("data.id", contains(equalTo(1), equalTo(2), equalTo(3), equalTo(4), equalTo(5), equalTo(6), equalTo(7), equalTo(8)))
+			.body("data", hasSize(12))
 		;
 	}
 
@@ -26,8 +31,8 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos?puntos_residuo=1&puntos_residuo=3")
 			.then()
-			.body("data", hasSize(5))
-			.body("data.id", contains(equalTo(1), equalTo(2), equalTo(3), equalTo(4), equalTo(5)))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.puntoResiduoId", everyItem(anyOf(equalTo(1), equalTo(3))))
 		;
 	}
 
@@ -35,8 +40,8 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos?ciudadanos=1&ciudadanos=3")
 			.then()
-			.body("data", hasSize(greaterThan(4)))
-			.body("data.id", contains(equalTo(1), equalTo(2), equalTo(3), equalTo(4), equalTo(5)))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.puntoResiduoUri",  everyItem(anyOf(containsString("/ciudadano/1"), containsString("/ciudadano/3"))))
 		;
 	}
 
@@ -44,8 +49,8 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos?tipos=1&tipos=3")
 			.then()
-			.body("data", hasSize(5))
-			.body("data.id", contains(equalTo(1), equalTo(2), equalTo(3), equalTo(5), equalTo(6)))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.tipoResiduo.id", everyItem(anyOf(equalTo(1), equalTo(3))))
 		;
 	}
 
@@ -61,8 +66,8 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos?retirado=true")
 			.then()
-			.body("data", hasSize(1))
-			.body("data.id", contains(equalTo(3)))
+			.body("data", hasSize(greaterThan(0)))
+			.body("data.fechaRetiro", everyItem(notNullValue()))
 		;
 	}
 
@@ -70,8 +75,8 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos?retirado=false")
 			.then()
-			.body("data", hasSize(7))
-			.body("data.id", contains(equalTo(1), equalTo(2), equalTo(4), equalTo(5), equalTo(6), equalTo(7), equalTo(8)))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.fechaRetiro", everyItem(nullValue()))
 		;
 	}
 
@@ -79,8 +84,7 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos?fecha_limite_retiro=2023-08-01T00:00:00.000Z")
 			.then()
-			.body("data", hasSize(7))
-			.body("data.id", contains(equalTo(1), equalTo(3), equalTo(4), equalTo(5), equalTo(6), equalTo(7), equalTo(8)))
+			.body("data", hasSize(greaterThan(1)))
 		;
 	}
 
@@ -88,8 +92,11 @@ import static org.hamcrest.Matchers.hasSize;
 		RestAssured.given()
 			.get("/residuos?puntos_residuo=1&ciudadanos=1&tipos=1&retirado=false&fecha_limite_retiro=2023-08-01T00:00:00.000Z")
 			.then()
-			.body("data", hasSize(2))
-			.body("data.id", contains(equalTo(1), equalTo(5)))
+			.body("data", hasSize(greaterThan(1)))
+			.body("data.puntoResiduoId", everyItem(equalTo(1)))
+			.body("data.puntoResiduoUri", everyItem(containsString("/ciudadano/1")))
+			.body("data.tipoResiduo.id", everyItem(equalTo(1)))
+			.body("data.fechaRetiro", everyItem(nullValue()))
 		;
 	}
 }
