@@ -1,8 +1,16 @@
 package org.circle8.dao;
 
-import com.google.gson.Gson;
-import com.google.inject.Inject;
-import lombok.val;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
+import javax.sql.DataSource;
+
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.Organizacion;
 import org.circle8.entity.Punto;
@@ -19,29 +27,38 @@ import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 import org.circle8.utils.Dates;
 
-import javax.sql.DataSource;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonPrimitive;
+import com.google.inject.Inject;
+
+import lombok.val;
 
 public class ZonaDao extends Dao {
 
 	private static final Gson GSON = new Gson();
+	
+	private static final String INSERT = """
+			INSERT INTO "Zona"(
+			"OrganizacionId", "Polyline", "Nombre")
+			VALUES (?, ?, ?);
+			""";
+	
+	private static final String INSERT_ZONA_TIPO_RESIDUO = """
+			INSERT INTO "Zona_TipoResiduo"("ZonaId", "TipoResiduoId")
+			VALUES (?, ?);
+			""";
+	
+	private static final String UPDATE_ZONA = """
+			UPDATE public."Zona"
+			SET "Polyline"=?, "Nombre"=?
+			WHERE "ID"=?;
+			""";
 
 	private static final String INSERT_INTO_PUNTO_RESIDUO_ZONA = """
 			INSERT INTO "PuntoResiduo_Zona" ("PuntoResiduoId", "ZonaId")
 			VALUES (?, ?);
-			""";
-
-	private static final String DELETE_PUNTO_ZONA = """
-			DELETE FROM "PuntoResiduo_Zona"
-			WHERE "PuntoResiduoId" = ? AND "ZonaId" = ?;
-			""";
+			""";	
 
 	private static final String SELECT_FMT = """
 			SELECT
@@ -51,6 +68,13 @@ public class ZonaDao extends Dao {
 			  LEFT JOIN "TipoResiduo" AS tr on tr."ID" = ztr."TipoResiduoId"
 			    %s
 			 WHERE 1 = 1
+			""";
+	
+	private static final String SELECT_PUNTOS_IN_ZONA = """
+			SELECT pr."ID",pr."CiudadanoId", pr."Latitud", pr."Longitud"
+			FROM "PuntoResiduo_Zona" pz
+			LEFT JOIN "PuntoResiduo" AS pr on pr."ID" = pz."PuntoResiduoId"
+			WHERE pz."ZonaId" = ?;
 			""";
 
 	private static final String SELECT_SIMPLE = """
@@ -132,12 +156,114 @@ public class ZonaDao extends Dao {
 		     WHERE str."ID" IN (%s)
 		)
 		""";
+	
+	private static final String DELETE_ZONA = """
+			DELETE FROM "Zona"
+			WHERE "ID" = ? AND "OrganizacionId" = ?;
+			""";
+	
+	private static final String DELETE_ZONA_TIPO = """
+			DELETE FROM "Zona_TipoResiduo"
+			WHERE "ZonaId" = ?;
+			""";
+	
+	private static final String DELETE_PUNTOS_ZONA = """
+			DELETE FROM "PuntoResiduo_Zona"
+			WHERE "ZonaId" = ?;
+			""";
 
+	private static final String DELETE_PUNTO_ZONA = """
+			DELETE FROM "PuntoResiduo_Zona"
+			WHERE "PuntoResiduoId" = ? AND "ZonaId" = ?;
+			""";
 
 	@Inject
 	ZonaDao(DataSource ds) {
 		super(ds);
 	}
+	
+	public Zona save(Transaction t,Long organizacionId,Zona zona) throws PersistenceException {		
+		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setLong(1, organizacionId);
+			insert.setString(2, getPolyline(zona.polyline));
+			insert.setString(3, zona.nombre);
+
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new SQLException("Creating the Zona failed, no affected rows");
+
+			try ( var rs = insert.getGeneratedKeys() ) {
+				if (rs.next())
+					zona.id = rs.getLong(1);
+				else
+					throw new SQLException("Creating the Zona failed, no ID obtained");
+			}
+		} catch ( SQLException e ) {
+				throw new PersistenceException("error inserting Zona", e);
+		}
+
+		return zona;
+	}
+	
+	public Zona update(Transaction t,Long zonaId,Zona zona) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(UPDATE_ZONA) ) {
+			put.setString(1, getPolyline(zona.polyline));
+			put.setString(2, zona.nombre);
+			put.setLong(3, zonaId);
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe zona con id " + zonaId);
+		} catch ( SQLException e ) {
+				throw new PersistenceException("error inserting Zona", e);
+		}
+		return zona;
+	}
+	
+	public void saveTipos(Transaction t, long zonaId, long tipoResiduoId) throws PersistenceException, NotFoundException {
+		try ( var insert = t.prepareStatement(INSERT_ZONA_TIPO_RESIDUO, Statement.RETURN_GENERATED_KEYS) ) {
+			insert.setLong(1, zonaId);
+			insert.setLong(2, tipoResiduoId);
+			int insertions = insert.executeUpdate();
+			if ( insertions == 0 )
+				throw new NotFoundException("No existe el TipoResiduo a actualizar.");
+
+		} catch (SQLException e ) {	
+			if ( e.getMessage().contains("TipoResiduo_fkey"))
+				throw new NotFoundException("No existe el TipoResiduo a con id " + tipoResiduoId);
+			
+			throw new PersistenceException("error creating the relation between zona and tipoResiduo.", e);
+		}
+	}
+	
+	public void delete(Transaction t, Long organizacionId, Long zonaId) throws NotFoundException, PersistenceException {
+		try ( val delete =  t.prepareStatement(DELETE_ZONA) ) {
+			delete.setLong(1, zonaId);
+			delete.setLong(2, organizacionId);
+			if ( delete.executeUpdate() <= 0 )
+				throw new NotFoundException("No se encontro la zona a eliminar");
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Deleting tipos in zona", e);
+		}		
+	}
+	
+	public void deleteTipos(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
+		try ( val delete =  t.prepareStatement(DELETE_ZONA_TIPO) ) {
+			delete.setLong(1, zonaId);
+			if ( delete.executeUpdate() < 0 )
+				throw new NotFoundException("No se encontro zona a eliminar sus tipos de residuos");
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Deleting tipos in zona", e);
+		}
+	}	
+	
+	public void deletePuntos(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
+		try ( val delete =  t.prepareStatement(DELETE_PUNTOS_ZONA) ) {
+			delete.setLong(1, zonaId);
+			delete.executeUpdate();
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Deleting tipos in zona", e);
+		}
+	}	
 
 	public void includePuntoResiduo(Transaction t,Long puntoResiduoId, Long zonaId) throws PersistenceException {
 		try ( val insert = t.prepareStatement(INSERT_INTO_PUNTO_RESIDUO_ZONA, Statement.RETURN_GENERATED_KEYS) ) {
@@ -163,7 +289,6 @@ public class ZonaDao extends Dao {
 		try ( val delete =  t.prepareStatement(DELETE_PUNTO_ZONA) ) {
 			delete.setLong(1, puntoResiduoId);
 			delete.setLong(2, zonaId);
-
 			if ( delete.executeUpdate() <= 0 )
 				throw new NotFoundException("No se encontro el punto en la zona para eliminar");
 		} catch (SQLException e) {
@@ -197,6 +322,34 @@ public class ZonaDao extends Dao {
 			throw new PersistenceException("error getting zonas", e);
 		}
 	}
+	
+	public List<PuntoResiduo> getPuntosResiduo(Transaction t, Long zonaId) throws PersistenceException {
+		try(var select = createSelectListPuntos(t, zonaId);
+			var rs = select.executeQuery()) {
+			var puntos = new ArrayList<PuntoResiduo>();
+			while (rs.next()) {
+				val punto = PuntoResiduo.builder()
+						.id(rs.getLong("ID"))
+						.ciudadanoId(rs.getLong("CiudadanoId"))
+						.latitud(rs.getDouble("Latitud"))
+						.longitud(rs.getDouble("Longitud"))
+						.build();
+				puntos.add(punto);				
+			}
+			return puntos;
+		} catch (Exception e) {
+			throw new PersistenceException("error getting puntos in zona", e);
+		}
+	}
+	
+	private PreparedStatement createSelectListPuntos(
+			Transaction t,
+			Long zonaId
+		) throws PersistenceException, SQLException {
+			var p = t.prepareStatement(SELECT_PUNTOS_IN_ZONA);
+			p.setLong(1, zonaId);
+			return p;
+		}
 
 	private PreparedStatement createSelect(
 		Transaction t,
@@ -325,6 +478,17 @@ public class ZonaDao extends Dao {
 		}
 		return l;
 	}
+	
+	private String getPolyline(List<Punto> puntos) {
+		JsonArray array = new JsonArray();
+		for(Punto punto : puntos) {
+			JsonArray puntoArray = new JsonArray();
+			puntoArray.add(new JsonPrimitive(punto.latitud));
+			puntoArray.add(new JsonPrimitive(punto.longitud));
+			array.add(puntoArray);
+		}
+		return GSON.toJson(array);
+	}
 
 	private void addTipoResiduo(ResultSet rs, Zona z) throws SQLException {
 		if (rs.getInt("TipoResiduoId") != 0) {
@@ -375,5 +539,5 @@ public class ZonaDao extends Dao {
 			if(!z.puntosResiduos.contains(pr))
 				z.puntosResiduos.add(pr);
 		}
-	}
+	}	
 }

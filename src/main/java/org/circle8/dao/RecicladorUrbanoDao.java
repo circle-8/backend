@@ -22,6 +22,12 @@ public class RecicladorUrbanoDao {
 			"UsuarioId", "OrganizacionId")
 			VALUES (?, ?);
 			""";
+	
+	private static final String UPDATE_ZONA_NULL = """
+			UPDATE "RecicladorUrbano"
+			SET "ZonaId" = NULL
+			WHERE "ZonaId" = ?;
+			""";
 
 
 	public Long save(Transaction t, User u) throws PersistenceException, NotFoundException {
@@ -45,6 +51,15 @@ public class RecicladorUrbanoDao {
 				throw new PersistenceException("error inserting ciudadano", e);
 		}
 	}
+	
+	public void desasociarZona(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
+		try ( val update =  t.prepareStatement(UPDATE_ZONA_NULL) ) {
+			update.setLong(1, zonaId);
+			update.executeUpdate();
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Updating zona in reciclador", e);
+		}
+	}	
 
 	private PreparedStatement createInsert(Transaction t,User u) throws PersistenceException, SQLException {
 		val insert = u.zonaId != null ? INSERT : INSERT_WITHOUT_ZONA;

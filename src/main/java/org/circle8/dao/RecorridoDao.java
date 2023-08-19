@@ -11,6 +11,7 @@ import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
 import org.circle8.exception.ForeignKeyException;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
@@ -73,6 +74,12 @@ public class RecorridoDao extends Dao {
 		 WHERE "ID" = ?
 		   AND "ZonaId" = ?
 		""";
+	
+	private static final String UPDATE_ZONA_NULL = """
+			UPDATE "Recorrido"
+			SET "ZonaId" = NULL
+			WHERE "ZonaId" = ?;
+			""";
 
 	private final ZonaDao zonaDao;
 
@@ -211,4 +218,13 @@ public class RecorridoDao extends Dao {
 			throw new PersistenceException("error deleting recorrido", e);
 		}
 	}
+	
+	public void desasociarZona(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
+		try ( val update =  t.prepareStatement(UPDATE_ZONA_NULL) ) {
+			update.setLong(1, zonaId);
+			update.executeUpdate();
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Updating zona in recorrido", e);
+		}
+	}	
 }

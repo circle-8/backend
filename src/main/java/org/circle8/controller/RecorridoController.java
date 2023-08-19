@@ -1,10 +1,9 @@
 package org.circle8.controller;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
+
 import org.circle8.controller.request.recorrido.PostRecorridoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -22,9 +21,13 @@ import org.circle8.expand.RecorridoExpand;
 import org.circle8.service.RecorridoService;
 import org.circle8.utils.Dates;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 
 @Singleton
 @Slf4j
@@ -120,7 +123,6 @@ public class RecorridoController {
 	public ApiResponse delete(Context ctx) {
 		long id;
 		long zonaId;
-		long organizacionId;
 		try {
 			id = Long.parseLong(ctx.pathParam("id"));
 			zonaId = Long.parseLong(ctx.pathParam(ZONA_ID_PARAM));

@@ -26,4 +26,8 @@ public class OrganizacionDto {
 		return org;
 	}
 	
+	public Organizacion toEntity() {
+		return new Organizacion(id, razonSocial, usuarioId);
+	}
+	
 }

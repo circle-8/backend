@@ -1,12 +1,13 @@
-package org.circle8.integration.zona;
 
-import io.restassured.RestAssured;
+package org.circle8.integration.zona;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
+import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
 class ZonaIncludePuntoResiduoTest {
