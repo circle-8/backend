@@ -3,10 +3,8 @@ package org.circle8.service;
 import com.google.inject.Inject;
 import lombok.val;
 import org.circle8.dao.RecorridoDao;
-import org.circle8.dao.Transaction;
 import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Punto;
-import org.circle8.entity.Recorrido;
 import org.circle8.entity.Retiro;
 import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.NotFoundException;
@@ -14,6 +12,7 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
+import org.circle8.filter.RecorridoFilter;
 
 import java.util.List;
 
@@ -25,18 +24,10 @@ public class RecorridoService {
 
 	public RecorridoDto get(long id, RecorridoExpand x) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			return RecorridoDto.from(get(t, id, x));
-		} catch ( PersistenceException e ) {
-			throw new ServiceError("Ha ocurrido un error al buscar el recorrido", e);
-		}
-	}
-
-	private Recorrido get(Transaction t, long id, RecorridoExpand x) throws ServiceException {
-		try {
 			var r = this.dao.get(t, id, x)
 				.orElseThrow(() -> new NotFoundException("No existe la solicitud"));
 			sortRetiro(r.puntoInicio, r.puntos);
-			return r;
+			return RecorridoDto.from(r);
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al buscar el recorrido", e);
 		}
@@ -91,6 +82,14 @@ public class RecorridoService {
 			throw new ServiceException(e.getMessage(), e);
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al eliminar el recorrido", e);
+		}
+	}
+
+	public List<RecorridoDto> list(RecorridoFilter f) throws ServiceException {
+		try {
+			return this.dao.list(f).stream().map(RecorridoDto::from).toList();
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al obtener los recorridos", e);
 		}
 	}
 }
