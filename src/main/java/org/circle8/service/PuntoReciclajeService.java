@@ -1,20 +1,18 @@
 package org.circle8.service;
 
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajePostRequest;
 import org.circle8.dao.PuntoReciclajeDao;
 import org.circle8.dto.PuntoReciclajeDto;
 import org.circle8.dto.TipoResiduoDto;
 import org.circle8.exception.NotFoundException;
-
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.filter.PuntoReciclajeFilter;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import java.util.List;
 
 @Singleton
 public class PuntoReciclajeService {
@@ -70,7 +68,6 @@ public class PuntoReciclajeService {
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el punto de reciclaje", e);
 		}
-
 	}
 
 	/**

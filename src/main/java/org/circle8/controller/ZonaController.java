@@ -2,14 +2,13 @@ package org.circle8.controller;
 
 import java.util.List;
 
+import org.circle8.controller.request.zona.PostPutZonaRequest;
 import org.circle8.controller.request.zona.ZonaRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
-import org.circle8.controller.response.PuntoResponse;
-import org.circle8.controller.response.TipoResiduoResponse;
-import org.circle8.controller.response.ZonaResponse;
+import org.circle8.controller.response.SuccessResponse;
 import org.circle8.dto.ZonaDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
@@ -21,7 +20,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,63 +27,38 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ZonaController {
 	private ZonaService service;
-	
+
 	@Inject
 	public ZonaController(ZonaService zonaService) {
 		this.service = zonaService;
 	}
 	
-	private  static final String ORGANIZACION_ID_PARAM = "organizacion_id";
-	public static final String ORGANIZACION_URI_BASE = "/organizacion/";
-
-	private final ZonaResponse mock = ZonaResponse.builder()
-		.id(1)
-		.nombre("Zona 1")
-		.polyline(List.of(
-			new PuntoResponse(-34.6347176f,-58.5587959f),
-			new PuntoResponse(-34.6516556f,-58.5356009f),
-			new PuntoResponse(-34.6731596f,-58.5596279f),
-			new PuntoResponse(-34.6636766f,-58.5683339f),
-			new PuntoResponse(-34.6505856f,-58.5852295f),
-			new PuntoResponse(-34.6493356f,-58.5832919f),
-			new PuntoResponse(-34.6434332f,-58.5835331f),
-			new PuntoResponse(-34.6415567f,-58.5715792f),
-			new PuntoResponse(-34.6383786f,-58.5735709f)
-		))
-		.organizacionUri("/organizacion/1")
-		.organizacionId(1L)
-		.tipoResiduo(List.of(
-			new TipoResiduoResponse(1, "ORGANICO"),
-			new TipoResiduoResponse(2, "PLASTICO")
-		))
-		.build();
-
 	/**
 	 * GET /organizacion/{organizacion_id}/zona/{id}
 	 */
 	public ApiResponse get(Context ctx) {
 		final long organizacionId;
-		final long id;		
+		final long id;
 		try {
 			organizacionId = Long.parseLong(ctx.pathParam("organizacion_id"));
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la organización y/o de la zona debe ser numérico", "");
 		}
-		
+
 		val req = new ZonaRequest(ctx.queryParamMap());
 		val valid = req.valid();
 		if (!valid.valid())
 			return new ErrorResponse(valid);
-		
+
 		val filter = ZonaFilter.builder()
 				.id(id)
 				.organizacionId(organizacionId)
 				.tiposResiduos(req.tiposResiduo)
 				.build();
-		
+
 		val expand = new ZonaExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
-		
+
 		try {
 			return this.service.get(filter, expand).toResponse();
 		} catch ( ServiceError e ) {
@@ -97,36 +70,87 @@ public class ZonaController {
 	}
 
 	/**
-	 * PUT /organizacion/{id_organizacion}/zona/{id}
+	 * PUT /organizacion/{organizacion_id}/zona/{id}
 	 */
 	public ApiResponse put(Context ctx) {
-		return mock.toBuilder()
-			.id(Integer.parseInt(ctx.pathParam("id")))
-			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
-			.build();
+		final long organizacionId;
+		final long id;		
+		try {
+			organizacionId = Long.parseLong(ctx.pathParam("organizacion_id"));
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la organización y/o de la zona debe ser numérico", "");
+		}
+		
+		val req = ctx.bodyAsClass(PostPutZonaRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid()) {
+			return new ErrorResponse(valid);
+		}
+		
+		val dto = ZonaDto.from(req);
+		
+		try {
+			return service.put(organizacionId,id,dto).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error saving new PuntoReciclaje", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
-	 * DELETE /organizacion/{id_organizacion}/zona/{id}
+	 * DELETE /organizacion/{organizacion_id}/zona/{id}
 	 */
 	public ApiResponse delete(Context ctx) {
-		return new ApiResponse() {
-			@Override
-			public HttpStatus status() {
-				return HttpStatus.ACCEPTED;
-			}
-		};
+		long organizacion_id;
+		long zonaId;
+		try {
+			organizacion_id = Long.parseLong(ctx.pathParam("organizacion_id"));
+			zonaId = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids de zona y organizacion deben ser numéricos", "");
+		}
+
+		try{
+			this.service.delete(organizacion_id, zonaId);
+			return new SuccessResponse();
+		} catch ( ServiceError e ) {
+			log.error("[organizacion_id:{}, id:{}] error deleting zona", organizacion_id, zonaId, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
-	 * POST /organizacion/{id_organizacion}/zona
+	 * POST /organizacion/{organizacion_id}/zona
 	 */
 	public ApiResponse post(Context ctx) {
-		return mock.toBuilder()
-			.organizacionId(Long.parseLong(ctx.pathParam(ORGANIZACION_ID_PARAM)))
-			.organizacionUri(ORGANIZACION_URI_BASE + ctx.pathParam(ORGANIZACION_ID_PARAM))
-			.build();
+		final long organizacionId;
+		try {
+			organizacionId = Long.parseLong(ctx.pathParam("organizacion_id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id de la organización debe ser numérico", "");
+		}
+		
+		val req = ctx.bodyAsClass(PostPutZonaRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid()) {
+			return new ErrorResponse(valid);
+		}
+		
+		val dto = ZonaDto.from(req);
+		
+		try {
+			return service.save(organizacionId,dto).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error saving new PuntoReciclaje", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}
 	}
 
 	/**
@@ -142,7 +166,7 @@ public class ZonaController {
 	public ApiResponse excludePuntoResiduo(Context ctx) {
 		return doIncludeExclude(ctx, false);
 	}
-	
+
 	private ApiResponse doIncludeExclude(Context ctx,boolean isInclude) {
 		final long puntoResiduoId;
 		final long zonaId;
@@ -152,10 +176,10 @@ public class ZonaController {
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "Los ids deben ser numéricos", "");
 		}
-		
+
 		try {
 			val dto = isInclude ?
-					this.service.includePuntoResiduo(puntoResiduoId, zonaId) : 
+					this.service.includePuntoResiduo(puntoResiduoId, zonaId) :
 						this.service.excludePuntoResiduo(puntoResiduoId, zonaId);
 			return dto.toResponse();
 		} catch (ServiceError e) {
@@ -173,7 +197,7 @@ public class ZonaController {
 		val valid = req.valid();
 		if (!valid.valid())
 			return new ErrorResponse(valid);
-		
+
 		val filter = ZonaFilter.builder()
 				.organizacionId(req.organizacionId)
 				.recicladorId(req.recicladorId)
@@ -181,9 +205,9 @@ public class ZonaController {
 				.puntoResiduoId(req.puntoResiduoId)
 				.tiposResiduos(req.tiposResiduo)
 				.build();
-		
+
 		val expand = new ZonaExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
-		
+
 		try {
 			val zonas = this.service.list(filter, expand);
 			return new ListResponse<>(zonas.stream().map(ZonaDto::toResponse).toList());

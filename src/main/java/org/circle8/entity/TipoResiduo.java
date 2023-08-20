@@ -1,10 +1,10 @@
 package org.circle8.entity;
 
-import java.util.Objects;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class TipoResiduo {
 	public long id;
 	public String nombre;
-	
+
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
@@ -29,5 +29,3 @@ public class TipoResiduo {
 		return id == other.id;
 	}
 }
-
-

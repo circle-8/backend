@@ -1,8 +1,7 @@
 package org.circle8.controller.response;
 
-import org.circle8.dto.Dia;
-
 import com.google.gson.annotations.SerializedName;
+import org.circle8.dto.Dia;
 
 public enum DiaResponse {
 	@SerializedName("0")
@@ -19,7 +18,7 @@ public enum DiaResponse {
 	SABADO,
 	@SerializedName("6")
 	DOMINGO;
-	
+
 	public static DiaResponse from(Dia dia) {
 		return switch (dia) {
 		case LUNES -> LUNES;
@@ -31,7 +30,7 @@ public enum DiaResponse {
 		case DOMINGO -> DOMINGO;
 		};
 	}
-	
+
 	public Dia to() {
 		return switch(this) {
 		case LUNES -> Dia.LUNES;

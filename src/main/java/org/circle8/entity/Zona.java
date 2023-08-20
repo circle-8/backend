@@ -1,10 +1,10 @@
 package org.circle8.entity;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -18,4 +18,6 @@ public class Zona {
 	public List<TipoResiduo> tipoResiduo;
 	public List<Recorrido> recorridos;
 	public List<PuntoResiduo> puntosResiduos;
+
+	public Zona(long id ) { this.id = id; }
 }

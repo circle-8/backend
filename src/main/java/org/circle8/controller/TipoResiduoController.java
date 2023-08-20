@@ -1,5 +1,10 @@
 package org.circle8.controller;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import lombok.val;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -9,24 +14,17 @@ import org.circle8.dto.TipoResiduoDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.service.TipoResiduoService;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
-import lombok.val;
-
 @Singleton
 
 public class TipoResiduoController {
-	
+
 	private TipoResiduoService service;
-	
+
 	@Inject
 	public TipoResiduoController(TipoResiduoService tipoResiduoService) {
 		this.service = tipoResiduoService;
 	}
-	
+
 	private final TipoResiduoResponse mock = new TipoResiduoResponse(1, "ORGANICO");
 	/**
 	 * GET /tipo_residuo/{id}

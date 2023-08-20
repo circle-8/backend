@@ -77,7 +77,11 @@ CREATE TABLE IF NOT EXISTS public."Recorrido"
     "FechaInicio" timestamp with time zone,
     "FechaFin" timestamp with time zone,
     "RecicladorId" bigint NOT NULL,
-    "ZonaId" bigint NOT NULL,
+    "ZonaId" bigint,
+    "LatitudInicio" double precision NOT NULL,
+    "LongitudInicio" double precision NOT NULL,
+    "LatitudFin" double precision NOT NULL,
+    "LongitudFin" double precision NOT NULL,
     CONSTRAINT "Recorrido_pkey" PRIMARY KEY ("ID")
 );
 
@@ -271,7 +275,7 @@ ALTER TABLE IF EXISTS public."RecicladorUrbano"
     REFERENCES public."Usuario" ("ID")
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
-    
+
 ALTER TABLE IF EXISTS public."RecicladorUrbano"
     ADD CONSTRAINT "RecicladorUrbano_OrganizacionId_fkey" FOREIGN KEY ("OrganizacionId")
     REFERENCES public."Organizacion" ("ID")
@@ -368,5 +372,17 @@ CREATE INDEX IF NOT EXISTS "fki_FK_Usuario_Suscripcion"
 ALTER TABLE IF EXISTS public."Zona"
     ADD CONSTRAINT "FK_Zona_Organizacion" FOREIGN KEY ("OrganizacionId")
     REFERENCES public."Organizacion" ("ID")
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+    
+ALTER TABLE IF EXISTS public."Zona_TipoResiduo"
+    ADD CONSTRAINT "Zona_fkey" FOREIGN KEY ("ZonaId")
+    REFERENCES public."Zona" ("ID")
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+    
+ALTER TABLE IF EXISTS public."Zona_TipoResiduo"
+    ADD CONSTRAINT "TipoResiduo_fkey" FOREIGN KEY ("TipoResiduoId")
+    REFERENCES public."TipoResiduo" ("ID")
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;

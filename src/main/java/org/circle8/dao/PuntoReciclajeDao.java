@@ -1,18 +1,6 @@
 package org.circle8.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.sql.DataSource;
-
+import com.google.inject.Inject;
 import jakarta.annotation.Nullable;
 import lombok.val;
 import org.circle8.controller.request.punto_reciclaje.PuntoReciclajePostRequest;
@@ -24,7 +12,17 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.PuntoReciclajeFilter;
 
-import com.google.inject.Inject;
+import javax.sql.DataSource;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PuntoReciclajeDao extends Dao {
 

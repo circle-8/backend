@@ -1,15 +1,14 @@
 package org.circle8.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-
+import lombok.val;
 import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 
-import lombok.val;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class RecicladorUrbanoDao {
 	private static final String INSERT = """
@@ -17,16 +16,22 @@ public class RecicladorUrbanoDao {
 			"UsuarioId", "OrganizacionId", "ZonaId")
 			VALUES (?, ?, ?);
 			""";
-	
+
 	private static final String INSERT_WITHOUT_ZONA = """
 			INSERT INTO public."RecicladorUrbano"(
 			"UsuarioId", "OrganizacionId")
 			VALUES (?, ?);
 			""";
 	
+	private static final String UPDATE_ZONA_NULL = """
+			UPDATE "RecicladorUrbano"
+			SET "ZonaId" = NULL
+			WHERE "ZonaId" = ?;
+			""";
+
 
 	public Long save(Transaction t, User u) throws PersistenceException, NotFoundException {
-		try ( var insert = createInsert(t, u) ) {			
+		try ( var insert = createInsert(t, u) ) {
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
 				throw new SQLException("Creating the reciclador failed, no affected rows");
@@ -47,8 +52,17 @@ public class RecicladorUrbanoDao {
 		}
 	}
 	
+	public void desasociarZona(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
+		try ( val update =  t.prepareStatement(UPDATE_ZONA_NULL) ) {
+			update.setLong(1, zonaId);
+			update.executeUpdate();
+		} catch (SQLException e) {			
+			throw new PersistenceException("error Updating zona in reciclador", e);
+		}
+	}	
+
 	private PreparedStatement createInsert(Transaction t,User u) throws PersistenceException, SQLException {
-		val insert = u.zonaId != null ? INSERT : INSERT_WITHOUT_ZONA;		
+		val insert = u.zonaId != null ? INSERT : INSERT_WITHOUT_ZONA;
 		val ps = t.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
 		ps.setLong(1, u.id);
 		ps.setLong(2, u.organizacionId);

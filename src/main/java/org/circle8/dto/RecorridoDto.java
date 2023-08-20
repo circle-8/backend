@@ -1,12 +1,13 @@
 package org.circle8.dto;
 
 
+import org.circle8.controller.request.recorrido.PostRecorridoRequest;
+import org.circle8.controller.response.RecorridoResponse;
+import org.circle8.entity.Recorrido;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
-
-import org.circle8.controller.response.RecorridoResponse;
-import org.circle8.entity.Recorrido;
 
 public class RecorridoDto {
 	public Long id;
@@ -40,6 +41,28 @@ public class RecorridoDto {
 		return r;
 	}
 
+	public static RecorridoDto from(PostRecorridoRequest req, long zonaId, long organizacionId) {
+		var r = new RecorridoDto();
+		r.fechaRetiro = req.fechaRetiro;
+		r.recicladorId = req.recicladorId;
+		r.zonaId = zonaId;
+		r.organizacionId = organizacionId;
+		r.puntoInicio = PuntoDto.from(req.puntoInicio);
+		r.puntoFin = PuntoDto.from(req.puntoFin);
+		return r;
+	}
+
+	public Recorrido toEntity() {
+		return Recorrido.builder()
+			.fechaRetiro(this.fechaRetiro)
+			.recicladorId(this.recicladorId)
+			.zonaId(this.zonaId)
+			.organizacionId(this.organizacionId)
+			.puntoInicio(this.puntoInicio.toEntity())
+			.puntoFin(this.puntoFin.toEntity())
+			.build();
+	}
+
 	public RecorridoResponse toResponse() {
 		var r = new RecorridoResponse();
 		r.id = this.id;
@@ -50,13 +73,13 @@ public class RecorridoDto {
 		r.recicladorUri = this.reciclador != null ? "/user/"+this.reciclador.usuarioId : null;
 		r.reciclador = this.reciclador != null ? this.reciclador.toResponse() : null;
 		r.zonaId = this.zonaId;
-		r.zonaUri = (this.zonaId != null && this.organizacionId != null) ? 
+		r.zonaUri = (this.zonaId != null && this.organizacionId != null) ?
 				"/organizacion/"+this.organizacionId+"/zona/"+this.zonaId : null;
 		r.zona = this.zona != null ? this.zona.toResponse() : null;
 		r.puntoInicio = this.puntoInicio != null ? this.puntoInicio.toResponse() : null;
 		r.puntoFin = this.puntoFin != null ? this.puntoFin.toResponse() : null;
-		r.puntos = this.puntos.stream().map(RetiroDto::toResponse).toList();
-		
+		r.puntos = this.puntos != null ? this.puntos.stream().map(RetiroDto::toResponse).toList() : null;
+
 		return r;
 	}
 }

@@ -1,19 +1,20 @@
 package org.circle8.dao;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import lombok.val;
+import org.circle8.exception.PersistenceException;
+
+import javax.sql.DataSource;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.sql.DataSource;
-
-import org.circle8.exception.PersistenceException;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import lombok.val;
 
 @Singleton
 abstract class Dao {
@@ -67,7 +68,9 @@ abstract class Dao {
 	) {
 		if ( o != null ) {
 			conditions.append(where);
-			params.add(o);
+			if ( o instanceof LocalDate ld ) params.add(Date.valueOf(ld));
+			else if ( o instanceof ZonedDateTime zd ) params.add(Timestamp.from(zd.toInstant()));
+			else params.add(o);
 		}
 	}
 
