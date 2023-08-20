@@ -1,9 +1,10 @@
 package org.circle8.controller;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.circle8.controller.request.recorrido.PostRecorridoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -18,15 +19,13 @@ import org.circle8.dto.RecorridoDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
+import org.circle8.filter.RecorridoFilter;
 import org.circle8.service.RecorridoService;
 import org.circle8.utils.Dates;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 
 @Singleton
@@ -166,11 +165,15 @@ public class RecorridoController {
 	 * GET /recorridos
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2).build()
-		);
-
-		return new ListResponse<>(0, 1, 2, null, null, l);
+		val filter = new RecorridoFilter(ctx.queryParamMap());
+		try {
+			val recorridos = service.list(filter);
+			return new ListResponse<>(recorridos.stream().map(RecorridoDto::toResponse).toList());
+		} catch (ServiceError e) {
+			log.error("[Request: filter={}] error listing recorridos", filter, e);
+			return new ErrorResponse(e);
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 }

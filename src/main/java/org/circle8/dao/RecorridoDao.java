@@ -11,7 +11,6 @@ import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
 import org.circle8.exception.ForeignKeyException;
-import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
@@ -41,12 +40,17 @@ public class RecorridoDao extends Dao {
 	private static final String SELECT_SIMPLE = """
 		r."ID", r."FechaRetiro", "FechaInicio", "FechaFin", "RecicladorId", r."ZonaId",
 		"LatitudInicio", "LongitudInicio", "LatitudFin", "LongitudFin", z."OrganizacionId",
-		rurb."UsuarioId", res."ID" AS ResiduoId, res."FechaCreacion", res."Descripcion",
+		rurb."UsuarioId"
+		""";
+	private static final String SELECT_RESIDUOS = """
+		, res."ID" AS ResiduoId, res."FechaCreacion", res."Descripcion",
 		res."TipoResiduoId", tr."Nombre" AS TipoResiduoNombre, pr."Latitud", pr."Longitud"
 		""";
 	private static final String JOIN_SIMPLE = """
 		JOIN "Zona" AS z ON z."ID" = r."ZonaId"
 		JOIN "RecicladorUrbano" AS rurb ON rurb."ID" = r."RecicladorId"
+		""";
+	private static final String JOIN_RESIDUOS = """
 		LEFT JOIN "Residuo" AS res on res."RecorridoId" = r."ID"
 		LEFT JOIN "PuntoResiduo" AS pr ON pr."ID" = res."PuntoResiduoId"
 		LEFT JOIN "TipoResiduo" AS tr ON tr."ID" = res."TipoResiduoId"
@@ -74,7 +78,7 @@ public class RecorridoDao extends Dao {
 		 WHERE "ID" = ?
 		   AND "ZonaId" = ?
 		""";
-	
+
 	private static final String UPDATE_ZONA_NULL = """
 			UPDATE "Recorrido"
 			SET "ZonaId" = NULL
@@ -94,13 +98,27 @@ public class RecorridoDao extends Dao {
 		long id,
 		RecorridoExpand x
 	) throws PersistenceException {
-		try ( val select = createSelect(t, RecorridoFilter.byId(id), x) ) {
-			try ( var rs = select.executeQuery() ) {
-				var r = buildRecorridos(rs, x);
-				return r.stream().findFirst();
-			}
+		try (
+			val select = createSelect(t, RecorridoFilter.byId(id), x);
+			val rs = select.executeQuery()
+		) {
+			var r = buildRecorridos(rs, x);
+			return r.stream().findFirst();
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting recorrido", e);
+		}
+	}
+
+	public List<Recorrido> list(RecorridoFilter f) throws PersistenceException {
+		val x = RecorridoExpand.EMPTY;
+		try (
+			val t = open(true);
+			val select = createSelect(t, f, x);
+			val rs = select.executeQuery()
+		) {
+			return new ArrayList<>(buildRecorridos(rs, x));
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error listing recorrido", e);
 		}
 	}
 
@@ -112,6 +130,10 @@ public class RecorridoDao extends Dao {
 		val select = new StringBuilder(SELECT_SIMPLE);
 		val join = new StringBuilder(JOIN_SIMPLE);
 		if ( x.zona ) select.append(SELECT_ZONA);
+		if ( x.residuos ) {
+			select.append(SELECT_RESIDUOS);
+			join.append(JOIN_RESIDUOS);
+		}
 		if ( x.reciclador ) {
 			select.append(SELECT_RECICLADOR);
 			join.append(JOIN_RECICLADOR);
@@ -119,7 +141,11 @@ public class RecorridoDao extends Dao {
 
 		List<Object> parameters = new ArrayList<>();
 		val where = new StringBuilder();
-		appendCondition(f.id, "AND r.\"ID\" = ?", where, parameters);
+		appendCondition(f.id, "AND r.\"ID\" = ?\n", where, parameters);
+		appendCondition(f.recicladorId, "AND r.\"RecicladorId\" = ?\n", where, parameters);
+		appendCondition(f.organizacionId, "AND z.\"OrganizacionId\" = ?\n", where, parameters);
+		appendCondition(f.zonaId, "AND z.\"ID\" = ?\n", where, parameters);
+		appendCondition(f.fechaRetiro, "AND r.\"FechaRetiro\" = ?\n", where, parameters);
 
 		val sql = String.format(SELECT_FMT, select, join, where);
 		return t.prepareStatement(sql, parameters);
@@ -131,6 +157,7 @@ public class RecorridoDao extends Dao {
 			val id = rs.getLong("ID");
 			val r = recorridos.computeIfAbsent(id, newId -> buildRecorrido(rs, x, newId));
 
+			if ( !x.residuos ) continue;
 			val residuoId = rs.getLong("ResiduoId");
 			if ( residuoId != 0L ) {
 				val residuo = Residuo.builder()
@@ -218,13 +245,13 @@ public class RecorridoDao extends Dao {
 			throw new PersistenceException("error deleting recorrido", e);
 		}
 	}
-	
-	public void desasociarZona(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
+
+	public void desasociarZona(Transaction t,Long zonaId) throws PersistenceException {
 		try ( val update =  t.prepareStatement(UPDATE_ZONA_NULL) ) {
 			update.setLong(1, zonaId);
 			update.executeUpdate();
-		} catch (SQLException e) {			
+		} catch (SQLException e) {
 			throw new PersistenceException("error Updating zona in recorrido", e);
 		}
-	}	
+	}
 }
