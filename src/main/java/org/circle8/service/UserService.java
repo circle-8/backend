@@ -2,9 +2,15 @@ package org.circle8.service;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import lombok.val;
+
+import org.circle8.dao.Transaction;
 import org.circle8.dao.UserDao;
 import org.circle8.dto.SuscripcionDto;
+import org.circle8.dto.TipoUsuario;
 import org.circle8.dto.UserDto;
+import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
@@ -67,7 +73,7 @@ public class UserService {
 				case CIUDADANO -> ciudadano.save(t, user);
 				case TRANSPORTISTA -> {
 					var c = ciudadano.save(t, user);
-					transportista.save(t, c);
+					transportista.save(t, c.usuarioId);
 				}
 				case RECICLADOR_URBANO -> reciclador.save(t, user);
 				case ORGANIZACION -> throw new IllegalArgumentException("ORGANIZACION todavía no definido");
@@ -87,11 +93,20 @@ public class UserService {
 		return dto;
 	}
 	
-	public UserDto put(Long id,UserDto dto, String password) throws ServiceException {
+	public UserDto put(Long id, UserDto dto, String password) throws ServiceException {
 		var user = dto.toEntity();
 		user.hashedPassword = crypt.hash(password);
 		try ( var t = dao.open() ) {
 			dao.update(t, id, user);
+			
+			if(!TipoUsuario.CIUDADANO.equals(user.tipo)) {
+				switch ( user.tipo ) {
+					case TRANSPORTISTA -> updateTransportista(t, id);
+					case RECICLADOR_URBANO -> updateReciclador(t, user);
+					case ORGANIZACION -> updateOrganizacion(t,user);
+					default -> throw new IllegalStateException("hay un TipoUsuario no contemplado al actualizar");
+				}
+			}			
 			t.commit();
 		} catch ( DuplicatedEntry e ) {
 			throw new ServiceException("El usuario y/o email ya se encuentran registrados", e);
@@ -100,5 +115,21 @@ public class UserService {
 		}
 		
 		return dto;
+	}
+	
+	private void updateTransportista(Transaction t, Long userId) throws PersistenceException, ServiceException {
+		val transOp = transportista.getByUsuarioId(t,userId);
+		if(!transOp.isPresent()) {
+			transportista.save(t, userId);
+		}
+		//TODO: ver caso en el que era transportista y ya no
+	}
+	
+	private void updateReciclador(Transaction t, User user) {
+		
+	}
+	
+	private void updateOrganizacion(Transaction t, User user) {
+		//TODO: implementar cuando este organizacion
 	}
 }

@@ -470,7 +470,7 @@ public class ZonaDao extends Dao {
 		return z;
 	}
 
-	List<Punto> getPolyline(String poly) {
+	public List<Punto> getPolyline(String poly) {
 		val l = new ArrayList<Punto>();
 		float[][] list = GSON.fromJson(poly, float[][].class);
 		for (float[] element : list) {
