@@ -7,6 +7,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import javax.sql.DataSource;
 
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,7 @@ import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
 public class UserPutTest {
+	private final DataSource ds = ApiTestExtension.Dep.getDatasource();
 
 	@Test
 	void testPutOk() throws Exception {
@@ -42,6 +46,45 @@ public class UserPutTest {
 			.body("suscripcion", is(not(empty())))
 			;
 	}
+	
+	@Test
+	void testPutTransportistaOk() throws Exception {
+		var request = """
+				{
+				  "username": "nuevo-usuario-1",
+				  "password": "1234",
+				  "nombre": "Nuevo Usuario 1",
+				  "email": "nuevo@email.com",
+				  "tipoUsuario": "TRANSPORTISTA"
+				}""";
+
+		RestAssured.given()
+			.body(request)
+			.put("/user/1")
+			.then()
+			.statusCode(200)
+			.body("id", is(not(emptyOrNullString())))
+			.body("username", equalTo("nuevo-usuario-1"))
+			.body("nombre", equalTo("Nuevo Usuario 1"))
+			.body("email", equalTo("nuevo@email.com"))
+			.body("tipoUsuario", equalTo("TRANSPORTISTA"))
+			.body("password", is(nullValue()))
+			.body("suscripcion", is(not(empty())))
+			;
+		
+		var checkTransportistaSQL = """
+				SELECT
+				t."ID", t."UsuarioId", t."Polyline"
+			  FROM "Transportista" AS t
+			 WHERE "UsuarioId" = ?
+			""";
+		try ( var conn = ds.getConnection();
+				var ps = conn.prepareStatement(checkTransportistaSQL) ) {
+			ps.setLong(1, 1);
+			assertTrue(ps.executeQuery().next());
+		}
+	}
+	
 	
 	@Test
 	void testExistUserName() throws Exception {
