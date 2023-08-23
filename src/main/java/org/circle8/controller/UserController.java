@@ -172,4 +172,33 @@ public class UserController {
 	public ApiResponse restorePassword(Context ctx) {
 		return mock;
 	}
+	
+	/**
+	 * PUT /user/id
+	 */
+	public ApiResponse put(Context ctx) {
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del usuario debe ser numérico", "");
+		}
+		
+		val req = ctx.bodyAsClass(UserRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(valid);
+
+		var dto = UserDto.from(req);
+		try {
+			dto = service.put(id, dto, req.password);
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error saving new user", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+		}
+
+		return dto.toResponse();
+	}
 }

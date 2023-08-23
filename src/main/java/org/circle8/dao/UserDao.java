@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import org.circle8.dto.TipoUsuario;
 import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 
 import javax.sql.DataSource;
@@ -21,6 +22,12 @@ public class UserDao extends Dao {
 			  "NombreApellido", "Username", "Password", "TipoUsuario", "Email")
 			  VALUES (?, ?, ?, ?, ?)
 			  """;
+	
+	private static final String UPDATE = """
+			UPDATE "Usuario"
+			SET "NombreApellido"=?, "Username"=?, "Password"=?, "TipoUsuario"=?, "Email"=?
+			WHERE "ID"=?;
+			""";
 
 	private static final String SELECT_GET = """
 			   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId"
@@ -53,6 +60,30 @@ public class UserDao extends Dao {
 				else
 					throw new SQLException("Creating the user failed, no ID obtained");
 			}
+		} catch ( SQLException e ) {
+			if ( e.getMessage().contains("Usuario_Username_key") )
+				throw new DuplicatedEntry("username already exists", e);
+			else if ( e.getMessage().contains("Usuario_Email_key") )
+				throw new DuplicatedEntry("email already exists", e);
+			else
+				throw new PersistenceException("error inserting user", e);
+		}
+
+		return user;
+	}
+	
+	public User update(Transaction t, Long id, User user) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(UPDATE) ) {
+			put.setString(1, user.nombre);
+			put.setString(2, user.username);
+			put.setString(3, user.hashedPassword);
+			put.setString(4, user.tipo.name());
+			put.setString(5, user.email);
+			put.setLong(6, id);
+
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe el usuario con id " + id);
 		} catch ( SQLException e ) {
 			if ( e.getMessage().contains("Usuario_Username_key") )
 				throw new DuplicatedEntry("username already exists", e);

@@ -86,4 +86,19 @@ public class UserService {
 
 		return dto;
 	}
+	
+	public UserDto put(Long id,UserDto dto, String password) throws ServiceException {
+		var user = dto.toEntity();
+		user.hashedPassword = crypt.hash(password);
+		try ( var t = dao.open() ) {
+			dao.update(t, id, user);
+			t.commit();
+		} catch ( DuplicatedEntry e ) {
+			throw new ServiceException("El usuario y/o email ya se encuentran registrados", e);
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al actualizar el usuario", e);
+		}
+		
+		return dto;
+	}
 }
