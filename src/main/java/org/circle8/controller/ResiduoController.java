@@ -104,7 +104,7 @@ public class ResiduoController {
 			val residuos = service.list(filter);
 			return new ListResponse<>(residuos.stream().map(ResiduoDto::toResponse).toList());
 		} catch (ServiceError e) {
-			log.error("[Request: filter={}] error fulfill", filter, e);
+			log.error("[Request: filter={}] error listing residuos", filter, e);
 			return new ErrorResponse(e);
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(e);

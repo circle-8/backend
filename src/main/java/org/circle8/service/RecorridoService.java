@@ -3,11 +3,8 @@ package org.circle8.service;
 import com.google.inject.Inject;
 import lombok.val;
 import org.circle8.dao.RecorridoDao;
-import org.circle8.dao.Transaction;
-import org.circle8.dto.PuntoDto;
 import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Punto;
-import org.circle8.entity.Recorrido;
 import org.circle8.entity.Retiro;
 import org.circle8.enums.RecorridoEnum;
 import org.circle8.exception.ForeignKeyException;
@@ -16,8 +13,7 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
-
-import java.util.ArrayList;
+import org.circle8.filter.RecorridoFilter;
 import java.util.List;
 
 public class RecorridoService {
@@ -28,18 +24,10 @@ public class RecorridoService {
 
 	public RecorridoDto get(long id, RecorridoExpand x) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			return RecorridoDto.from(get(t, id, x));
-		} catch ( PersistenceException e ) {
-			throw new ServiceError("Ha ocurrido un error al buscar el recorrido", e);
-		}
-	}
-
-	private Recorrido get(Transaction t, long id, RecorridoExpand x) throws ServiceException {
-		try {
 			var r = this.dao.get(t, id, x)
 				.orElseThrow(() -> new NotFoundException("No existe la solicitud"));
 			sortRetiro(r.puntoInicio, r.puntos);
-			return r;
+			return RecorridoDto.from(r);
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al buscar el recorrido", e);
 		}
@@ -97,6 +85,7 @@ public class RecorridoService {
 		}
 	}
 
+
 	public RecorridoDto updateDate(long id, RecorridoEnum o) throws ServiceException {
 		try ( val t = dao.open(true) ) {
 			dao.updateDate(t, id, o);
@@ -108,15 +97,22 @@ public class RecorridoService {
       }
    }
 
-	public RecorridoDto putSave(RecorridoDto dto) throws ServiceException{
-		try ( val t = dao.open(true) ) {
+	public RecorridoDto putSave(RecorridoDto dto) throws ServiceException {
+		try (val t = dao.open(true)) {
 			val recorrido = dto.toEntity();
 			recorrido.id = dto.id;
 			dao.putSave(t, recorrido);
-			return RecorridoDto.from(dao.get(t, dto.id, RecorridoExpand.EMPTY).
-				orElseThrow(() -> new NotFoundException("No existe el recorrido")));
+			return RecorridoDto.from(dao.get(t, dto.id, RecorridoExpand.EMPTY).orElseThrow(() -> new NotFoundException("No existe el recorrido")));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al actualizar el recorrido", e);
+		}
+	}
+
+	public List<RecorridoDto> list(RecorridoFilter f) throws ServiceException {
+		try {
+			return this.dao.list(f).stream().map(RecorridoDto::from).toList();
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al obtener los recorridos", e);
 		}
 	}
 }

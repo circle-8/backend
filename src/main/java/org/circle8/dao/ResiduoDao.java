@@ -196,14 +196,10 @@ public class ResiduoDao extends Dao {
 		appendListCondition(f.tipos, WHERE_TIPOS, conditions, parameters);
 		appendCondition(f.transaccion, WHERE_TRANSACCION, conditions, parameters);
 		appendCondition(f.recorrido, WHERE_RECORRIDO, conditions, parameters);
+		appendCondition(f.fechaLimiteRetiro, WHERE_FECHA_LIMITE, conditions, parameters);
 
 		if ( f.retirado != null ) {
 			conditions.append(f.retirado ? WHERE_RETIRADO : WHERE_NOT_RETIRADO);
-		}
-
-		if ( f.fechaLimiteRetiro != null ) {
-			conditions.append(WHERE_FECHA_LIMITE);
-			parameters.add(Timestamp.from(f.fechaLimiteRetiro.toInstant()));
 		}
 
 		val p = t.prepareStatement(conditions.toString());

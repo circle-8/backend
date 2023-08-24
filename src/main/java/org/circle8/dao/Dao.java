@@ -6,8 +6,12 @@ import lombok.val;
 import org.circle8.exception.PersistenceException;
 
 import javax.sql.DataSource;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,7 +68,9 @@ abstract class Dao {
 	) {
 		if ( o != null ) {
 			conditions.append(where);
-			params.add(o);
+			if ( o instanceof LocalDate ld ) params.add(Date.valueOf(ld));
+			else if ( o instanceof ZonedDateTime zd ) params.add(Timestamp.from(zd.toInstant()));
+			else params.add(o);
 		}
 	}
 

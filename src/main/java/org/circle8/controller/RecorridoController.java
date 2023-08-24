@@ -24,10 +24,12 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
+import org.circle8.filter.RecorridoFilter;
 import org.circle8.service.RecorridoService;
 
 import java.time.LocalDate;
 import java.util.List;
+
 
 @Singleton
 @Slf4j
@@ -143,7 +145,6 @@ public class RecorridoController {
 	public ApiResponse delete(Context ctx) {
 		long id;
 		long zonaId;
-		long organizacionId;
 		try {
 			id = Long.parseLong(ctx.pathParam("id"));
 			zonaId = Long.parseLong(ctx.pathParam(ZONA_ID_PARAM));
@@ -206,11 +207,15 @@ public class RecorridoController {
 	 * GET /recorridos
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2).build()
-		);
-
-		return new ListResponse<>(0, 1, 2, null, null, l);
+		val filter = new RecorridoFilter(ctx.queryParamMap());
+		try {
+			val recorridos = service.list(filter);
+			return new ListResponse<>(recorridos.stream().map(RecorridoDto::toResponse).toList());
+		} catch (ServiceError e) {
+			log.error("[Request: filter={}] error listing recorridos", filter, e);
+			return new ErrorResponse(e);
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 }
