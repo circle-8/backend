@@ -1,7 +1,6 @@
 package org.circle8.integration.user;
 
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -37,7 +36,7 @@ public class UserPutTest {
 			.put("/user/1")
 			.then()
 			.statusCode(200)
-			.body("id", is(not(emptyOrNullString())))
+			.body("id", equalTo(1))
 			.body("username", equalTo("nuevo-usuario-1"))
 			.body("nombre", equalTo("Nuevo Usuario 1"))
 			.body("email", equalTo("nuevo@email.com"))
@@ -63,7 +62,7 @@ public class UserPutTest {
 			.put("/user/1")
 			.then()
 			.statusCode(200)
-			.body("id", is(not(emptyOrNullString())))
+			.body("id", equalTo(1))
 			.body("username", equalTo("nuevo-usuario-1"))
 			.body("nombre", equalTo("Nuevo Usuario 1"))
 			.body("email", equalTo("nuevo@email.com"))
@@ -83,6 +82,36 @@ public class UserPutTest {
 			ps.setLong(1, 1);
 			assertTrue(ps.executeQuery().next());
 		}
+	}
+	
+	@Test
+	void testPutRecicladorOk() throws Exception {
+		var request = """
+				{
+				  "username": "Reciclador",
+				  "password": "1234",
+				  "nombre": "reciclador 1",
+				  "email": "reciclador1@email.com",
+				  "tipoUsuario": "RECICLADOR_URBANO",
+				  "organizacionId": 1,
+				  "zonaId": 3
+				}""";
+
+		RestAssured.given()
+			.body(request)
+			.put("/user/3")
+			.then()
+			.statusCode(200)
+			.body("id", equalTo(3))
+			.body("username", equalTo("Reciclador"))
+			.body("nombre", equalTo("reciclador 1"))
+			.body("email", equalTo("reciclador1@email.com"))
+			.body("tipoUsuario", equalTo("RECICLADOR_URBANO"))
+			.body("password", is(nullValue()))
+			.body("suscripcion", is(not(empty())))
+			.body("organizacionId", equalTo(1))
+			.body("zonaId", equalTo(3))
+			;
 	}
 	
 	

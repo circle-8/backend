@@ -190,8 +190,9 @@ public class UserController {
 			return new ErrorResponse(valid);
 
 		var dto = UserDto.from(req);
+		dto.id = id;
 		try {
-			dto = service.put(id, dto, req.password);
+			dto = service.put(dto, req.password);
 		} catch ( ServiceError e ) {
 			log.error("[Request:{}] error saving new user", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());

@@ -9,12 +9,19 @@ import org.circle8.exception.PersistenceException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 
 public class RecicladorUrbanoDao {
 	private static final String INSERT = """
 			INSERT INTO public."RecicladorUrbano"(
 			"UsuarioId", "OrganizacionId", "ZonaId")
 			VALUES (?, ?, ?);
+			""";
+	
+	private static final String UPDATE = """
+			UPDATE "RecicladorUrbano"
+			SET "OrganizacionId"=?, "ZonaId"=?
+			WHERE "UsuarioId"=?
 			""";
 
 	private static final String INSERT_WITHOUT_ZONA = """
@@ -52,6 +59,22 @@ public class RecicladorUrbanoDao {
 		}
 	}
 	
+	public void put(Transaction t, User u) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(UPDATE) ) {
+			put.setLong(1, u.organizacionId);
+			if(u.zonaId != null)			
+				put.setLong(2, u.zonaId);
+			else
+				put.setNull(2, Types.BIGINT);
+			put.setLong(3, u.id);
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe el reciclador");
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error updating user", e);
+		}
+	}
+	
 	public void desasociarZona(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
 		try ( val update =  t.prepareStatement(UPDATE_ZONA_NULL) ) {
 			update.setLong(1, zonaId);
@@ -69,5 +92,5 @@ public class RecicladorUrbanoDao {
 		if(u.zonaId != null)
 			ps.setLong(3, u.zonaId);
 		return ps;
-	}
+	}	
 }

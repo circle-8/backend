@@ -93,15 +93,15 @@ public class UserService {
 		return dto;
 	}
 	
-	public UserDto put(Long id, UserDto dto, String password) throws ServiceException {
+	public UserDto put(UserDto dto, String password) throws ServiceException {
 		var user = dto.toEntity();
 		user.hashedPassword = crypt.hash(password);
 		try ( var t = dao.open() ) {
-			dao.update(t, id, user);
+			dao.update(t, user);
 			
 			if(!TipoUsuario.CIUDADANO.equals(user.tipo)) {
 				switch ( user.tipo ) {
-					case TRANSPORTISTA -> updateTransportista(t, id);
+					case TRANSPORTISTA -> updateTransportista(t, user);
 					case RECICLADOR_URBANO -> updateReciclador(t, user);
 					case ORGANIZACION -> updateOrganizacion(t,user);
 					default -> throw new IllegalStateException("hay un TipoUsuario no contemplado al actualizar");
@@ -117,16 +117,18 @@ public class UserService {
 		return dto;
 	}
 	
-	private void updateTransportista(Transaction t, Long userId) throws PersistenceException, ServiceException {
-		val transOp = transportista.getByUsuarioId(t,userId);
+	private void updateTransportista(Transaction t, User user) throws PersistenceException, ServiceException {
+		val transOp = transportista.getByUsuarioId(t, user.id);
 		if(!transOp.isPresent()) {
-			transportista.save(t, userId);
+			transportista.save(t, user.id);
 		}
 		//TODO: ver caso en el que era transportista y ya no
 	}
 	
-	private void updateReciclador(Transaction t, User user) {
-		
+	private void updateReciclador(Transaction t, User user) throws NotFoundException, ServiceError {
+		if(user.organizacionId != null) {
+			reciclador.put(t, user);
+		}
 	}
 	
 	private void updateOrganizacion(Transaction t, User user) {

@@ -72,18 +72,18 @@ public class UserDao extends Dao {
 		return user;
 	}
 	
-	public User update(Transaction t, Long id, User user) throws PersistenceException, NotFoundException {
+	public User update(Transaction t, User user) throws PersistenceException, NotFoundException {
 		try ( var put = t.prepareStatement(UPDATE) ) {
 			put.setString(1, user.nombre);
 			put.setString(2, user.username);
 			put.setString(3, user.hashedPassword);
 			put.setString(4, user.tipo.name());
 			put.setString(5, user.email);
-			put.setLong(6, id);
+			put.setLong(6, user.id);
 
 			int puts = put.executeUpdate();
 			if ( puts == 0 )
-				throw new NotFoundException("No existe el usuario con id " + id);
+				throw new NotFoundException("No existe el usuario con id " + user.id);
 		} catch ( SQLException e ) {
 			if ( e.getMessage().contains("Usuario_Username_key") )
 				throw new DuplicatedEntry("username already exists", e);
