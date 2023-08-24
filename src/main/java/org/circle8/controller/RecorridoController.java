@@ -19,6 +19,7 @@ import org.circle8.controller.response.RetiroResponse;
 import org.circle8.controller.response.SuccessResponse;
 import org.circle8.dto.PuntoDto;
 import org.circle8.dto.RecorridoDto;
+import org.circle8.enums.RecorridoEnum;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
@@ -171,16 +172,8 @@ public class RecorridoController {
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del recorrido debe ser numérico", "");
 		}
-
-		val req = ctx.bodyAsClass(PuntoRequest.class);
-		val valid = req.valid();
-		if ( !valid.valid() )
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
-
 		try {
-			return service.updateInicio(PuntoDto.from(req), id).toResponse();
-		} catch (NotFoundException e) {
-			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+			return service.updateDate(id, RecorridoEnum.INICIO).toResponse();
 		} catch ( ServiceError e ) {
 			log.error("[id:{}, zonaId:{}] error updating recorrido", id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -199,16 +192,8 @@ public class RecorridoController {
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del recorrido debe ser numérico", "");
 		}
-
-		val req = ctx.bodyAsClass(PuntoRequest.class);
-		val valid = req.valid();
-		if ( !valid.valid() )
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
-
 		try {
-			return service.updateFin(PuntoDto.from(req), id).toResponse();
-		} catch (NotFoundException e) {
-			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+			return service.updateDate(id, RecorridoEnum.FIN).toResponse();
 		} catch ( ServiceError e ) {
 			log.error("[id:{}, zonaId:{}] error updating recorrido", id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());

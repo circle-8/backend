@@ -9,6 +9,7 @@ import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Recorrido;
 import org.circle8.entity.Retiro;
+import org.circle8.enums.RecorridoEnum;
 import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
@@ -96,31 +97,23 @@ public class RecorridoService {
 		}
 	}
 
-	public RecorridoDto updateInicio(PuntoDto punto, long id) throws ServiceException {
+	public RecorridoDto updateDate(long id, RecorridoEnum o) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			dao.saveInicio(t, punto.toEntity(), id);
-			return RecorridoDto.from(dao.get(t, id, new RecorridoExpand(new ArrayList<>())).
+			dao.updateDate(t, id, o);
+			val updatedRecorrido = dao.get(t, id, RecorridoExpand.EMPTY);
+			return RecorridoDto.from(updatedRecorrido.
 				orElseThrow(() -> new NotFoundException("No existe el recorrido")));
 		} catch (PersistenceException e) {
-			throw new ServiceError("Ha ocurrido un error al actualizar la fechaInicio del recorrido", e);
+			throw new ServiceError("Ha ocurrido un error al actualizar el recorrido", e);
       }
-
    }
-
-	public RecorridoDto updateFin(PuntoDto punto, long id) throws ServiceException {
-		try ( val t = dao.open(true) ) {
-			dao.saveFin(t, punto.toEntity(), id);
-			return RecorridoDto.from(dao.get(t, id, new RecorridoExpand(new ArrayList<>())).
-				orElseThrow(() -> new NotFoundException("No existe el recorrido")));
-		} catch (PersistenceException e) {
-			throw new ServiceError("Ha ocurrido un error al actualizar la fechaFin del recorrido", e);
-		}
-	}
 
 	public RecorridoDto putSave(RecorridoDto dto) throws ServiceException{
 		try ( val t = dao.open(true) ) {
-			dao.putSave(t, dto);
-			return RecorridoDto.from(dao.get(t, dto.id, new RecorridoExpand(new ArrayList<>())).
+			val recorrido = dto.toEntity();
+			recorrido.id = dto.id;
+			dao.putSave(t, recorrido);
+			return RecorridoDto.from(dao.get(t, dto.id, RecorridoExpand.EMPTY).
 				orElseThrow(() -> new NotFoundException("No existe el recorrido")));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al actualizar el recorrido", e);

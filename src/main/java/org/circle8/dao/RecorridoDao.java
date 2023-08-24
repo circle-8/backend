@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import lombok.SneakyThrows;
 import lombok.val;
 
-import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Recorrido;
@@ -12,6 +11,7 @@ import org.circle8.entity.Residuo;
 import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
+import org.circle8.enums.RecorridoEnum;
 import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
@@ -25,6 +25,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -79,34 +81,31 @@ public class RecorridoDao extends Dao {
 
 	private static final String UPDATE_INICIO = """
 		UPDATE public."Recorrido" AS r
-			SET "LatitudInicio"= ? , "LongitudInicio"= ?
+			SET "FechaInicio" = ?
 			WHERE r."ID" = ?;
 		""";
 
 	private static final String UPDATE_FIN = """
 		UPDATE public."Recorrido" AS r
-			SET "LatitudFin"= ? , "LongitudFin"= ?
+			SET "FechaFin" = ?
 			WHERE r."ID" = ?;
 		""";
 
 	private static final String UPDATE = """
 		UPDATE public."Recorrido" AS r
-		%s
+		SET %s
 		WHERE r."ID" = ?
 		AND r."ZonaId" = ?;
 		""";
 
-	private static final String SET_FECHA_RETIRO_ALSO = """
-		, "FechaRetiro"= ?
+	private static final String SET_FECHA_RETIRO = """
+		"FechaRetiro"= ?
 		""";
 
 	private static final String SET_RECICLADOR = """
-		SET "RecicladorId"= ?
+		"RecicladorId"= ?
 		""";
 
-	private static final String SET_FECHA_RETIRO_ONLY = """
-		SET "FechaRetiro"= ?
-		""";
 
 	private final ZonaDao zonaDao;
 
@@ -246,27 +245,15 @@ public class RecorridoDao extends Dao {
 		}
 	}
 
-	public void saveInicio(Transaction t , Punto punto, long id) throws PersistenceException, NotFoundException {
-		try ( var update = t.prepareStatement(UPDATE_INICIO) ) {
-			update.setDouble(1, punto.latitud);
-			update.setDouble(2, punto.longitud);
-			update.setLong(3, id);
-
-			if(update.executeUpdate() <= 0){
-				throw new NotFoundException("updating the recorrido failed, no affected rows");
-			}
-
-		} catch (SQLException e) {
-			throw new PersistenceException("error updating recorrido", e);
-      }
-
-   }
-
-	public void saveFin(Transaction t, Punto punto, long id) throws PersistenceException, NotFoundException {
-		try ( var update = t.prepareStatement(UPDATE_FIN) ) {
-			update.setDouble(1, punto.latitud);
-			update.setDouble(2, punto.longitud);
-			update.setLong(3, id);
+	public void updateDate(Transaction t, long id, RecorridoEnum o) throws NotFoundException, PersistenceException {
+		String updateSql;
+		if(o == RecorridoEnum.FIN)
+			updateSql = UPDATE_FIN;
+		else
+			updateSql = UPDATE_INICIO;
+		try ( var update = t.prepareStatement(updateSql) ) {
+			update.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
+			update.setLong(2, id);
 
 			if(update.executeUpdate() <= 0){
 				throw new NotFoundException("updating the recorrido failed, no affected rows");
@@ -276,9 +263,9 @@ public class RecorridoDao extends Dao {
 			throw new PersistenceException("error updating recorrido", e);
 		}
 	}
-
-	public void putSave(Transaction t, RecorridoDto dto) throws PersistenceException, NotFoundException {
-		try (var put = createPut(t, dto)){
+	public void putSave(Transaction t, Recorrido r) throws PersistenceException, NotFoundException {
+		try (var put = createPut(t, r)){
+			val s = put.toString();
 			if(put.executeUpdate() <= 0){
 				throw new NotFoundException("updating the recorrido failed, no affected rows");
 			}
@@ -289,23 +276,21 @@ public class RecorridoDao extends Dao {
       }
    }
 
-	private PreparedStatement createPut(Transaction t, RecorridoDto dto) throws PersistenceException, SQLException {
+	private PreparedStatement createPut(Transaction t, Recorrido r) throws PersistenceException, SQLException {
 		val put = new StringBuilder();
 		List<Object> parameters = new ArrayList<>();
-		if(dto.recicladorId != null){
+		if(r.recicladorId != null){
 			put.append(SET_RECICLADOR);
-			parameters.add(dto.recicladorId);
-			if(dto.fechaRetiro != null){
-				put.append(SET_FECHA_RETIRO_ALSO);
-				parameters.add(dto.fechaRetiro);
-			}
+			parameters.add(r.recicladorId);
 		}
-		else{
-			put.append(SET_FECHA_RETIRO_ONLY);
-			parameters.add(dto.fechaRetiro);
+		if(r.fechaRetiro != null){
+			if(!put.isEmpty())
+				put.append(", ");
+			put.append(SET_FECHA_RETIRO);
+			parameters.add(r.fechaRetiro);
 		}
-		parameters.add(dto.id);
-		parameters.add(dto.zonaId);
+		parameters.add(r.id);
+		parameters.add(r.zonaId);
 		val sql = String.format(UPDATE, put);
 		var p = t.prepareStatement(sql);
 		for (int i = 0; i < parameters.size(); i++)

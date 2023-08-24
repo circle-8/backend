@@ -64,14 +64,15 @@ public class RecorridoDto {
 	}
 
 	public Recorrido toEntity() {
-		return Recorrido.builder()
-			.fechaRetiro(this.fechaRetiro)
-			.recicladorId(this.recicladorId)
-			.zonaId(this.zonaId)
-			.organizacionId(this.organizacionId)
-			.puntoInicio(this.puntoInicio.toEntity())
-			.puntoFin(this.puntoFin.toEntity())
-			.build();
+		Recorrido r = new Recorrido();
+		r.fechaRetiro = this.fechaRetiro;
+		r.recicladorId = this.recicladorId;
+		r.zonaId = this.zonaId;
+		r.organizacionId = this.organizacionId;
+		r.puntoInicio = this.puntoInicio !=  null ? puntoInicio.toEntity() : null;
+		r.puntoFin = this.puntoFin != null ? puntoFin.toEntity() : null;
+
+		return r;
 	}
 
 	public RecorridoResponse toResponse() {
