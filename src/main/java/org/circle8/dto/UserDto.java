@@ -22,6 +22,7 @@ public class UserDto {
 	public Long ciudadanoId;
 	public Long recicladorUrbanoId;
 	public Long organizacionId;
+	public String razonSocial;
 	public Long zonaId;
 
 	public static UserDto from(UserRequest request) {
@@ -32,6 +33,7 @@ public class UserDto {
 		u.tipo = request.tipoUsuario.to();
 		u.organizacionId = request.organizacionId;
 		u.zonaId = request.zonaId;
+		u.razonSocial = request.razonSocial;
 		return u;
 	}
 
@@ -43,6 +45,7 @@ public class UserDto {
 		u.nombre = entity.nombre;
 		u.email = entity.email;
 		u.tipo = entity.tipo;
+		u.suscripcion = SuscripcionDto.from(entity.suscripcion);
 		u.ciudadanoId = entity.ciudadanoId;
 		u.recicladorUrbanoId = entity.recicladorUrbanoId;
 		u.organizacionId = entity.organizacionId;

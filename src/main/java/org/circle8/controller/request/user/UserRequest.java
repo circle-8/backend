@@ -34,15 +34,15 @@ public class UserRequest implements IRequest {
 			validation.add("falta 'email'");
 		if ( tipoUsuario == null )
 			validation.add(String.format("'tipoUsuario' debe ser uno de %s", Arrays.toString(TipoUsuarioResponse.values())));
-		if( !Strings.isNullOrEmpty(razonSocial) && !tipoUsuario.equals(TipoUsuarioResponse.ORGANIZACION))
+		if( !Strings.isNullOrEmpty(razonSocial) && !TipoUsuarioResponse.ORGANIZACION.equals(tipoUsuario) )
 			validation.add("Si se indica la razon social, el tipo de usuario debe ser ORGANIZACION");
-		if( Strings.isNullOrEmpty(razonSocial) && tipoUsuario.equals(TipoUsuarioResponse.ORGANIZACION))
-			validation.add("Se debe indica la razon social el si tipo de usuario es ORGANIZACION");
-		if(organizacionId != null && !tipoUsuario.equals(TipoUsuarioResponse.RECICLADOR_URBANO))
-			validation.add("Si se indica la organizacion, el tipo de usuario debe ser RECICLADOR_URBANO");
-		if(organizacionId == null && tipoUsuario.equals(TipoUsuarioResponse.RECICLADOR_URBANO))
-			validation.add("Se debe indica la organizacion el si tipo de usuario es RECICLADOR_URBANO");
-		if(zonaId != null && !tipoUsuario.equals(TipoUsuarioResponse.RECICLADOR_URBANO))
+		if( Strings.isNullOrEmpty(razonSocial) && TipoUsuarioResponse.ORGANIZACION.equals(tipoUsuario) )
+			validation.add("Se debe indicar la razon social si el tipo de usuario es ORGANIZACION");
+		if( organizacionId != null && (!TipoUsuarioResponse.RECICLADOR_URBANO.equals(tipoUsuario) && !TipoUsuarioResponse.ORGANIZACION.equals(tipoUsuario)) )
+			validation.add("Si se indica la organizacion, el tipo de usuario debe ser RECICLADOR_URBANO u ORGANIZACION");
+		if( organizacionId == null && (!TipoUsuarioResponse.RECICLADOR_URBANO.equals(tipoUsuario) && !TipoUsuarioResponse.ORGANIZACION.equals(tipoUsuario)) )
+			validation.add("Se debe indicar la organizacion si el tipo de usuario es RECICLADOR_URBANO u ORGANIZACION");
+		if(zonaId != null && !TipoUsuarioResponse.RECICLADOR_URBANO.equals(tipoUsuario))
 			validation.add("Si se indica la zona, el tipo de usuario debe ser RECICLADOR_URBANO");
 
 		// TODO: La zona puede quedar en null de entrada, si luego se cambia validar

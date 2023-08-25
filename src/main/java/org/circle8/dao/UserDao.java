@@ -18,17 +18,17 @@ public class UserDao extends Dao {
 
 	private static final String INSERT = """
 			INSERT INTO "Usuario"(
-			  "NombreApellido", "Username", "Password", "TipoUsuario", "Email")
-			  VALUES (?, ?, ?, ?, ?)
+			  "NombreApellido", "Username", "Password", "TipoUsuario", "Email", "SuscripcionId")
+			  VALUES (?, ?, ?, ?, ?, ?)
 			  """;
 
 	private static final String SELECT_GET = """
-			   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId"
+		   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId"
 		     FROM "Usuario" u
 		LEFT JOIN "Ciudadano" c on c."UsuarioId" = u."ID"
 		LEFT JOIN "RecicladorUrbano" r on r."UsuarioId" = u."ID"
 		    WHERE "Username" = ?
-		    """;
+		""";
 
 	@Inject
 	public UserDao(DataSource ds) {
@@ -42,6 +42,7 @@ public class UserDao extends Dao {
 			insert.setString(3, user.hashedPassword);
 			insert.setString(4, user.tipo.name());
 			insert.setString(5, user.email);
+			insert.setObject(6, user.suscripcion.id != 0 ? user.suscripcion.id : null);
 
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )

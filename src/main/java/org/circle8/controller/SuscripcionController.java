@@ -7,15 +7,15 @@ import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.SuscripcionResponse;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Singleton
 public class SuscripcionController {
 	private final SuscripcionResponse mock = SuscripcionResponse.builder()
 		.id(1)
-		.ultimaRenovacion(LocalDateTime.now().minusDays(120))
-		.proximaRenovacion(LocalDateTime.now().plusDays(120))
+		.ultimaRenovacion(LocalDate.now().minusDays(120))
+		.proximaRenovacion(LocalDate.now().plusDays(120))
 		.build();
 	/**
 	 * GET /suscripciones
