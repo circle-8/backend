@@ -21,7 +21,7 @@ class SignUpTest {
 	private final DataSource ds = ApiTestExtension.Dep.getDatasource();
 
 	@Test
-	void testNewCidadano() throws Exception {
+	void testNewCiudadano() throws Exception {
 		var request = """
    {
      "username": "nuevo-usuario",
@@ -86,6 +86,37 @@ class SignUpTest {
 		try ( var conn = ds.getConnection(); var ps = conn.prepareStatement(checkUserSQL) ) {
 			ps.setString(1, "nuevo-usuario-reciclador");
 			ps.setString(2, "nuevoReciclador@email.com");
+			assertTrue(ps.executeQuery().next());
+		}
+	}
+
+	@Test
+	void testNewOrganizacion() throws Exception {
+		var request = """
+   {
+     "username": "nueva-organizacion",
+     "password": "1234",
+     "nombre": "Nueva organizacion",
+     "email": "nueva-organizacion@email.com",
+     "tipoUsuario": "ORGANIZACION",
+     "razonSocial": "Organizacion"
+   }""";
+
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(200)
+			.body("id", is(not(emptyOrNullString())))
+			.body("suscripcion", is(not(empty())))
+		;
+
+		var checkUserSQL = """
+		SELECT "Username" FROM public."Usuario" WHERE "Username" = ? AND "Email" = ? AND "SuscripcionId" IS NOT NULL
+		""";
+		try ( var conn = ds.getConnection(); var ps = conn.prepareStatement(checkUserSQL) ) {
+			ps.setString(1, "nueva-organizacion");
+			ps.setString(2, "nueva-organizacion@email.com");
 			assertTrue(ps.executeQuery().next());
 		}
 	}
@@ -212,7 +243,7 @@ class SignUpTest {
 			.body(request)
 			.post("/user")
 			.then()
-			.statusCode(500)
+			.statusCode(400)
 		;
 	}
 

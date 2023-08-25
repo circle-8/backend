@@ -11,4 +11,6 @@ public class Organizacion {
 	public long id;
 	public String razonSocial;
 	public Long usuarioId;
+
+	public Organizacion(Long usuarioId) { this.usuarioId = usuarioId; }
 }
