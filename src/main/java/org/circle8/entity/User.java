@@ -14,6 +14,7 @@ public class User {
 	public String hashedPassword;
 	public String nombre;
 	public String email;
+	public Suscripcion suscripcion;
 	public TipoUsuario tipo;
 	public Long ciudadanoId;
 	public Long recicladorUrbanoId;

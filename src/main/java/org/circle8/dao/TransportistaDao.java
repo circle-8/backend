@@ -23,13 +23,13 @@ public class TransportistaDao {
 				else
 					throw new SQLException("Creating the transportista failed, no ID obtained");
 			}
+
+			return tr;
 		} catch ( SQLException e ) {
 			if ( e.getMessage().contains("Transportista_UsuarioId_key") )
 				throw new DuplicatedEntry("transportista already exists", e);
 			else
 				throw new PersistenceException("error inserting transportista", e);
 		}
-
-		return tr;
 	}
 }

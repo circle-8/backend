@@ -107,8 +107,6 @@ public class SolicitudDao extends Dao {
 		JOIN "Usuario" AS u1 ON u1."ID" = c1."UsuarioId"
 		JOIN "Usuario" AS u2 ON u2."ID" = c2."UsuarioId"
 		""";
-	private static final String JOIN_X_PUNTO_RECICLAJE = """
-		""";
 
 	private static final String PUT_APROBAR = """
 		UPDATE "Solicitud"
@@ -336,7 +334,6 @@ public class SolicitudDao extends Dao {
 		var joinFields = "";
 		if ( x.residuo ) joinFields += JOIN_X_RESIDUO;
 		if ( x.ciudadanos ) joinFields += JOIN_X_CIUDADANO;
-		if ( x.puntoReciclaje ) joinFields += JOIN_X_PUNTO_RECICLAJE;
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 
