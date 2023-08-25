@@ -12,6 +12,7 @@ import io.javalin.http.HttpStatus;
 import io.javalin.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.Configuration;
+import org.circle8.controller.OrganizacionController;
 import org.circle8.controller.PlanController;
 import org.circle8.controller.PuntoReciclajeController;
 import org.circle8.controller.PuntoResiduoController;
@@ -51,6 +52,7 @@ public class Routes {
 	private final TipoResiduoController tipoResiduoController;
 	private final PuntoVerdeController puntoVerdeController;
 	private final SolicitudController solicitudController;
+	private final OrganizacionController organizacionController;
 
 	private final JwtService jwtService;
 
@@ -74,7 +76,8 @@ public class Routes {
 		SuscripcionController suscripcionController,
 		TipoResiduoController tipoResiduoController,
 		PuntoVerdeController puntoVerdeController,
-		SolicitudController solicitudController
+		SolicitudController solicitudController,
+		OrganizacionController organizacionController
 	) {
 		this.gson = gson;
 		this.cfg = cfg;
@@ -92,6 +95,7 @@ public class Routes {
 		this.tipoResiduoController = tipoResiduoController;
 		this.puntoVerdeController = puntoVerdeController;
 		this.solicitudController = solicitudController;
+		this.organizacionController = organizacionController;
 	}
 
 	public Javalin initRoutes() {
@@ -190,6 +194,8 @@ public class Routes {
 			.get("/solicitud/{id}", result(solicitudController::get))
 			.put("/solicitud/{id}/aprobar", result(solicitudController::approve))
 			.put("/solicitud/{id}/cancelar", result(solicitudController::cancel))
+			// ORGANIZACION
+			.get("/organizacion/{id}", result(organizacionController::get))
 			// Exceptions
 			.error(HttpStatus.NOT_FOUND, ctx -> {
 				if ( Strings.isNullOrEmpty(ctx.result()) || "Not Found".equalsIgnoreCase(ctx.result()) ) {

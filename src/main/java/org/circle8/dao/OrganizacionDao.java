@@ -8,6 +8,7 @@ import org.circle8.exception.PersistenceException;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Optional;
 
 public class OrganizacionDao extends Dao {
 	@Inject public OrganizacionDao(DataSource ds) { super(ds); }
@@ -33,6 +34,23 @@ public class OrganizacionDao extends Dao {
 				throw new DuplicatedEntry("organizacion already exists", e);
 			else
 				throw new PersistenceException("error inserting organizacion", e);
+		}
+	}
+
+	public Optional<Organizacion> get(long id) throws PersistenceException {
+		var selectSQL = "SELECT \"ID\", \"RazonSocial\", \"UsuarioId\" FROM \"Organizacion\" WHERE \"ID\" = ?";
+		try ( var t = open(true); var select = t.prepareStatement(selectSQL) ) {
+			select.setLong(1, id);
+			try ( var rs = select.executeQuery() ) {
+				if ( !rs.next() ) return Optional.empty();
+				return Optional.of(new Organizacion(
+					rs.getLong("ID"),
+					rs.getString("RazonSocial"),
+					rs.getLong("UsuarioId")
+				));
+			}
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error getting organizacion", e);
 		}
 	}
 }
