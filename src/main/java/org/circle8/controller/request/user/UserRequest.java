@@ -6,6 +6,7 @@ import org.circle8.controller.request.IRequest;
 import org.circle8.controller.response.TipoUsuarioResponse;
 
 import java.util.Arrays;
+import java.util.List;
 
 @ToString
 public class UserRequest implements IRequest {
@@ -38,9 +39,9 @@ public class UserRequest implements IRequest {
 			validation.add("Si se indica la razon social, el tipo de usuario debe ser ORGANIZACION");
 		if( Strings.isNullOrEmpty(razonSocial) && TipoUsuarioResponse.ORGANIZACION.equals(tipoUsuario) )
 			validation.add("Se debe indicar la razon social si el tipo de usuario es ORGANIZACION");
-		if( organizacionId != null && (!TipoUsuarioResponse.RECICLADOR_URBANO.equals(tipoUsuario) && !TipoUsuarioResponse.ORGANIZACION.equals(tipoUsuario)) )
+		if( organizacionId != null && (tipoUsuario == null || !List.of(TipoUsuarioResponse.RECICLADOR_URBANO, TipoUsuarioResponse.ORGANIZACION).contains(tipoUsuario)) )
 			validation.add("Si se indica la organizacion, el tipo de usuario debe ser RECICLADOR_URBANO u ORGANIZACION");
-		if( organizacionId == null && (!TipoUsuarioResponse.RECICLADOR_URBANO.equals(tipoUsuario) && !TipoUsuarioResponse.ORGANIZACION.equals(tipoUsuario)) )
+		if( organizacionId == null && TipoUsuarioResponse.RECICLADOR_URBANO.equals(tipoUsuario))
 			validation.add("Se debe indicar la organizacion si el tipo de usuario es RECICLADOR_URBANO u ORGANIZACION");
 		if(zonaId != null && !TipoUsuarioResponse.RECICLADOR_URBANO.equals(tipoUsuario))
 			validation.add("Si se indica la zona, el tipo de usuario debe ser RECICLADOR_URBANO");
