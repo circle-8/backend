@@ -170,13 +170,6 @@
             <artifactId>commons-beanutils</artifactId>
             <version>1.9.4</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.exparity/hamcrest-date -->
-        <dependency>
-            <groupId>org.exparity</groupId>
-            <artifactId>hamcrest-date</artifactId>
-            <version>2.0.0</version>
-            <scope>test</scope>
-        </dependency>
 
 
 

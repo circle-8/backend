@@ -77,7 +77,7 @@ public class RecorridoPutTest {
 	}
 
 	@Test
-	void testWithInexistingRecorrido() {
+	void testWithInexistentRecorrido() {
 		String request = """
 			{
 				"fechaRetiro": "2023-08-12",
@@ -92,7 +92,7 @@ public class RecorridoPutTest {
 	}
 
 	@Test
-	void testWithInexistingRecicladorId() {
+	void testWithInexistentRecicladorId() {
 		String request = """
 			{
 				"fechaRetiro": "2023-08-12",

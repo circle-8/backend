@@ -6,7 +6,6 @@ import io.javalin.http.Context;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.circle8.controller.request.recorrido.PostRecorridoRequest;
-import org.circle8.controller.request.recorrido.PuntoRequest;
 import org.circle8.controller.request.recorrido.PutRecorridoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -17,15 +16,13 @@ import org.circle8.controller.response.RecorridoResponse;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.RetiroResponse;
 import org.circle8.controller.response.SuccessResponse;
-import org.circle8.dto.PuntoDto;
 import org.circle8.dto.RecorridoDto;
-import org.circle8.enums.RecorridoEnum;
-import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
 import org.circle8.service.RecorridoService;
+import org.circle8.service.RecorridoService.UpdateEnum;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -130,7 +127,7 @@ public class RecorridoController {
 
 		var dto = RecorridoDto.from(req, zonaId, organizacionId, id);
 		try {
-			return service.putSave(dto).toResponse();
+			return service.update(dto, UpdateEnum.RETIRO).toResponse();
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error saving new recorrido", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -174,7 +171,9 @@ public class RecorridoController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del recorrido debe ser numérico", "");
 		}
 		try {
-			return service.updateDate(id, RecorridoEnum.INICIO).toResponse();
+			val dto = new RecorridoDto();
+			dto.id = id;
+			return service.update(dto, UpdateEnum.INICIO).toResponse();
 		} catch ( ServiceError e ) {
 			log.error("[id:{}, zonaId:{}] error updating recorrido", id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -194,7 +193,9 @@ public class RecorridoController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del recorrido debe ser numérico", "");
 		}
 		try {
-			return service.updateDate(id, RecorridoEnum.FIN).toResponse();
+			val dto = new RecorridoDto();
+			dto.id = id;
+			return service.update(dto, UpdateEnum.FIN).toResponse();
 		} catch ( ServiceError e ) {
 			log.error("[id:{}, zonaId:{}] error updating recorrido", id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());

@@ -11,12 +11,12 @@ import org.circle8.entity.Residuo;
 import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
-import org.circle8.enums.RecorridoEnum;
 import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
+import org.circle8.service.RecorridoService.UpdateEnum;
 import org.circle8.utils.Dates;
 
 import javax.sql.DataSource;
@@ -84,23 +84,27 @@ public class RecorridoDao extends Dao {
 		   AND "ZonaId" = ?
 		""";
 
-	private static final String UPDATE_INICIO = """
-		UPDATE public."Recorrido" AS r
-			SET "FechaInicio" = ?
-			WHERE r."ID" = ?;
-		""";
-
-	private static final String UPDATE_FIN = """
-		UPDATE public."Recorrido" AS r
-			SET "FechaFin" = ?
-			WHERE r."ID" = ?;
-		""";
-
 	private static final String UPDATE = """
 		UPDATE public."Recorrido" AS r
 		SET %s
-		WHERE r."ID" = ?
+		WHERE 1 = 1
+		%s
+		""";
+
+	private static final String WHERE_ID = """
+		AND r."ID" = ?
+		""";
+
+	private static final String WHERE_ZONA_ID = """
 		AND r."ZonaId" = ?;
+		""";
+
+	private static final String SET_FECHA_FIN = """
+		"FechaFin" = ?
+		""";
+
+	private static final String SET_FECHA_INICIO = """
+		"FechaInicio" = ?
 		""";
 
 	private static final String SET_FECHA_RETIRO = """
@@ -280,53 +284,48 @@ public class RecorridoDao extends Dao {
 	}
 
 
-	public void updateDate(Transaction t, long id, RecorridoEnum o) throws NotFoundException, PersistenceException {
-		String updateSql;
-		if(o == RecorridoEnum.FIN)
-			updateSql = UPDATE_FIN;
-		else
-			updateSql = UPDATE_INICIO;
-		try ( var update = t.prepareStatement(updateSql) ) {
-			update.setTimestamp(1, Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
-			update.setLong(2, id);
-
-			if(update.executeUpdate() <= 0){
-				throw new NotFoundException("updating the recorrido failed, no affected rows");
-			}
-
-		} catch (SQLException e) {
-			throw new PersistenceException("error updating recorrido", e);
-		}
-	}
-	public void putSave(Transaction t, Recorrido r) throws PersistenceException, NotFoundException {
-		try (var put = createPut(t, r)){
+	public void update(Transaction t, Recorrido r, UpdateEnum o) throws PersistenceException, NotFoundException {
+		try (var put = createUpdate(t, r, o)){
 			val s = put.toString();
 			if(put.executeUpdate() <= 0){
 				throw new NotFoundException("updating the recorrido failed, no affected rows");
 			}
 		} catch (SQLException e) {
 			if(e.getMessage().contains("Recorrido_RecicladorId_fkey"))
-				throw new PersistenceException("El recicladorId ingresado no existe en la tabla", e);
+				throw new ForeignKeyException("El recicladorId ingresado no existe en la tabla", e);
 			throw new PersistenceException("error updating recorrido", e);
-      }
-   }
+		}
+	}
 
-	private PreparedStatement createPut(Transaction t, Recorrido r) throws PersistenceException, SQLException {
-		val put = new StringBuilder();
+
+	private PreparedStatement createUpdate(Transaction t, Recorrido r, UpdateEnum o) throws PersistenceException, SQLException {
+		val set = new ArrayList<String>();
 		List<Object> parameters = new ArrayList<>();
-		if(r.recicladorId != null){
-			put.append(SET_RECICLADOR);
-			parameters.add(r.recicladorId);
+		String where;
+		if(o == UpdateEnum.RETIRO) {
+			if(r.recicladorId != null){
+				set.add(SET_RECICLADOR);
+				parameters.add(r.recicladorId);
+			}
+			if(r.fechaRetiro != null){
+				set.add(SET_FECHA_RETIRO);
+				parameters.add(r.fechaRetiro);
+			}
+			where = WHERE_ID + WHERE_ZONA_ID;
+			parameters.add(r.id);
+			parameters.add(r.zonaId);
 		}
-		if(r.fechaRetiro != null){
-			if(!put.isEmpty())
-				put.append(", ");
-			put.append(SET_FECHA_RETIRO);
-			parameters.add(r.fechaRetiro);
+		else {
+			if(o == UpdateEnum.FIN)
+				set.add(SET_FECHA_FIN);
+			else
+				set.add(SET_FECHA_INICIO);
+			where = WHERE_ID;
+			parameters.add(Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
+			parameters.add(r.id);
 		}
-		parameters.add(r.id);
-		parameters.add(r.zonaId);
-		val sql = String.format(UPDATE, put);
+		val sets = String.join(", ", set);
+		val sql = String.format(UPDATE, sets, where);
 		var p = t.prepareStatement(sql);
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i + 1, parameters.get(i));

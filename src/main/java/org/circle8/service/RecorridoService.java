@@ -6,7 +6,6 @@ import org.circle8.dao.RecorridoDao;
 import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Retiro;
-import org.circle8.enums.RecorridoEnum;
 import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
@@ -17,6 +16,14 @@ import org.circle8.filter.RecorridoFilter;
 import java.util.List;
 
 public class RecorridoService {
+
+	public enum UpdateEnum {
+
+		INICIO,
+		FIN,
+		RETIRO;
+
+	}
 	private final RecorridoDao dao;
 
 	@Inject
@@ -86,27 +93,18 @@ public class RecorridoService {
 	}
 
 
-	public RecorridoDto updateDate(long id, RecorridoEnum o) throws ServiceException {
+	public RecorridoDto update(RecorridoDto dto, UpdateEnum o) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			dao.updateDate(t, id, o);
-			val updatedRecorrido = dao.get(t, id, RecorridoExpand.EMPTY);
-			return RecorridoDto.from(updatedRecorrido.
-				orElseThrow(() -> new NotFoundException("No existe el recorrido")));
+			val recorrido = dto.toEntity();
+			recorrido.id = dto.id;
+			dao.update(t, recorrido, o);
+			return dao.get(t, dto.id, RecorridoExpand.EMPTY)
+						 .map(RecorridoDto::from)
+						 .orElseThrow(() -> new NotFoundException("No existe el recorrido"));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al actualizar el recorrido", e);
       }
    }
-
-	public RecorridoDto putSave(RecorridoDto dto) throws ServiceException {
-		try (val t = dao.open(true)) {
-			val recorrido = dto.toEntity();
-			recorrido.id = dto.id;
-			dao.putSave(t, recorrido);
-			return RecorridoDto.from(dao.get(t, dto.id, RecorridoExpand.EMPTY).orElseThrow(() -> new NotFoundException("No existe el recorrido")));
-		} catch (PersistenceException e) {
-			throw new ServiceError("Ha ocurrido un error al actualizar el recorrido", e);
-		}
-	}
 
 	public List<RecorridoDto> list(RecorridoFilter f) throws ServiceException {
 		try {
