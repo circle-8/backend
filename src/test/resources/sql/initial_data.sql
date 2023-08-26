@@ -37,11 +37,18 @@ VALUES (
            NULL,
            'CIUDADANO',
            'existing3@email.com'
+       ),(
+           'Organizacion 1',
+           'organizacion1',
+           '$2a$10$vQ35vpn5y4RPXXNm4blxWer6NVn0Pl3GHmSn5XRr2VdGITgpn1j0G', -- 1234
+           NULL,
+           'ORGANIZACION',
+           'organizacion1@email.com'
        );
 
 INSERT INTO public."Ciudadano" ("UsuarioId") VALUES (1),(2),(5);
 
-INSERT INTO public."Organizacion"("RazonSocial", "UsuarioId") VALUES ('Usuario 1 SA', 1),('Usuario 2 SA', 2);
+INSERT INTO public."Organizacion"("RazonSocial", "UsuarioId") VALUES ('Usuario 1 SA', 1),('Usuario 2 SA', 2),('Organizacion SA', 6);
 
 INSERT INTO public."Zona"("OrganizacionId", "Polyline", "Nombre")
 VALUES

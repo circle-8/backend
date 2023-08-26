@@ -44,7 +44,7 @@ public class UserPutTest {
 			.body("password", is(nullValue()))
 			.body("suscripcion", is(not(empty())))
 			;
-	}
+	}	
 	
 	@Test
 	void testPutTransportistaOk() throws Exception {
@@ -114,6 +114,53 @@ public class UserPutTest {
 			;
 	}
 	
+	@Test
+	void testPutOrganizacion() throws Exception {
+		var request = """
+				{
+				  "username": "organizacion1",
+				  "password": "1234",
+				  "nombre": "Organizacion 1",
+				  "email": "organizacion1@email.com",
+				  "tipoUsuario": "ORGANIZACION",
+				  "organizacionId": 3,
+				  "razonSocial": "Organizacion 1 S.A"
+				}""";
+
+		RestAssured.given()
+			.body(request)
+			.put("/user/6")
+			.then()
+			.statusCode(200)
+			.body("id", equalTo(6))
+			.body("username", equalTo("organizacion1"))
+			.body("nombre", equalTo("Organizacion 1"))
+			.body("email", equalTo("organizacion1@email.com"))
+			.body("tipoUsuario", equalTo("ORGANIZACION"))
+			.body("password", is(nullValue()))
+			.body("suscripcion", is(not(empty())))
+			.body("organizacionId", equalTo(3))
+		;
+	}
+	
+	@Test
+	void testNotFoundUser() {
+		var request = """
+				{
+				  "username": "nuevo-usuario-1",
+				  "password": "1234",
+				  "nombre": "Nuevo Usuario 1",
+				  "email": "nuevo@email.com",
+				  "tipoUsuario": "CIUDADANO"
+				}""";
+		
+		RestAssured.given()
+		.body(request)
+		.put("/user/0")
+		.then()
+		.statusCode(400)
+		;
+	}	
 	
 	@Test
 	void testExistUserName() throws Exception {
@@ -239,7 +286,7 @@ public class UserPutTest {
 			.body(request)
 			.put("/user/1")
 			.then()
-			.statusCode(500)
+			.statusCode(400)
 		;
 	}
 	
