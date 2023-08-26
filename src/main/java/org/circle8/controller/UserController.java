@@ -31,7 +31,6 @@ import java.util.List;
 @Singleton
 @Slf4j
 public class UserController {
-
 	private static final UserResponse mock = UserResponse.builder()
 		.id(1)
 		.username("username")

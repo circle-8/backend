@@ -16,18 +16,18 @@ public class OrganizacionDto {
 		o.usuarioId = entity.usuarioId;
 		return o;
 	}
-	
+
 	public OrganizacionResponse toResponse() {
 		var org = new OrganizacionResponse();
 		org.id = this.id;
 		org.razonSocial = this.razonSocial;
 		org.usuarioId = this.usuarioId;
-		org.usuarioUri = this.usuarioId != null ? "/user/"+this.usuarioId : null;		
+		org.usuarioUri = this.usuarioId != null ? "/user/"+this.usuarioId : null;
 		return org;
 	}
-	
+
 	public Organizacion toEntity() {
 		return new Organizacion(id, razonSocial, usuarioId);
 	}
-	
+
 }

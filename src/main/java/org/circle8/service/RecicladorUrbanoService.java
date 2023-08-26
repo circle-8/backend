@@ -18,10 +18,11 @@ public class RecicladorUrbanoService {
 		this.dao = dao;
 	}
 
-	public void save(Transaction t, User u) throws ServiceException {
+	public User save(Transaction t, User u) throws ServiceException {
+		// TODO: esto deberia devolver un RecicladorUrbano :(
 		try {
-			var id = dao.save(t, u);
-			u.id = id;
+			u.recicladorUrbanoId = dao.save(t, u);
+			return u;
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar el reciclador", e);
 		}

@@ -18,4 +18,10 @@ public class PlanDto {
 			.id(id)
 			.build();
 	}
+
+    public Plan toEntity() {
+		return Plan.builder()
+			.id(id)
+			.build();
+    }
 }

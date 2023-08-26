@@ -1,21 +1,21 @@
 package org.circle8.service;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import lombok.val;
-
 import org.circle8.dao.Transaction;
 import org.circle8.dao.UserDao;
-import org.circle8.dto.SuscripcionDto;
 import org.circle8.dto.TipoUsuario;
 import org.circle8.dto.UserDto;
+import org.circle8.entity.Organizacion;
 import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import lombok.val;
 
 @Singleton
 public class UserService {
@@ -25,6 +25,7 @@ public class UserService {
 	private final CiudadanoService ciudadano;
 	private final RecicladorUrbanoService reciclador;
 	private final TransportistaService transportista;
+	private final OrganizacionService organizacion;
 
 	@Inject
 	public UserService(
@@ -33,7 +34,8 @@ public class UserService {
 		SuscripcionService suscripcion,
 		CiudadanoService ciudadano,
 		RecicladorUrbanoService reciclador,
-		TransportistaService transportista
+		TransportistaService transportista,
+		OrganizacionService organizacion
 	) {
 		this.dao = dao;
 		this.crypt = crypt;
@@ -41,6 +43,7 @@ public class UserService {
 		this.ciudadano = ciudadano;
 		this.reciclador = reciclador;
 		this.transportista = transportista;
+		this.organizacion = organizacion;
 	}
 
 	public UserDto login(String username, String password) throws ServiceException {
@@ -66,6 +69,8 @@ public class UserService {
 		user.hashedPassword = crypt.hash(password);
 
 		try ( var t = dao.open() ) {
+			user.suscripcion = suscripcion.subscribe(t, user);
+
 			user = dao.save(t, user);
 			dto.id = user.id;
 
@@ -76,12 +81,14 @@ public class UserService {
 					transportista.save(t, c.usuarioId);
 				}
 				case RECICLADOR_URBANO -> reciclador.save(t, user);
-				case ORGANIZACION -> throw new IllegalArgumentException("ORGANIZACION todavía no definido");
+				case ORGANIZACION -> {
+					var o = new Organizacion(user.id);
+					o.razonSocial = dto.razonSocial;
+					organizacion.save(t, o);
+					user.organizacionId = o.id;
+				}
 				default -> throw new IllegalStateException("hay un TipoUsuario no contemplado al guardar");
 			}
-
-			var s = suscripcion.subscribe(t, user);
-			dto.suscripcion = SuscripcionDto.from(s);
 
 			t.commit();
 		} catch ( DuplicatedEntry e ) {
