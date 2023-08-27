@@ -1,10 +1,7 @@
 package org.circle8.controller;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+import java.util.List;
+
 import org.circle8.controller.request.transaccion.TransaccionPostRequest;
 import org.circle8.controller.request.transaccion.TransaccionPutRequest;
 import org.circle8.controller.request.transaccion.TransaccionesRequest;
@@ -13,7 +10,6 @@ import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.SuccessResponse;
-import org.circle8.controller.response.TransaccionResponse;
 import org.circle8.dto.TransaccionDto;
 import org.circle8.exception.BadRequestException;
 import org.circle8.exception.NotFoundException;
@@ -22,10 +18,13 @@ import org.circle8.exception.ServiceException;
 import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
 import org.circle8.service.TransaccionService;
-import org.circle8.utils.Dates;
 
-import java.time.ZonedDateTime;
-import java.util.List;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @Slf4j
@@ -40,13 +39,6 @@ public class TransaccionController {
 	public TransaccionController(TransaccionService service) {
 		this.service = service;
 	}
-
-	private final TransaccionResponse mock = TransaccionResponse.builder()
-		.id(1L)
-		.fechaCreacion(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
-		.puntoReciclajeUri("/reciclador/1/punto_reciclaje/1")
-		.puntoReciclajeId(1L)
-		.build();
 
 	/**
 	 * GET /transaccion/{id}
@@ -198,7 +190,7 @@ public class TransaccionController {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch (NotFoundException e) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
-      } catch (BadRequestException e) {
+		} catch (BadRequestException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "La Transaccion ya posee un Transporte", "");
 		}
    }
@@ -230,9 +222,22 @@ public class TransaccionController {
 	 * POST /transaccion/{id}/solicitud_transporte
 	 */
 	public ApiResponse solicitudTransporte(Context ctx) {
-		return mock.toBuilder()
-			.id(Long.parseLong(ctx.pathParam("id")))
-			.build();
+		final Long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id debe ser numérico", "");
+		}
+		try {
+			return this.service.createTransporte(id).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error creating transporte from transaccion: ", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}catch (BadRequestException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "La Transaccion ya posee un Transporte", "");
+		}
 	}
 
 	/**

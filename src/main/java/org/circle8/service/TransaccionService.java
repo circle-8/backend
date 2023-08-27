@@ -1,9 +1,18 @@
 package org.circle8.service;
 
-import com.google.inject.Inject;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.configuration2.Configuration;
 import org.circle8.dao.TransaccionDao;
+import org.circle8.dao.TransporteDao;
+import org.circle8.dto.PuntoResiduoDto;
+import org.circle8.dto.ResiduoDto;
 import org.circle8.dto.TransaccionDto;
+import org.circle8.entity.Punto;
 import org.circle8.entity.Residuo;
+import org.circle8.entity.Transporte;
 import org.circle8.exception.BadRequestException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
@@ -12,16 +21,22 @@ import org.circle8.exception.ServiceException;
 import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.inject.Inject;
+
+import io.jsonwebtoken.lang.Collections;
+import lombok.val;
 
 public class TransaccionService {
 
 	private final TransaccionDao dao;
+	private final TransporteDao transporteDao;
+	private final Configuration config;
 
 	@Inject
-	public TransaccionService(TransaccionDao dao) {
+	public TransaccionService(TransaccionDao dao,TransporteDao transporteDao,Configuration config) {
 		this.dao = dao;
+		this.transporteDao = transporteDao;
+		this.config = config;
 	}
 
 	public TransaccionDto get(Long transaccionId, TransaccionExpand expand) throws ServiceException {
@@ -49,9 +64,7 @@ public class TransaccionService {
 				dao.saveResiduo(t, r.id, dto.id);
 			}
 			t.commit();
-			List<String> expandList = new ArrayList<>();
-			expandList.add("residuos");
-			return this.dao.get(t, dto.id, new TransaccionExpand(expandList)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion que se buscaba actualizar"));
+			return this.dao.get(t, dto.id, new TransaccionExpand(false,false,true)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion que se buscaba actualizar"));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar la transaccion", e);
 		}
@@ -62,9 +75,7 @@ public class TransaccionService {
 			TransaccionDto dto = dao.get(t, id, new TransaccionExpand(new ArrayList<>())).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 			dao.saveResiduo(t, residuoId, id);
 			t.commit();
-			List<String> expandList = new ArrayList<>();
-			expandList.add("residuos");
-			return this.dao.get(t, dto.id, new TransaccionExpand(expandList)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+			return this.dao.get(t, dto.id, new TransaccionExpand(false,false,true)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al tratar de agregar un residuo a la transaccion", e);
 		}
@@ -110,6 +121,73 @@ public class TransaccionService {
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al intentar remover el transporte de la transaccion", e);
 		}
+	}
+	
+	public TransaccionDto createTransporte(Long id) throws NotFoundException, ServiceError, BadRequestException {
+		try (var t = dao.open()) {			
+			var transaccion = dao.get(id, new TransaccionExpand(false,false,true)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+			if(transaccion.transporteId != null && transaccion.transporteId != 0L)
+				throw new BadRequestException("La transaccion ya posee un transporte");
+			var transporte = Transporte.builder().precioSugerido(getPrecioSugerido(transaccion)).build();
+			this.transporteDao.save(t, transporte);
+			transaccion.transporteId = transporte.id;
+			dao.setTransporte(t, id, transporte.id);
+//			t.commit();
+			return transaccion;
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al intentar remover el transporte de la transaccion", e);
+		}
+	}
+	
+	private BigDecimal getPrecioSugerido(TransaccionDto transaccion) {
+		var precio = BigDecimal.ZERO;
+		if(!Collections.isEmpty(transaccion.residuos)) {
+			var cantidadPuntos = new BigDecimal(transaccion.residuos.size());
+			var valorPuntos = new BigDecimal(config.getLong("VALOR_POR_PUNTOS"));
+			var distancia = getDistancia(transaccion.residuos);
+			var valoDistancia = new BigDecimal(config.getLong("VALOR_POR_KM"));
+			var totalPuntos = cantidadPuntos.multiply(valorPuntos);
+			var totalDistancia = distancia.multiply(valoDistancia);			
+			precio = totalPuntos.add(totalDistancia);
+		}		
+		return precio;
+	}
+	
+	private BigDecimal getDistancia(List<ResiduoDto> residuos) {
+		var distancia = BigDecimal.ZERO;
+		if(!residuos.isEmpty()) {
+			sortResiduos(residuos.get(0).puntoResiduo, residuos);			
+		}
+		
+		return distancia;
+	}
+	
+	private void sortResiduos(PuntoResiduoDto puntoResiduo, List<ResiduoDto> points) {
+		var puntoInicial = new Punto(puntoResiduo.latitud, puntoResiduo.longitud);
+		points.sort((a, b) -> {
+			val d1 = calculateDistance(puntoInicial, new Punto(a.puntoResiduo.latitud, a.puntoResiduo.longitud));
+			val d2 = calculateDistance(puntoInicial, new Punto(b.puntoResiduo.latitud, b.puntoResiduo.longitud));
+			return Double.compare(d1, d2);
+		});
+	}
+
+	private double calculateDistance(Punto pointA, Punto pointB) {
+		val earthRadiusKm = 6371.0;
+		val lat1Rad = Math.toRadians(pointA.latitud);
+		val lon1Rad = Math.toRadians(pointA.longitud);
+		val lat2Rad = Math.toRadians(pointB.latitud);
+		val lon2Rad = Math.toRadians(pointB.longitud);
+
+		val dLat = lat2Rad - lat1Rad;
+		val dLon = lon2Rad - lon1Rad;
+
+		val a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+			+ Math.cos(lat1Rad) * Math.cos(lat2Rad)
+			* Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+		val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+		return earthRadiusKm * c;
 	}
 
 }
