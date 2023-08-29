@@ -19,7 +19,7 @@ public class TransportistaService {
 		this.dao = dao;
 	}
 
-	public Transportista save(Transaction t, Long userId) throws ServiceException {
+	Transportista save(Transaction t, Long userId) throws ServiceException {
 		var tr = Transportista.builder().usuarioId(userId).build();
 		try {
 			return dao.save(t, tr);
@@ -28,7 +28,7 @@ public class TransportistaService {
 		}
 	}
 	
-	public Optional<Transportista> getByUsuarioId(Transaction t, Long userId) throws PersistenceException {
+	Optional<Transportista> getByUsuarioId(Transaction t, Long userId) throws PersistenceException {
 		return this.dao.get(t, null, userId);
 	}
 }

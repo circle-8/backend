@@ -73,7 +73,7 @@ public class OrganizacionDao extends Dao {
 		}
 	}
 	
-	public void put(Transaction t, User u) throws PersistenceException, NotFoundException {
+	public void update(Transaction t, User u) throws PersistenceException, NotFoundException {
 		try ( var put = t.prepareStatement(UPDATE) ) {
 			put.setString(1, u.razonSocial);
 			put.setLong(2, u.organizacionId);

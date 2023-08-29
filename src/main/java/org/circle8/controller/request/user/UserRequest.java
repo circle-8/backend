@@ -39,7 +39,7 @@ public class UserRequest implements IRequest {
 			validation.add("Si se indica la razon social, el tipo de usuario debe ser ORGANIZACION");
 		if( Strings.isNullOrEmpty(razonSocial) && TipoUsuarioResponse.ORGANIZACION.equals(tipoUsuario) )
 			validation.add("Se debe indicar la razon social si el tipo de usuario es ORGANIZACION");
-		if( organizacionId != null && (tipoUsuario == null || !List.of(TipoUsuarioResponse.RECICLADOR_URBANO, TipoUsuarioResponse.ORGANIZACION).contains(tipoUsuario)))
+		if( organizacionId != null && (tipoUsuario == null || !List.of(TipoUsuarioResponse.RECICLADOR_URBANO, TipoUsuarioResponse.ORGANIZACION).contains(tipoUsuario)) )
 			validation.add("Si se indica la organizacion, el tipo de usuario debe ser RECICLADOR_URBANO u ORGANIZACION");
 		if( organizacionId == null && TipoUsuarioResponse.RECICLADOR_URBANO.equals(tipoUsuario))
 			validation.add("Se debe indicar la organizacion si el tipo de usuario es RECICLADOR_URBANO u ORGANIZACION");

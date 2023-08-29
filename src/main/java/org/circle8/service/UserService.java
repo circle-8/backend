@@ -109,8 +109,8 @@ public class UserService {
 			if(!TipoUsuario.CIUDADANO.equals(user.tipo)) {
 				switch ( user.tipo ) {
 					case TRANSPORTISTA -> updateTransportista(t, user);
-					case RECICLADOR_URBANO -> reciclador.put(t, user);
-					case ORGANIZACION -> organizacion.put(t, user);
+					case RECICLADOR_URBANO -> updateReciclador(t, user);
+					case ORGANIZACION -> organizacion.update(t, user);
 					default -> throw new IllegalStateException("hay un TipoUsuario no contemplado al actualizar");
 				}
 			}			
@@ -130,5 +130,11 @@ public class UserService {
 			transportista.save(t, user.id);
 		}
 		//TODO: ver caso en el que era transportista y ya no
+	}
+	
+	private void updateReciclador(Transaction t, User user) throws NotFoundException, ServiceError {
+		if(user.zonaId != null) {
+			reciclador.update(t, user);
+		}
 	}
 }

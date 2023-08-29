@@ -8,18 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.circle8.entity.Punto;
 import org.circle8.entity.Transportista;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
-
-import com.google.common.base.Strings;
-import com.google.gson.Gson;
-
-import lombok.val;
+import org.circle8.utils.PuntoUtils;
 
 public class TransportistaDao {
-	private static final Gson GSON = new Gson();
 	
 	private static final String INSERT = """
 			INSERT INTO "Transportista"("UsuarioId")
@@ -109,18 +103,7 @@ public class TransportistaDao {
 		var t = new Transportista();
 		t.id = rs.getLong("ID");
 		t.usuarioId = rs.getLong("UsuarioId");
-		t.polyline = getPolyline(rs.getString("Polyline"));		
+		t.polyline = PuntoUtils.getPolyline(rs.getString("Polyline"));		
 		return t;
-	}
-	
-	private List<Punto> getPolyline(String poly) {
-		val l = new ArrayList<Punto>();
-		if(!Strings.isNullOrEmpty(poly)) {
-			float[][] list = GSON.fromJson(poly, float[][].class);
-			for (float[] element : list) {
-				l.add(new Punto(element[0], element[1]));
-			}
-		}		
-		return l;
-	}
+	}	
 }

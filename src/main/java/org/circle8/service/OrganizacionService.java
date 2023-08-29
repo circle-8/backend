@@ -34,9 +34,9 @@ public class OrganizacionService {
 		}
 	}
 	
-	public void put(Transaction t, User u) throws NotFoundException, ServiceError {
+	public void update(Transaction t, User u) throws NotFoundException, ServiceError {
 		try {
-			dao.put(t, u);
+			dao.update(t, u);
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar la organizacion", e);
 		}

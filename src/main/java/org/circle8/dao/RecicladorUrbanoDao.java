@@ -1,15 +1,15 @@
 package org.circle8.dao;
 
-import lombok.val;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+
 import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import lombok.val;
 
 public class RecicladorUrbanoDao {
 	private static final String INSERT = """
@@ -59,13 +59,10 @@ public class RecicladorUrbanoDao {
 		}
 	}
 	
-	public void put(Transaction t, User u) throws PersistenceException, NotFoundException {
+	public void update(Transaction t, User u) throws PersistenceException, NotFoundException {
 		try ( var put = t.prepareStatement(UPDATE) ) {
 			put.setLong(1, u.organizacionId);
-			if(u.zonaId != null)			
-				put.setLong(2, u.zonaId);
-			else
-				put.setNull(2, Types.BIGINT);
+			put.setLong(2, u.zonaId);
 			put.setLong(3, u.id);
 			int puts = put.executeUpdate();
 			if ( puts == 0 )

@@ -26,6 +26,7 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 import org.circle8.utils.Dates;
+import org.circle8.utils.PuntoUtils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -461,7 +462,7 @@ public class ZonaDao extends Dao {
 		var z = new Zona();
 		z.id = rs.getLong("ID");
 		z.nombre = rs.getString("Nombre");
-		z.polyline = getPolyline(rs.getString("Polyline"));
+		z.polyline = PuntoUtils.getPolyline(rs.getString("Polyline"));
 		z.organizacionId = rs.getLong("OrganizacionId");
 		z.organizacion = buildOrganizacion(rs, x.organizacion);
 		z.tipoResiduo = new ArrayList<>();
@@ -470,14 +471,6 @@ public class ZonaDao extends Dao {
 		return z;
 	}
 
-	public List<Punto> getPolyline(String poly) {
-		val l = new ArrayList<Punto>();
-		float[][] list = GSON.fromJson(poly, float[][].class);
-		for (float[] element : list) {
-			l.add(new Punto(element[0], element[1]));
-		}
-		return l;
-	}
 	
 	private String getPolyline(List<Punto> puntos) {
 		JsonArray array = new JsonArray();

@@ -18,7 +18,7 @@ public class RecicladorUrbanoService {
 		this.dao = dao;
 	}
 
-	public User save(Transaction t, User u) throws ServiceException {
+	User save(Transaction t, User u) throws ServiceException {
 		// TODO: esto deberia devolver un RecicladorUrbano :(
 		try {
 			u.recicladorUrbanoId = dao.save(t, u);
@@ -28,9 +28,9 @@ public class RecicladorUrbanoService {
 		}
 	}
 	
-	public void put(Transaction t, User u) throws NotFoundException, ServiceError {
+	void update(Transaction t, User u) throws NotFoundException, ServiceError {
 		try {
-			dao.put(t, u);
+			dao.update(t, u);
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al guardar el reciclador", e);
 		}

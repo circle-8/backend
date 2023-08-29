@@ -158,7 +158,7 @@ public class UserPutTest {
 		.body(request)
 		.put("/user/0")
 		.then()
-		.statusCode(400)
+		.statusCode(404)
 		;
 	}	
 	
