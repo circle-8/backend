@@ -1,13 +1,14 @@
 package org.circle8.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.configuration2.Configuration;
+import org.circle8.dao.PuntoResiduoDao;
 import org.circle8.dao.TransaccionDao;
 import org.circle8.dao.TransporteDao;
-import org.circle8.dto.PuntoResiduoDto;
 import org.circle8.dto.ResiduoDto;
 import org.circle8.dto.TransaccionDto;
 import org.circle8.entity.Punto;
@@ -18,6 +19,7 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
 
@@ -30,12 +32,17 @@ public class TransaccionService {
 
 	private final TransaccionDao dao;
 	private final TransporteDao transporteDao;
+	private final PuntoResiduoDao puntoResiduoDao;
 	private final Configuration config;
 
 	@Inject
-	public TransaccionService(TransaccionDao dao,TransporteDao transporteDao,Configuration config) {
+	public TransaccionService(TransaccionDao dao, 
+			TransporteDao transporteDao,
+			PuntoResiduoDao puntoResiduoDao,
+			Configuration config) {
 		this.dao = dao;
 		this.transporteDao = transporteDao;
+		this.puntoResiduoDao = puntoResiduoDao;
 		this.config = config;
 	}
 
@@ -132,14 +139,14 @@ public class TransaccionService {
 			this.transporteDao.save(t, transporte);
 			transaccion.transporteId = transporte.id;
 			dao.setTransporte(t, id, transporte.id);
-//			t.commit();
+			t.commit();
 			return transaccion;
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al intentar remover el transporte de la transaccion", e);
 		}
 	}
 	
-	private BigDecimal getPrecioSugerido(TransaccionDto transaccion) {
+	private BigDecimal getPrecioSugerido(TransaccionDto transaccion) throws PersistenceException {
 		var precio = BigDecimal.ZERO;
 		if(!Collections.isEmpty(transaccion.residuos)) {
 			var cantidadPuntos = new BigDecimal(transaccion.residuos.size());
@@ -153,22 +160,35 @@ public class TransaccionService {
 		return precio;
 	}
 	
-	private BigDecimal getDistancia(TransaccionDto transaccion) {
+	private BigDecimal getDistancia(TransaccionDto transaccion) throws PersistenceException {
 		var distancia = BigDecimal.ZERO;
 		if(!transaccion.residuos.isEmpty()) {
-//			sortResiduos(residuos.get(0).puntoResiduo, residuos);			
+			var puntos = new ArrayList<Punto>();
+			for(ResiduoDto residuo : transaccion.residuos) {
+				var punto = puntoResiduoDao.get(null, residuo.puntoResiduo.id, PuntoResiduoExpand.EMPTY);
+				if(punto.isPresent()) 
+					puntos.add(new Punto(punto.get().latitud.floatValue(), punto.get().longitud.floatValue()));
+			}
+			sortPuntos(puntos.get(0), puntos);
+			
+			if(transaccion.puntoReciclaje != null)
+				puntos.add(new Punto((float) transaccion.puntoReciclaje.latitud, (float) transaccion.puntoReciclaje.longitud));
+						
+			for (int i = 0; i < (puntos.size()-1); i++) {
+				var dist = calculateDistance(puntos.get(i), puntos.get(i+1));
+				distancia = distancia.add(new BigDecimal(dist));
+			}
 		}		
 		return distancia;
 	}
 	
-//	private void sortResiduos(PuntoResiduoDto puntoResiduo, List<ResiduoDto> points) {
-//		var puntoInicial = new Punto(puntoResiduo.latitud, puntoResiduo.longitud);
-//		points.sort((a, b) -> {
-//			val d1 = calculateDistance(puntoInicial, new Punto(a.puntoResiduo.latitud, a.puntoResiduo.longitud));
-//			val d2 = calculateDistance(puntoInicial, new Punto(b.puntoResiduo.latitud, b.puntoResiduo.longitud));
-//			return Double.compare(d1, d2);
-//		});
-//	}
+	private void sortPuntos(Punto puntoInicial, List<Punto> points) {
+		points.sort((a, b) -> {
+			val d1 = calculateDistance(puntoInicial, a);
+			val d2 = calculateDistance(puntoInicial, b);
+			return Double.compare(d1, d2);
+		});
+	}
 
 	private double calculateDistance(Punto pointA, Punto pointB) {
 		val earthRadiusKm = 6371.0;
