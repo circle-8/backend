@@ -195,7 +195,7 @@ public class UserController {
 		try {
 			dto = service.put(dto, req.password);
 		} catch ( ServiceError e ) {
-			log.error("[Request:{}] error saving new user", req, e);
+			log.error("[Request:{}, id={}] error updating user", req, id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
