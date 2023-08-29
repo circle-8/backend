@@ -198,7 +198,7 @@ public class UserController {
 			log.error("[Request:{}, id={}] error updating user", req, id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+			return new ErrorResponse(e);
 		}
 
 		return dto.toResponse();
