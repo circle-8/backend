@@ -1,15 +1,13 @@
 package org.circle8.integration.recorrido;
 
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
+import java.time.ZonedDateTime;
 import io.restassured.RestAssured;
 
 import org.circle8.ApiTestExtension;
 import org.circle8.utils.Dates;
-import org.exparity.hamcrest.date.DateMatchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -23,7 +21,8 @@ public class RecorridoPostFinTest {
 		val response =RestAssured.given()
 					  .post("/recorrido/1/fin")
 					  .then()
-					  .statusCode(200);
+					  .statusCode(200)
+					  .body("fechaFin", not(nullValue()));
 	}
 
 	@Test

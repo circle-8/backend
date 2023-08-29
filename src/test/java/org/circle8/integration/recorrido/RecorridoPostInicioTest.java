@@ -1,6 +1,7 @@
 package org.circle8.integration.recorrido;
 
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 import io.restassured.RestAssured;
 
@@ -16,7 +17,8 @@ public class RecorridoPostInicioTest {
 		RestAssured.given()
 					  .post("/recorrido/1/inicio")
 					  .then()
-					  .statusCode(200);
+					  .statusCode(200)
+					  .body("fechaInicio", not(nullValue()));
 		;
 	}
 
