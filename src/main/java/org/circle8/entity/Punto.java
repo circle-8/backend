@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class Punto {
-	public double latitud;
-	public double longitud;
+	public float latitud;
+	public float longitud;
 }

@@ -125,7 +125,7 @@ public class TransaccionService {
 	
 	public TransaccionDto createTransporte(Long id) throws NotFoundException, ServiceError, BadRequestException {
 		try (var t = dao.open()) {			
-			var transaccion = dao.get(id, new TransaccionExpand(false,false,true)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+			var transaccion = dao.get(id, new TransaccionExpand(true,false,true)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 			if(transaccion.transporteId != null && transaccion.transporteId != 0L)
 				throw new BadRequestException("La transaccion ya posee un transporte");
 			var transporte = Transporte.builder().precioSugerido(getPrecioSugerido(transaccion)).build();
@@ -144,7 +144,7 @@ public class TransaccionService {
 		if(!Collections.isEmpty(transaccion.residuos)) {
 			var cantidadPuntos = new BigDecimal(transaccion.residuos.size());
 			var valorPuntos = new BigDecimal(config.getLong("VALOR_POR_PUNTOS"));
-			var distancia = getDistancia(transaccion.residuos);
+			var distancia = getDistancia(transaccion);
 			var valoDistancia = new BigDecimal(config.getLong("VALOR_POR_KM"));
 			var totalPuntos = cantidadPuntos.multiply(valorPuntos);
 			var totalDistancia = distancia.multiply(valoDistancia);			
@@ -153,23 +153,22 @@ public class TransaccionService {
 		return precio;
 	}
 	
-	private BigDecimal getDistancia(List<ResiduoDto> residuos) {
+	private BigDecimal getDistancia(TransaccionDto transaccion) {
 		var distancia = BigDecimal.ZERO;
-		if(!residuos.isEmpty()) {
-			sortResiduos(residuos.get(0).puntoResiduo, residuos);			
-		}
-		
+		if(!transaccion.residuos.isEmpty()) {
+//			sortResiduos(residuos.get(0).puntoResiduo, residuos);			
+		}		
 		return distancia;
 	}
 	
-	private void sortResiduos(PuntoResiduoDto puntoResiduo, List<ResiduoDto> points) {
-		var puntoInicial = new Punto(puntoResiduo.latitud, puntoResiduo.longitud);
-		points.sort((a, b) -> {
-			val d1 = calculateDistance(puntoInicial, new Punto(a.puntoResiduo.latitud, a.puntoResiduo.longitud));
-			val d2 = calculateDistance(puntoInicial, new Punto(b.puntoResiduo.latitud, b.puntoResiduo.longitud));
-			return Double.compare(d1, d2);
-		});
-	}
+//	private void sortResiduos(PuntoResiduoDto puntoResiduo, List<ResiduoDto> points) {
+//		var puntoInicial = new Punto(puntoResiduo.latitud, puntoResiduo.longitud);
+//		points.sort((a, b) -> {
+//			val d1 = calculateDistance(puntoInicial, new Punto(a.puntoResiduo.latitud, a.puntoResiduo.longitud));
+//			val d2 = calculateDistance(puntoInicial, new Punto(b.puntoResiduo.latitud, b.puntoResiduo.longitud));
+//			return Double.compare(d1, d2);
+//		});
+//	}
 
 	private double calculateDistance(Punto pointA, Punto pointB) {
 		val earthRadiusKm = 6371.0;
