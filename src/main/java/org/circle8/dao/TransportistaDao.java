@@ -8,12 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.sql.DataSource;
+
 import org.circle8.entity.Transportista;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.PersistenceException;
 import org.circle8.utils.PuntoUtils;
 
-public class TransportistaDao {
+import com.google.inject.Inject;
+
+public class TransportistaDao extends Dao {
 	
 	private static final String INSERT = """
 			INSERT INTO "Transportista"("UsuarioId")
@@ -38,6 +42,12 @@ public class TransportistaDao {
 	private static final String WHERE_USUARIO = """
 			AND t."UsuarioId" = ?
 			""";
+	
+	@Inject
+	TransportistaDao(DataSource ds) {
+		super(ds);
+	}
+
 	
 	public Transportista save(Transaction t, Transportista tr) throws PersistenceException {
 		try ( var insert = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS) ) {
@@ -83,13 +93,11 @@ public class TransportistaDao {
 		List<Object> parameters = new ArrayList<>();
 
 		if (id != null) {
-			b.append(WHERE_ID);
-			parameters.add(id);
+			appendCondition(id, WHERE_ID, b, parameters);
 		}
 
 		if (usuarioId != null) {
-			b.append(WHERE_USUARIO);
-			parameters.add(usuarioId);
+			appendCondition(usuarioId, WHERE_USUARIO, b, parameters);
 		}
 
 		var p = t.prepareStatement(b.toString());
