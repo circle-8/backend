@@ -3,6 +3,7 @@ package org.circle8.integration.user;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.sql.DataSource;
@@ -30,6 +31,23 @@ public class UserPutTest {
 			.then()
 			.statusCode(200)
 			.body("username", equalTo("nuevo-usuario-1"))
+			;
+	}	
+	
+	@Test
+	void testExistingUsername() throws Exception {
+		var request = """
+				{
+				  "username": "username2"
+				}""";
+
+		RestAssured.given()
+			.body(request)
+			.put("/user/1")
+			.then()
+			.statusCode(400)
+			.body("code", equalTo("BAD_REQUEST"))
+			.body("message", stringContainsInOrder("usuario", "registrado"))
 			;
 	}	
 	
@@ -64,19 +82,39 @@ public class UserPutTest {
 			.body("email", is(nullValue()))
 			;
 		
-//		var checkEmailSQL = """
-//				SELECT
-//				u."Email"
-//			  FROM "Usuario" AS u
-//			 WHERE u."ID" = ?
-//			""";
-//		try ( var conn = ds.getConnection();
-//				var ps = conn.prepareStatement(checkEmailSQL) ) {
-//			ps.setLong(1, 1);
-//			assertTrue(ps.executeQuery().next());
-//			assertTrue(rs.getString("NombreApellido"));
-//		}
+		var checkEmailSQL = """
+				SELECT
+				u."Email"
+			  FROM "Usuario" AS u
+			 WHERE u."ID" = ?
+			""";
+		try ( var conn = ds.getConnection();
+				var ps = conn.prepareStatement(checkEmailSQL) ) {
+			ps.setLong(1, 1);
+			var rs = ps.executeQuery();
+			assertTrue(rs.next());
+			assertTrue(rs.getString("Email").equals("nuevo@email.com"));
+		}
 	}	
+	
+	
+	@Test
+	void testExistingEmail() throws Exception {
+		var request = """
+				{
+				  "email": "existing2@email.com"
+				}""";
+
+		RestAssured.given()
+			.body(request)
+			.put("/user/1")
+			.then()
+			.statusCode(400)
+			.body("code", equalTo("BAD_REQUEST"))
+			.body("message", stringContainsInOrder("email", "registrado"))
+			;
+	}	
+	
 	
 	@Test
 	void testPutTransportistaOk() throws Exception {
@@ -110,7 +148,7 @@ public class UserPutTest {
 	void testPutOrganizacionOk() throws Exception {
 		var request = """
 				{
-				  "organizacionId": 1
+				  "organizacionId": 2
 				}""";
 
 		RestAssured.given()
@@ -118,7 +156,7 @@ public class UserPutTest {
 			.put("/user/3")
 			.then()
 			.statusCode(200)
-			.body("organizacionId", equalTo(1))
+			.body("organizacionId", equalTo(2))
 			;
 	}	
 	
@@ -152,6 +190,20 @@ public class UserPutTest {
 			.then()
 			.statusCode(200)
 			;
+		
+		var checkRazonSocialSQL = """
+				SELECT
+				o."RazonSocial"
+			  FROM "Organizacion" AS o
+			 WHERE o."UsuarioId" = ?
+			""";
+		try ( var conn = ds.getConnection();
+				var ps = conn.prepareStatement(checkRazonSocialSQL) ) {
+			ps.setLong(1, 6);
+			var rs = ps.executeQuery();
+			assertTrue(rs.next());
+			assertTrue(rs.getString("RazonSocial").equals("Organizacion 1 S.A"));
+		}
 	}	
 	
 
