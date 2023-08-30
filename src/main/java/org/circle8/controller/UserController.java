@@ -68,7 +68,20 @@ public class UserController {
 	 * GET /user/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del usuario debe ser numérico", "");
+		}
+		
+		try {
+			return service.get(id).toResponse();
+		} catch ( ServiceError e ) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

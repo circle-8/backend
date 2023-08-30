@@ -49,7 +49,7 @@ public class UserService {
 
 	public UserDto login(String username, String password) throws ServiceException {
 		try {
-			var u = this.dao.get(username).orElseThrow(() -> new NotFoundException("El usuario y/o contraseña son incorrectos"));
+			var u = this.dao.get(username,null).orElseThrow(() -> new NotFoundException("El usuario y/o contraseña son incorrectos"));
 			if ( !crypt.check(password, u.hashedPassword) )
 				throw new NotFoundException("El usuario y/o contraseña son incorrectos");
 
@@ -57,6 +57,15 @@ public class UserService {
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al obtener el usuario", e);
 		}
+	}
+	
+	public UserDto get(Long id) throws NotFoundException, ServiceError {
+		try {
+			var u = this.dao.get(null,id).orElseThrow(() -> new NotFoundException("No existe el usuario con id " + id));
+			return UserDto.from(u);
+		} catch (Exception e) {
+			throw new ServiceError("Ha ocurrido un error al obtener el usuario", e);
+		}		
 	}
 
 	/**
@@ -112,7 +121,7 @@ public class UserService {
 			updateReciclador(t, user);
 			updateOrganizacion(t, user);
 			t.commit();
-			var u = this.dao.getById(id).orElseThrow(() -> new NotFoundException("No existe el usuario con id " + id));
+			var u = this.dao.get(null,id).orElseThrow(() -> new NotFoundException("No existe el usuario con id " + id));
 			return UserDto.from(u);
 		} catch ( DuplicatedEntry e ) {
 			throw new ServiceException("El usuario y/o email ya se encuentran registrados", e);

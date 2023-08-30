@@ -36,16 +36,17 @@ public class UserDao extends Dao {
 		     FROM "Usuario" u
 		LEFT JOIN "Ciudadano" c on c."UsuarioId" = u."ID"
 		LEFT JOIN "RecicladorUrbano" r on r."UsuarioId" = u."ID"
-		    WHERE "Username" = ?
+		    WHERE 1 = 1
 		""";
 	
-	private static final String SELECT_GET_BY_ID = """
-			   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId"
-			     FROM "Usuario" u
-			LEFT JOIN "Ciudadano" c on c."UsuarioId" = u."ID"
-			LEFT JOIN "RecicladorUrbano" r on r."UsuarioId" = u."ID"
-			    WHERE u."ID" = ?
+	private static final String WHERE_ID = """
+			AND u."ID" = ?
 			""";
+	
+	private static final String WHERE_USER_NAME = """
+			AND u."Username" = ?
+			""";
+
 	
 	private static final String UPDATE = """
 			UPDATE "Usuario"
@@ -123,9 +124,8 @@ public class UserDao extends Dao {
 		return user;
 	}
 
-	public Optional<User> get(String username) throws PersistenceException {
-		try ( var t = open(true); var select = t.prepareStatement(SELECT_GET) ) {
-			select.setString(1, username);
+	public Optional<User> get(String userName, Long id) throws PersistenceException {
+		try ( var t = open(true); var select = createSelect(t, userName, id) ) {
 			try ( var rs = select.executeQuery() ) {
 				if ( !rs.next() )
 					return Optional.empty();
@@ -136,17 +136,25 @@ public class UserDao extends Dao {
 		}
 	}
 	
-	public Optional<User> getById(Long id) throws PersistenceException {
-		try ( var t = open(true); var select = t.prepareStatement(SELECT_GET_BY_ID) ) {
-			select.setLong(1, id);
-			try ( var rs = select.executeQuery() ) {
-				if ( !rs.next() )
-					return Optional.empty();
-				return Optional.of(buildUser(rs));
-			}
-		} catch ( SQLException e ) {
-			throw new PersistenceException("error getting user", e);
+	private PreparedStatement createSelect(Transaction t, String userName, Long id) throws PersistenceException, SQLException {
+		var b = new StringBuilder(SELECT_GET);
+		List<Object> parameters = new ArrayList<>();
+		
+		if(!Strings.isNullOrEmpty(userName)) {
+			b.append(WHERE_USER_NAME);
+			parameters.add(userName);
 		}
+
+		if(id != null) {
+			b.append(WHERE_ID);
+			parameters.add(id);
+		}
+
+		var p = t.prepareStatement(b.toString());
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+
+		return p;
 	}
 
 	private User buildUser(ResultSet rs) throws SQLException {
