@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.commons.configuration2.Configuration;
 import org.circle8.controller.request.user.RefreshTokenRequest;
 import org.circle8.controller.request.user.TokenRequest;
+import org.circle8.controller.request.user.UserPutRequest;
 import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -185,15 +186,15 @@ public class UserController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del usuario debe ser numérico", "");
 		}
 		
-		val req = ctx.bodyAsClass(UserRequest.class);
+		val req = ctx.bodyAsClass(UserPutRequest.class);
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(valid);
 
 		var dto = UserDto.from(req);
-		dto.id = id;
+		
 		try {
-			dto = service.put(dto, req.password);
+			dto = service.put(id, dto);
 		} catch ( ServiceError e ) {
 			log.error("[Request:{}, id={}] error updating user", req, id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());

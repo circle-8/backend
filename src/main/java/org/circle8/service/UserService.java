@@ -12,6 +12,7 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 
+import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -100,41 +101,48 @@ public class UserService {
 		return dto;
 	}
 	
-	public UserDto put(UserDto dto, String password) throws ServiceException {
+	public UserDto put(Long id, UserDto dto) throws ServiceException {
 		var user = dto.toEntity();
-		user.hashedPassword = crypt.hash(password);
+		user.id = id;
 		try ( var t = dao.open() ) {
-			dao.update(t, user);
-			
-			if(!TipoUsuario.CIUDADANO.equals(user.tipo)) {
-				switch ( user.tipo ) {
-					case TRANSPORTISTA -> updateTransportista(t, user);
-					case RECICLADOR_URBANO -> updateReciclador(t, user);
-					case ORGANIZACION -> organizacion.update(t, user);
-					default -> throw new IllegalStateException("hay un TipoUsuario no contemplado al actualizar");
-				}
-			}			
+			updateUser(t, user);		
+			if(user.tipo != null && TipoUsuario.TRANSPORTISTA.equals(user.tipo)) {
+				updateTransportista(t, user);				
+			}
+			updateReciclador(t, user);
+			updateOrganizacion(t, user);
 			t.commit();
+			var u = this.dao.getById(id).orElseThrow(() -> new NotFoundException("No existe el usuario con id " + id));
+			return UserDto.from(u);
 		} catch ( DuplicatedEntry e ) {
 			throw new ServiceException("El usuario y/o email ya se encuentran registrados", e);
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al actualizar el usuario", e);
 		}
-		
-		return dto;
+	}
+	
+	private void updateUser(Transaction t, User user) throws NotFoundException, PersistenceException {
+		if( !Strings.isNullOrEmpty(user.nombre)
+				|| !Strings.isNullOrEmpty(user.username)
+				|| user.tipo != null
+				|| !Strings.isNullOrEmpty(user.email) )
+			dao.update(t, user);
 	}
 	
 	private void updateTransportista(Transaction t, User user) throws PersistenceException, ServiceException {
 		val transOp = transportista.getByUsuarioId(t, user.id);
-		if(!transOp.isPresent()) {
+		if(!transOp.isPresent())
 			transportista.save(t, user.id);
-		}
 		//TODO: ver caso en el que era transportista y ya no
 	}
 	
 	private void updateReciclador(Transaction t, User user) throws NotFoundException, ServiceError {
-		if(user.zonaId != null) {
+		if(user.zonaId != null || user.organizacionId != null)
 			reciclador.update(t, user);
-		}
+	}
+	
+	private void updateOrganizacion(Transaction t, User user) throws NotFoundException, ServiceError {
+		if(!Strings.isNullOrEmpty(user.razonSocial))
+			organizacion.update(t, user);
 	}
 }

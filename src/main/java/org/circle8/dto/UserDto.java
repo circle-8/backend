@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.val;
+
+import org.circle8.controller.request.user.UserPutRequest;
 import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.TipoUsuarioResponse;
 import org.circle8.controller.response.UserResponse;
@@ -37,6 +39,21 @@ public class UserDto {
 		u.razonSocial = request.razonSocial;
 		return u;
 	}
+	
+	public static UserDto from(UserPutRequest request) {
+		val u = new UserDto();
+		u.username = request.username;
+		u.nombre = request.nombre;
+		u.email = request.email;
+		u.tipo = request.tipoUsuario != null ?
+				request.tipoUsuario.to() : null;
+		u.organizacionId = request.organizacionId;
+		u.razonSocial = request.razonSocial;
+		u.zonaId = request.zonaId;
+		u.razonSocial = request.razonSocial;
+		return u;
+	}
+
 
 	public static UserDto from(User entity) {
 		if ( entity == null ) return null;

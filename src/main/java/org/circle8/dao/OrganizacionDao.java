@@ -25,7 +25,7 @@ public class OrganizacionDao extends Dao {
 	private static final String UPDATE = """
 			UPDATE "Organizacion"
 			SET "RazonSocial"=?
-			WHERE "ID"=? AND "UsuarioId"=?
+			WHERE "UsuarioId"=?
 			""";
 	
 	private static final String SELECT = """
@@ -76,8 +76,7 @@ public class OrganizacionDao extends Dao {
 	public void update(Transaction t, User u) throws PersistenceException, NotFoundException {
 		try ( var put = t.prepareStatement(UPDATE) ) {
 			put.setString(1, u.razonSocial);
-			put.setLong(2, u.organizacionId);
-			put.setLong(3, u.id);			
+			put.setLong(2, u.id);			
 			int puts = put.executeUpdate();
 			if ( puts == 0 )
 				throw new NotFoundException("No existe la organizacion");
