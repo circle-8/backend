@@ -63,7 +63,7 @@ public class UserService {
 		try {
 			var u = this.dao.get(null,id).orElseThrow(() -> new NotFoundException("No existe el usuario con id " + id));
 			return UserDto.from(u);
-		} catch (Exception e) {
+		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el usuario", e);
 		}		
 	}
