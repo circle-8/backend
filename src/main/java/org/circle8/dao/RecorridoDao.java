@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,9 +23,11 @@ import org.circle8.entity.Retiro;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
 import org.circle8.exception.ForeignKeyException;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
+import org.circle8.service.RecorridoService.UpdateEnum;
 import org.circle8.utils.Dates;
 import org.circle8.utils.PuntoUtils;
 
@@ -83,18 +87,47 @@ public class RecorridoDao extends Dao {
 		   AND "ZonaId" = ?
 		""";
 
+	private static final String UPDATE = """
+		UPDATE public."Recorrido" AS r
+		SET %s
+		WHERE 1 = 1
+		%s
+		""";
+
+	private static final String WHERE_ID = """
+		AND r."ID" = ?
+		""";
+
+	private static final String WHERE_ZONA_ID = """
+		AND r."ZonaId" = ?;
+		""";
+
+	private static final String SET_FECHA_FIN = """
+		"FechaFin" = ?
+		""";
+
+	private static final String SET_FECHA_INICIO = """
+		"FechaInicio" = ?
+		""";
+
+	private static final String SET_FECHA_RETIRO = """
+		"FechaRetiro"= ?
+		""";
+
+	private static final String SET_RECICLADOR = """
+		"RecicladorId"= ?
+		""";
+
+
 	private static final String UPDATE_ZONA_NULL = """
 			UPDATE "Recorrido"
 			SET "ZonaId" = NULL
 			WHERE "ZonaId" = ?;
 			""";
 
-	private final ZonaDao zonaDao;
-
 	@Inject
-	public RecorridoDao(DataSource ds, ZonaDao zonaDao) {
+	public RecorridoDao(DataSource ds) {
 		super(ds);
-		this.zonaDao = zonaDao;
 	}
 
 	public Optional<Recorrido> get(
@@ -201,8 +234,8 @@ public class RecorridoDao extends Dao {
 			rs.getLong("ZonaId"),
 			rs.getLong("OrganizacionId"),
 			z,
-			new Punto(rs.getFloat("LatitudInicio"), rs.getFloat("LongitudInicio")),
-			new Punto(rs.getFloat("LatitudFin"), rs.getFloat("LongitudFin")),
+			new Punto(rs.getDouble("LatitudInicio"), rs.getDouble("LongitudInicio")),
+			new Punto(rs.getDouble("LatitudFin"), rs.getDouble("LongitudFin")),
 			new ArrayList<>()
 		);
 	}
@@ -248,6 +281,54 @@ public class RecorridoDao extends Dao {
 				throw new ForeignKeyException("El recorrido ya cuenta con residuos, no puede ser eliminado");
 			throw new PersistenceException("error deleting recorrido", e);
 		}
+	}
+
+
+	public void update(Transaction t, Recorrido r, UpdateEnum o) throws PersistenceException, NotFoundException {
+		try (var put = createUpdate(t, r, o)){
+			if(put.executeUpdate() <= 0){
+				throw new NotFoundException("updating the recorrido failed, no affected rows");
+			}
+		} catch (SQLException e) {
+			if(e.getMessage().contains("Recorrido_RecicladorId_fkey"))
+				throw new ForeignKeyException("El recicladorId ingresado no existe en la tabla", e);
+			throw new PersistenceException("error updating recorrido", e);
+		}
+	}
+
+
+	private PreparedStatement createUpdate(Transaction t, Recorrido r, UpdateEnum o) throws PersistenceException, SQLException {
+		val set = new ArrayList<String>();
+		List<Object> parameters = new ArrayList<>();
+		String where;
+		if(o == UpdateEnum.RETIRO) {
+			if(r.recicladorId != null){
+				set.add(SET_RECICLADOR);
+				parameters.add(r.recicladorId);
+			}
+			if(r.fechaRetiro != null){
+				set.add(SET_FECHA_RETIRO);
+				parameters.add(r.fechaRetiro);
+			}
+			where = WHERE_ID + WHERE_ZONA_ID;
+			parameters.add(r.id);
+			parameters.add(r.zonaId);
+		}
+		else {
+			if(o == UpdateEnum.FIN)
+				set.add(SET_FECHA_FIN);
+			else
+				set.add(SET_FECHA_INICIO);
+			where = WHERE_ID;
+			parameters.add(Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
+			parameters.add(r.id);
+		}
+		val sets = String.join(", ", set);
+		val sql = String.format(UPDATE, sets, where);
+		var p = t.prepareStatement(sql);
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+		return p;
 	}
 
 	public void desasociarZona(Transaction t,Long zonaId) throws PersistenceException {
