@@ -4,6 +4,6 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class PuntoResponse implements ApiResponse {
-	public float latitud;
-	public float longitud;
+	public double latitud;
+	public double longitud;
 }
