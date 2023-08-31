@@ -20,7 +20,7 @@ public class TransaccionSolicitarTransporteTest {
 	@Test
 	void testSolicitarOk() throws SQLException {
 		RestAssured.given()
-			.post("/transaccion/4/solicitud_transporte")
+			.post("/transaccion/4/transporte")
 			.then()
 			.statusCode(200)
 		;
@@ -53,7 +53,7 @@ public class TransaccionSolicitarTransporteTest {
 	@Test
 	void testNotFound() {
 		RestAssured.given()
-			.post("/transaccion/0/solicitud_transporte")
+			.post("/transaccion/0/transporte")
 			.then()
 			.statusCode(404)
 		;
@@ -63,7 +63,7 @@ public class TransaccionSolicitarTransporteTest {
 	@Test
 	void testAlreadyHaveTransporte() {
 		RestAssured.given()
-			.post("/transaccion/1/solicitud_transporte")
+			.post("/transaccion/1/transporte")
 			.then()
 			.statusCode(400)
 		;
@@ -72,7 +72,7 @@ public class TransaccionSolicitarTransporteTest {
 	@Test
 	void testWhitoutId() {
 		RestAssured.given()
-			.post("/transaccion//solicitud_transporte")
+			.post("/transaccion//transporte")
 			.then()
 			.statusCode(404)
 		;
@@ -81,7 +81,7 @@ public class TransaccionSolicitarTransporteTest {
 	@Test
 	void testInvalidId() {
 		RestAssured.given()
-			.post("/transaccion/aa/solicitud_transporte")
+			.post("/transaccion/aa/transporte")
 			.then()
 			.statusCode(400)
 		;

@@ -219,7 +219,7 @@ public class TransaccionController {
 	}
 
 	/**
-	 * POST /transaccion/{id}/solicitud_transporte
+	 * POST /transaccion/{id}/transporte
 	 */
 	public ApiResponse solicitudTransporte(Context ctx) {
 		final Long id;

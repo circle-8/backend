@@ -45,15 +45,6 @@ public class TransaccionSetTransporteTest {
 	}
 
 	@Test
-	void testWhitoutTransporteId() {
-		RestAssured.given()
-					  .post("/transaccion/1/transporte/")
-					  .then()
-					  .statusCode(404)
-		;
-	}
-
-	@Test
 	void testWhithInexistingTransaccionId() {
 		RestAssured.given()
 					  .post("/transaccion/5/transporte/1")
