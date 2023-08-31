@@ -217,6 +217,29 @@ public class TransaccionController {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}
 	}
+	
+	/**
+	 * DELETE /transaccion/{id}/transporte
+	 */
+	public ApiResponse deleteTransporte(Context ctx) {
+		final Long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id debe ser numérico", "");
+		}
+		try {
+			this.service.deleteTransporte(id);
+			return new SuccessResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error remove transporteId from transaccion: ", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( NotFoundException e ) {
+			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		}catch (BadRequestException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "La Transaccion ya posee un Transporte", "");
+		}
+	}
 
 	/**
 	 * POST /transaccion/{id}/transporte

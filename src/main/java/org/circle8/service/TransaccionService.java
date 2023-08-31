@@ -129,6 +129,19 @@ public class TransaccionService {
 		}
 	}
 	
+	public void deleteTransporte(Long id) throws NotFoundException, ServiceError, BadRequestException {
+		try (var t = dao.open(true)) {
+			var transaccion = dao.get(id, new TransaccionExpand(false,true,false)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+			if(transaccion.transporte == null)
+				throw new BadRequestException("La transaccion no posee un transporte");
+			if(transaccion.transporte.transportistaId != null)
+				throw new BadRequestException("El transporte ya fue aceptado por un transportista");
+			dao.removeTransporte(t, id, transaccion.transporte.id);
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al intentar remover el transporte de la transaccion", e);
+		}
+	}
+	
 	public TransaccionDto createTransporte(Long id) throws NotFoundException, ServiceError, BadRequestException {
 		try (var t = dao.open()) {			
 			var transaccion = dao.get(id, new TransaccionExpand(true,false,true)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
