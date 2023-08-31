@@ -70,7 +70,7 @@ public class TransaccionSolicitarTransporteTest {
 	}
 	
 	@Test
-	void testWhitoutId() {
+	void testWithOutId() {
 		RestAssured.given()
 			.post("/transaccion//transporte")
 			.then()

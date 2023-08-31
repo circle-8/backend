@@ -21,6 +21,7 @@ import org.circle8.exception.ServiceException;
 import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
+import org.circle8.utils.PuntoUtils;
 
 import com.google.inject.Inject;
 
@@ -132,9 +133,8 @@ public class TransaccionService {
 	public void deleteTransporte(Long id) throws NotFoundException, ServiceError, BadRequestException {
 		try (var t = dao.open(true)) {
 			var transaccion = dao.get(id, new TransaccionExpand(false,true,false)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
-			if(transaccion.transporte == null)
-				throw new BadRequestException("La transaccion no posee un transporte");
-			if(transaccion.transporte.transportistaId != null)
+			if(transaccion.transporte.transportistaId != null
+					&& transaccion.transporte.transportistaId != 0)
 				throw new BadRequestException("El transporte ya fue aceptado por un transportista");
 			dao.removeTransporte(t, id, transaccion.transporte.id);
 		} catch (PersistenceException e) {
@@ -187,7 +187,7 @@ public class TransaccionService {
 				puntos.add(new Punto((float) transaccion.puntoReciclaje.latitud, (float) transaccion.puntoReciclaje.longitud));
 						
 			for (int i = 0; i < (puntos.size()-1); i++) {
-				var dist = calculateDistance(puntos.get(i), puntos.get(i+1));
+				var dist = PuntoUtils.calculateDistance(puntos.get(i), puntos.get(i+1));
 				distancia = distancia.add(new BigDecimal(dist));
 			}
 		}		
@@ -196,29 +196,9 @@ public class TransaccionService {
 	
 	private void sortPuntos(Punto puntoInicial, List<Punto> points) {
 		points.sort((a, b) -> {
-			val d1 = calculateDistance(puntoInicial, a);
-			val d2 = calculateDistance(puntoInicial, b);
+			val d1 = PuntoUtils.calculateDistance(puntoInicial, a);
+			val d2 = PuntoUtils.calculateDistance(puntoInicial, b);
 			return Double.compare(d1, d2);
 		});
 	}
-
-	private double calculateDistance(Punto pointA, Punto pointB) {
-		val earthRadiusKm = 6371.0;
-		val lat1Rad = Math.toRadians(pointA.latitud);
-		val lon1Rad = Math.toRadians(pointA.longitud);
-		val lat2Rad = Math.toRadians(pointB.latitud);
-		val lon2Rad = Math.toRadians(pointB.longitud);
-
-		val dLat = lat2Rad - lat1Rad;
-		val dLon = lon2Rad - lon1Rad;
-
-		val a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-			+ Math.cos(lat1Rad) * Math.cos(lat2Rad)
-			* Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-		val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-		return earthRadiusKm * c;
-	}
-
 }

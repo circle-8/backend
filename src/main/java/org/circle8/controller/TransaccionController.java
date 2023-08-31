@@ -237,7 +237,7 @@ public class TransaccionController {
 		} catch ( NotFoundException e ) {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}catch (BadRequestException e) {
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, "La Transaccion ya posee un Transporte", "");
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
 		}
 	}
 
