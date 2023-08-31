@@ -13,10 +13,17 @@ import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
-
 import java.util.List;
 
 public class RecorridoService {
+
+	public enum UpdateEnum {
+
+		INICIO,
+		FIN,
+		RETIRO;
+
+	}
 	private final RecorridoDao dao;
 
 	@Inject
@@ -84,6 +91,20 @@ public class RecorridoService {
 			throw new ServiceError("Ha ocurrido un error al eliminar el recorrido", e);
 		}
 	}
+
+
+	public RecorridoDto update(RecorridoDto dto, UpdateEnum o) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			val recorrido = dto.toEntity();
+			recorrido.id = dto.id;
+			dao.update(t, recorrido, o);
+			return dao.get(t, dto.id, RecorridoExpand.EMPTY)
+						 .map(RecorridoDto::from)
+						 .orElseThrow(() -> new NotFoundException("No existe el recorrido"));
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al actualizar el recorrido", e);
+      }
+   }
 
 	public List<RecorridoDto> list(RecorridoFilter f) throws ServiceException {
 		try {
