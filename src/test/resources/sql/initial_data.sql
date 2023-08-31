@@ -37,11 +37,18 @@ VALUES (
            NULL,
            'CIUDADANO',
            'existing3@email.com'
+       ),(
+           'Organizacion 1',
+           'organizacion1',
+           '$2a$10$vQ35vpn5y4RPXXNm4blxWer6NVn0Pl3GHmSn5XRr2VdGITgpn1j0G', -- 1234
+           NULL,
+           'ORGANIZACION',
+           'organizacion1@email.com'
        );
 
 INSERT INTO public."Ciudadano" ("UsuarioId") VALUES (1),(2),(5);
 
-INSERT INTO public."Organizacion"("RazonSocial", "UsuarioId") VALUES ('Usuario 1 SA', 1),('Usuario 2 SA', 2);
+INSERT INTO public."Organizacion"("RazonSocial", "UsuarioId") VALUES ('Usuario 1 SA', 1),('Usuario 2 SA', 2),('Organizacion SA', 6);
 
 INSERT INTO public."Zona"("OrganizacionId", "Polyline", "Nombre")
 VALUES
@@ -111,8 +118,8 @@ VALUES
 (3, 3)
 ;
 
-INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (1, 'fakePolyline');
-INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (2, 'fakePolyline');
+INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (1, '[[-34.667407, -58.582951], [-34.666284, -58.573635],[-34.658771, -58.577580],[-34.665860, -58.591205]]');
+INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (2, '[[-34.667407, -58.582951], [-34.666284, -58.573635],[-34.658771, -58.577580],[-34.665860, -58.591205]]');
 
 INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId") VALUES (40, NULL, '2020-01-01 08:00:00+00', '2020-01-02 08:00:00+00', false, false, 1);
 INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId") VALUES (50, NULL, '2020-02-01 08:00:00+00', '2020-02-02 08:00:00+00', true, true, 2);
