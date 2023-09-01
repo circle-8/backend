@@ -162,6 +162,7 @@ public class Routes {
 			.post("/refresh_token", noAuthRequired(userController::refreshToken))
 			.post("/user", noAuthRequired(userController::post))
 			.put("/user/password", noAuthRequired(userController::restorePassword))
+			.put("/user/{id}", noAuthRequired(userController::put))
 			// PUNTOS RESIDUO
 			.get("/ciudadano/{ciudadano_id}/punto_residuo/{id}", result(puntoResiduoController::get))
 			.get("/puntos_residuo", result(puntoResiduoController::list))

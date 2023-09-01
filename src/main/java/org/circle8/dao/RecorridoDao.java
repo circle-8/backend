@@ -1,8 +1,19 @@
 package org.circle8.dao;
 
-import com.google.inject.Inject;
-import lombok.SneakyThrows;
-import lombok.val;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+
+import javax.sql.DataSource;
 
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.Punto;
@@ -18,20 +29,12 @@ import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
 import org.circle8.service.RecorridoService.UpdateEnum;
 import org.circle8.utils.Dates;
+import org.circle8.utils.PuntoUtils;
 
-import javax.sql.DataSource;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import com.google.inject.Inject;
+
+import lombok.SneakyThrows;
+import lombok.val;
 
 public class RecorridoDao extends Dao {
 	private static final String SELECT_FMT = """
@@ -122,12 +125,9 @@ public class RecorridoDao extends Dao {
 			WHERE "ZonaId" = ?;
 			""";
 
-	private final ZonaDao zonaDao;
-
 	@Inject
-	public RecorridoDao(DataSource ds, ZonaDao zonaDao) {
+	public RecorridoDao(DataSource ds) {
 		super(ds);
-		this.zonaDao = zonaDao;
 	}
 
 	public Optional<Recorrido> get(
@@ -214,7 +214,7 @@ public class RecorridoDao extends Dao {
 		val z = new Zona(rs.getLong("ZonaId"));
 		z.organizacionId = rs.getLong("OrganizacionId");
 		if ( x.zona ) {
-			z.polyline = zonaDao.getPolyline(rs.getString("Polyline"));
+			z.polyline = PuntoUtils.getPolyline(rs.getString("Polyline"));
 			z.nombre = rs.getString("ZonaNombre");
 		}
 
@@ -286,7 +286,6 @@ public class RecorridoDao extends Dao {
 
 	public void update(Transaction t, Recorrido r, UpdateEnum o) throws PersistenceException, NotFoundException {
 		try (var put = createUpdate(t, r, o)){
-			val s = put.toString();
 			if(put.executeUpdate() <= 0){
 				throw new NotFoundException("updating the recorrido failed, no affected rows");
 			}

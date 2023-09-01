@@ -19,5 +19,6 @@ public class User {
 	public Long ciudadanoId;
 	public Long recicladorUrbanoId;
 	public Long organizacionId;
+	public String razonSocial;
 	public Long zonaId;
 }
