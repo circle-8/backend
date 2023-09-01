@@ -105,7 +105,7 @@ public class TransaccionDao extends Dao {
 		""";
 
 	private static final String SELECT_TRANSPORTE = """
-		, tra."FechaAcordada", tra."FechaInicio", tra."FechaFin", tra."Precio", tra."TransportistaId", tra."PagoConfirmado", tra."EntregaConfirmada"
+		, tra."FechaAcordada", tra."FechaInicio", tra."FechaFin", tra."Precio", tra."TransportistaId", tra."PagoConfirmado", tra."EntregaConfirmada", tra."PrecioSugerido"
 		""";
 
 	private static final String SELECT_PUNTO_RECICLAJE = """
@@ -230,7 +230,7 @@ public class TransaccionDao extends Dao {
 		return new Transporte(rs.getLong("TransporteId"), fechaAcordadaTimestamp != null ? fechaAcordadaTimestamp.toInstant().atZone(Dates.UTC) : null,
 			fechaInicioTimestamp != null ? fechaInicioTimestamp.toInstant().atZone(Dates.UTC) : null,
 			fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null, rs.getBigDecimal("Precio"),
-			rs.getLong("TransportistaId"), null, rs.getLong("ID"), rs.getBoolean("PagoConfirmado"), rs.getBoolean("EntregaConfirmada"));
+			rs.getLong("TransportistaId"), null, rs.getLong("ID"), rs.getBoolean("PagoConfirmado"), rs.getBoolean("EntregaConfirmada"),rs.getBigDecimal("Precio"));
 
 	}
 

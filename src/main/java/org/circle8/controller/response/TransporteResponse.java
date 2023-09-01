@@ -23,6 +23,7 @@ public class TransporteResponse implements ApiResponse {
 	public Long transaccionId;
 	public boolean pagoConfirmado;
 	public boolean entregaConfirmada;
+	public BigDecimal precioSugerido;
 
 	// No puede tener TransaccionResponse, pues no se puede serializar
 	// un JSON recursivo

@@ -1,18 +1,37 @@
 package org.circle8.controller;
 
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import org.circle8.controller.response.ApiResponse;
-import org.circle8.controller.response.ListResponse;
-import org.circle8.controller.response.TransporteResponse;
-import org.circle8.utils.Dates;
-
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import org.circle8.controller.response.ApiResponse;
+import org.circle8.controller.response.ErrorCode;
+import org.circle8.controller.response.ErrorResponse;
+import org.circle8.controller.response.ListResponse;
+import org.circle8.controller.response.TransporteResponse;
+import org.circle8.exception.ServiceError;
+import org.circle8.exception.ServiceException;
+import org.circle8.expand.TransporteExpand;
+import org.circle8.service.TransporteService;
+import org.circle8.utils.Dates;
+
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+
 @Singleton
+@Slf4j
 public class TransporteController {
+	private final TransporteService service;
+	
+	@Inject
+	private TransporteController(TransporteService service) {
+		this.service = service;
+	}
+	
 	private final static TransporteResponse mock = TransporteResponse.builder()
 		.id(1L)
 		.fechaAcordada(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
@@ -36,7 +55,24 @@ public class TransporteController {
 	 * GET /transporte/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder().id(Long.parseLong(ctx.pathParam("id"))).build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
+		}
+		
+		val expand = new TransporteExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
+		
+		try {
+			var dto = this.service.get(id, expand);
+			return dto.toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request: id={}, expand={}] error get transporte", id, expand, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
