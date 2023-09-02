@@ -121,8 +121,8 @@ VALUES
 INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (1, '[[-34.667407, -58.582951], [-34.666284, -58.573635],[-34.658771, -58.577580],[-34.665860, -58.591205]]');
 INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (2, '[[-34.667407, -58.582951], [-34.666284, -58.573635],[-34.658771, -58.577580],[-34.665860, -58.591205]]');
 
-INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId") VALUES (40, NULL, '2020-01-01 08:00:00+00', '2020-01-02 08:00:00+00', false, false, 1);
-INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId") VALUES (50, NULL, '2020-02-01 08:00:00+00', '2020-02-02 08:00:00+00', true, true, 2);
+INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (40, NULL, '2020-01-01 08:00:00+00', '2020-01-02 08:00:00+00', false, false, 1, 2500);
+INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (50, NULL, '2020-02-01 08:00:00+00', '2020-02-02 08:00:00+00', true, true, 2, 0);
 
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-01-01 08:00:00+00', '2023-01-02 08:00:00+00', 1, 1);
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-02-01 08:00:00+00', '2023-02-02 08:00:00+00', 2, 2);
