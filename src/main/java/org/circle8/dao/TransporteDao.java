@@ -51,10 +51,37 @@ public class TransporteDao extends Dao {
 			LEFT JOIN "TransaccionResiduo" AS trans on trans."TransporteId" = t."ID"
 			""";
 	
+	private static final String WHERE_TRANSACCION_ID = """
+			AND trans."ID" = ?
+			""";
+	
 	private static final String WHERE_ID = """
 			AND t."ID" = ?
 			""";
+	
+	private static final String WHERE_FECHA = """
+			AND t."FechaAcordada" = ?
+			""";
+	
+	private static final String WHERE_ENTREGA_CONFIRMADA = """
+			AND t."EntregaConfirmada" = true
+			""";
+	
+	private static final String WHERE_ENTREGA_NO_CONFIRMADA = """
+			AND t."EntregaConfirmada" = false
+			""";
+	
+	private static final String WHERE_PAGO_CONFIRMADO = """
+			AND t."PagoConfirmado" = true
+			""";
+	
+	private static final String WHERE_PAGO_NO_CONFIRMADO = """
+			AND t."PagoConfirmado" = false
+			""";
 
+	private static final String WHERE_TRANSPORTISTA_NULL = """
+			AND t."TransportistaId" IS NULL
+			""";
 
 	@Inject
 	TransporteDao(DataSource ds) {
@@ -86,15 +113,26 @@ public class TransporteDao extends Dao {
 			joinFields += JOIN_X_TRANSPORTISTA;
 		}
 		
-		if(x.transaccion) {
+		if(x.transaccion || f.transaccionId != null) {
 			selectFields += SELECT_X_TRANSACCION;
 			joinFields += JOIN_X_TRANSACCION;
 		}
 
-		var sql = String.format(SELECT_FMT, selectFields, joinFields);
-		var b = new StringBuilder(sql);
+		var b = new StringBuilder(String.format(SELECT_FMT, selectFields, joinFields));
 		List<Object> parameters = new ArrayList<>();
+		
 		appendCondition(f.transportistaId, WHERE_ID, b, parameters);
+		appendCondition(f.fechaRetiro, WHERE_FECHA, b, parameters);
+		appendCondition(f.transaccionId, WHERE_TRANSACCION_ID, b, parameters);
+		
+		if(f.entregaConfirmada != null)
+			b.append(f.entregaConfirmada ? WHERE_ENTREGA_CONFIRMADA : WHERE_ENTREGA_NO_CONFIRMADA);
+		
+		if(f.pagoConfirmado != null)
+			b.append(f.pagoConfirmado ? WHERE_PAGO_CONFIRMADO : WHERE_PAGO_NO_CONFIRMADO);
+		
+		if(f.soloSinTransportista != null)
+			b.append(WHERE_TRANSPORTISTA_NULL);	
 		
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++)
