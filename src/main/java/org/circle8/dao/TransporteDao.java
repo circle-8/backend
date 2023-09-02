@@ -13,6 +13,7 @@ import org.circle8.entity.Transporte;
 import org.circle8.entity.Transportista;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.TransporteExpand;
+import org.circle8.filter.TransporteFilter;
 import org.circle8.utils.Dates;
 import org.circle8.utils.PuntoUtils;
 
@@ -60,8 +61,8 @@ public class TransporteDao extends Dao {
 		super(ds);
 	}
 
-	public Optional<Transporte> get(Transaction t, long id, TransporteExpand x) throws PersistenceException {
-		try ( val select = createSelect(t, id, x) ) {
+	public Optional<Transporte> get(Transaction t, TransporteFilter f, TransporteExpand x) throws PersistenceException {
+		try ( val select = createSelect(t, f, x) ) {
 			try ( var rs = select.executeQuery() ) {
 				if ( !rs.next() )
 					return Optional.empty();
@@ -74,7 +75,7 @@ public class TransporteDao extends Dao {
 	}
 	
 	
-	private PreparedStatement createSelect(Transaction t, Long id, TransporteExpand x)
+	private PreparedStatement createSelect(Transaction t, TransporteFilter f, TransporteExpand x)
 			throws PersistenceException, SQLException {
 		
 		var selectFields = SELECT_SIMPLE;
@@ -93,7 +94,7 @@ public class TransporteDao extends Dao {
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 		var b = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
-		appendCondition(id, WHERE_ID, b, parameters);
+		appendCondition(f.transportistaId, WHERE_ID, b, parameters);
 		
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++)

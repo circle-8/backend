@@ -60,7 +60,7 @@ public class TransporteController {
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
-		}
+		}		
 		
 		val expand = new TransporteExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
 		

@@ -1,8 +1,5 @@
 package org.circle8.utils;
 
-import jakarta.annotation.Nullable;
-import org.circle8.controller.request.IRequest.Validation;
-
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,7 +7,29 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 
+import org.circle8.controller.request.IRequest.Validation;
+
+import jakarta.annotation.Nullable;
+
 public class Parser {
+	
+	@Nullable
+	public static Boolean parseBoolean(Validation v, Map<String, List<String>> params, String paramName) {
+		try {
+			var param = params.getOrDefault(paramName, List.of());
+			return !param.isEmpty() ? Boolean.parseBoolean(param.get(0)) : null;
+		} catch ( NumberFormatException e ) {
+			if ( v != null )
+				v.add(String.format("%s debe ser un booleano", paramName));
+			return null;
+		}
+	}
+	
+	@Nullable
+	public static Boolean parseBoolean(Map<String, List<String>> params, String paramName) {
+		return parseBoolean(null, params, paramName);
+	}
+	
 	@Nullable
 	public static Long parseLong(Validation v, Map<String, List<String>> params, String paramName) {
 		try {
@@ -56,6 +75,7 @@ public class Parser {
 		return parseLocalZonedDateTime(null, params, paramName);
 	}
 
+	@Nullable
 	public static LocalDate parseLocalDate(Validation v, Map<String, List<String>> params, String paramName) {
 		try {
 			var param = params.getOrDefault(paramName, List.of());
