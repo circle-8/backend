@@ -1,5 +1,7 @@
 package org.circle8.service;
 
+import java.util.List;
+
 import org.circle8.dao.Transaction;
 import org.circle8.dao.TransporteDao;
 import org.circle8.dto.TransporteDto;
@@ -11,8 +13,9 @@ import org.circle8.exception.ServiceException;
 import org.circle8.expand.TransporteExpand;
 import org.circle8.filter.TransporteFilter;
 
-import lombok.val;
 import com.google.inject.Inject;
+
+import lombok.val;
 
 public class TransporteService {
 
@@ -38,6 +41,14 @@ public class TransporteService {
 				.orElseThrow(() -> new NotFoundException("No existe el transporte"));
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al buscar el transporte", e);
+		}
+	}
+	
+	public List<TransporteDto> list(TransporteFilter f, TransporteExpand x) throws ServiceError{
+		try {
+			return this.dao.list(f, x).stream().map(TransporteDto::from).toList();
+		} catch (PersistenceException e) {
+			throw new ServiceError("Ha ocurrido un error al obtener el listado de transportes", e);
 		}
 	}
 }

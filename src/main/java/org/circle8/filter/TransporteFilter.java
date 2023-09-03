@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TransporteFilter {
 
+	public Long id;
 	public Long transportistaId;
 	public Boolean entregaConfirmada;
 	public Boolean pagoConfirmado;
@@ -18,7 +19,7 @@ public class TransporteFilter {
 	public LocalDate fechaRetiro;
 	public Long transaccionId;
 	
-	public TransporteFilter(Long transportistaId) {
-		this.transportistaId = transportistaId;
+	public TransporteFilter(Long id) {
+		this.id = id;
 	}	
 }

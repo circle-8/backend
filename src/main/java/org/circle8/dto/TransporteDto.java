@@ -4,11 +4,12 @@ import org.circle8.controller.response.TransporteResponse;
 import org.circle8.entity.Transporte;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 public class TransporteDto {
 	public Long id;
-	public ZonedDateTime fechaAcordada;
+	public LocalDate fechaAcordada;
 	public ZonedDateTime fechaInicio;
 	public ZonedDateTime fechaFin;
 	public BigDecimal precioAcordado;

@@ -59,6 +59,10 @@ public class TransporteDao extends Dao {
 			AND t."ID" = ?
 			""";
 	
+	private static final String WHERE_TRANSPORTISTA_ID = """
+			AND t."TransportistaId" = ?
+			""";
+	
 	private static final String WHERE_FECHA = """
 			AND t."FechaAcordada" = ?
 			""";
@@ -101,6 +105,28 @@ public class TransporteDao extends Dao {
 		}
 	}
 	
+	public List<Transporte> list(TransporteFilter f, TransporteExpand x) throws PersistenceException {
+		try ( var t = open(true) ) {
+			return list(t, f, x);
+		}
+	}
+	
+	public List<Transporte> list(Transaction t, TransporteFilter f, TransporteExpand x) throws PersistenceException {
+		try (
+			var select = createSelect(t, f, x);
+			var rs = select.executeQuery()
+		) {
+			val l = new ArrayList<Transporte>();
+			while ( rs.next() ) {
+				l.add(buildTransporte(rs, x));
+			}
+
+			return l;
+		} catch (SQLException e) {
+			throw new PersistenceException("error getting transportes", e);
+		}
+	}
+	
 	
 	private PreparedStatement createSelect(Transaction t, TransporteFilter f, TransporteExpand x)
 			throws PersistenceException, SQLException {
@@ -121,7 +147,8 @@ public class TransporteDao extends Dao {
 		var b = new StringBuilder(String.format(SELECT_FMT, selectFields, joinFields));
 		List<Object> parameters = new ArrayList<>();
 		
-		appendCondition(f.transportistaId, WHERE_ID, b, parameters);
+		appendCondition(f.id, WHERE_ID, b, parameters);
+		appendCondition(f.transportistaId, WHERE_TRANSPORTISTA_ID, b, parameters);
 		appendCondition(f.fechaRetiro, WHERE_FECHA, b, parameters);
 		appendCondition(f.transaccionId, WHERE_TRANSACCION_ID, b, parameters);
 		
@@ -131,7 +158,7 @@ public class TransporteDao extends Dao {
 		if(f.pagoConfirmado != null)
 			b.append(f.pagoConfirmado ? WHERE_PAGO_CONFIRMADO : WHERE_PAGO_NO_CONFIRMADO);
 		
-		if(f.soloSinTransportista != null)
+		if(f.soloSinTransportista != null && f.soloSinTransportista)
 			b.append(WHERE_TRANSPORTISTA_NULL);	
 		
 		var p = t.prepareStatement(b.toString());
@@ -144,8 +171,8 @@ public class TransporteDao extends Dao {
 	private Transporte buildTransporte(ResultSet rs, TransporteExpand x) throws SQLException {
 		val t = new Transporte();
 		t.id = rs.getLong("ID");
-		if(rs.getTimestamp("FechaAcordada") != null)
-			t.fechaAcordada = rs.getTimestamp("FechaAcordada").toInstant().atZone(Dates.UTC);
+		if(rs.getDate("FechaAcordada") != null)
+			t.fechaAcordada = rs.getDate("FechaAcordada").toLocalDate();
 		if(rs.getTimestamp("FechaInicio") != null)
 			t.fechaInicio = rs.getTimestamp("FechaInicio").toInstant().atZone(Dates.UTC);
 		if(rs.getTimestamp("FechaFin") != null)

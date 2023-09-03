@@ -1,17 +1,21 @@
 package org.circle8.controller;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import org.circle8.controller.request.transporte.TransporteRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.TransporteResponse;
+import org.circle8.dto.TransporteDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.TransporteExpand;
+import org.circle8.filter.TransporteFilter;
 import org.circle8.service.TransporteService;
 import org.circle8.utils.Dates;
 
@@ -34,7 +38,7 @@ public class TransporteController {
 	
 	private final static TransporteResponse mock = TransporteResponse.builder()
 		.id(1L)
-		.fechaAcordada(ZonedDateTime.of(2023, 1, 1, 16, 30, 0, 0, Dates.UTC))
+		.fechaAcordada(LocalDate.now())
 		.transaccionId(1L)
 		.transportistaUri("/transportista/1")
 		.build();
@@ -43,12 +47,30 @@ public class TransporteController {
 	 * GET /transportes
 	 */
 	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2L).build()
-		);
+		val req = new TransporteRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if (!valid.valid())
+			return new ErrorResponse(valid);
+		
+		val filter = TransporteFilter.builder()
+				.transportistaId(req.transportistaId)
+				.entregaConfirmada(req.entregaConfirmada)
+				.pagoConfirmado(req.pagoConfirmado)
+				.soloSinTransportista(req.soloSinTransportista)
+				.fechaRetiro(req.fechaRetiro)
+				.transaccionId(req.transaccionId)
+				.build();
+		
+		val expand = new TransporteExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
+		
+		try {
+			val transportes = this.service.list(filter, expand);
+			return new ListResponse<>(transportes.stream().map(TransporteDto::toResponse).toList());
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error list solicitudes", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		}
 
-		return new ListResponse<>(0, 1, 2, null, null, l);
 	}
 
 	/**

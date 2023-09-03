@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 @NoArgsConstructor
@@ -12,7 +13,7 @@ import java.time.ZonedDateTime;
 @Builder(toBuilder = true)
 public class TransporteResponse implements ApiResponse {
 	public Long id;
-	public ZonedDateTime fechaAcordada;
+	public LocalDate fechaAcordada;
 	public ZonedDateTime fechaInicio;
 	public ZonedDateTime fechaFin;
 	public BigDecimal precioAcordado;
