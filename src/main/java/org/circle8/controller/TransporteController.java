@@ -111,21 +111,46 @@ public class TransporteController {
 	 * POST /transporte/{id}/inicio
 	 */
 	public ApiResponse inicio(Context ctx) {
-		return mock.toBuilder()
-			.id(Long.parseLong(ctx.pathParam("id")))
-			.fechaInicio(ZonedDateTime.now(Dates.UTC))
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
+		}		
+
+		try {
+			val tr = new TransporteDto();
+			tr.id = id;
+			tr.fechaInicio = ZonedDateTime.now(Dates.UTC);
+			return this.service.update(tr).toResponse();
+		} catch ( ServiceError e ) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
 	 * POST /transporte/{id}/fin
 	 */
 	public ApiResponse fin(Context ctx) {
-		return mock.toBuilder()
-			.id(Long.parseLong(ctx.pathParam("id")))
-			.fechaInicio(ZonedDateTime.now(Dates.UTC).minusHours(1))
-			.fechaFin(ZonedDateTime.now(Dates.UTC))
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
+		}		
+
+		try {
+			val tr = new TransporteDto();
+			tr.fechaFin = ZonedDateTime.now(Dates.UTC);
+			tr.id = id;
+			return this.service.update(tr).toResponse();
+		} catch ( ServiceError e ) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
@@ -140,7 +165,10 @@ public class TransporteController {
 		}		
 
 		try {
-			return this.service.confirmarPago(id).toResponse();
+			val tr = new TransporteDto();
+			tr.id = id;
+			tr.pagoConfirmado = true;
+			return this.service.update(tr).toResponse();
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
@@ -160,7 +188,10 @@ public class TransporteController {
 		}		
 
 		try {
-			return this.service.confirmarEntrega(id).toResponse();
+			val tr = new TransporteDto();
+			tr.id = id;
+			tr.entregaConfirmada = true;
+			return this.service.update(tr).toResponse();
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {

@@ -123,7 +123,7 @@ INSERT INTO public."Transportista"("UsuarioId", "Polyline") VALUES (2, '[[-34.66
 
 INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (40, NULL, '2020-01-01 08:00:00+00', '2020-01-02 08:00:00+00', false, false, 1, 2500);
 INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (50, NULL, '2020-02-01 08:00:00+00', '2020-02-02 08:00:00+00', true, true, 2, 0);
-INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (60, '2020-03-02', '2020-03-01 08:00:00+00', '2020-03-02 08:00:00+00', true, false, NULL, 1500);
+INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (60, '2020-03-02', NULL, NULL, true, false, NULL, 1500);
 
 
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-01-01 08:00:00+00', '2023-01-02 08:00:00+00', 1, 1);

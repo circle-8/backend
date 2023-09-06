@@ -20,7 +20,7 @@ public class Transporte {
 	public Long transportistaId;
 	public Transportista transportista;
 	public Long transaccionId;
-	public boolean pagoConfirmado;
-	public boolean entregaConfirmada;
+	public Boolean pagoConfirmado;
+	public Boolean entregaConfirmada;
 	public BigDecimal precioSugerido;
 }

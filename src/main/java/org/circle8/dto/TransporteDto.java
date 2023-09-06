@@ -16,8 +16,8 @@ public class TransporteDto {
 	public Long transportistaId;
 	public TransportistaDto transportista;
 	public Long transaccionId;
-	public boolean pagoConfirmado;
-	public boolean entregaConfirmada;
+	public Boolean pagoConfirmado;
+	public Boolean entregaConfirmada;
 	public BigDecimal precioSugerido;
 
 	public static TransporteDto from(Transporte entity) {
@@ -29,7 +29,8 @@ public class TransporteDto {
 		t.fechaFin = entity.fechaFin;
 		t.precioAcordado = entity.precioAcordado;
 		t.transportistaId = entity.transportistaId;
-		t.transportista = TransportistaDto.from(entity.transportista);
+		t.transportista = entity.transportista != null ?
+				TransportistaDto.from(entity.transportista) : null;
 		t.transaccionId = entity.transaccionId;
 		t.pagoConfirmado = entity.pagoConfirmado;
 		t.entregaConfirmada = entity.entregaConfirmada;
@@ -63,7 +64,6 @@ public class TransporteDto {
 		t.fechaFin = fechaFin;
 		t.precioAcordado = precioAcordado;
 		t.transportistaId = transportistaId;
-		t.transportista = transportista.toEntity();
 		t.transaccionId = transaccionId;
 		t.pagoConfirmado = pagoConfirmado;
 		t.entregaConfirmada = entregaConfirmada;

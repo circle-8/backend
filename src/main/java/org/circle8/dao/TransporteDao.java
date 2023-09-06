@@ -3,6 +3,7 @@ package org.circle8.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -87,19 +88,28 @@ public class TransporteDao extends Dao {
 	private static final String WHERE_TRANSPORTISTA_NULL = """
 			AND t."TransportistaId" IS NULL
 			""";
-	
-	private static final String UPDATE_PAGO = """
+	private static final String UPDATE = """
 			UPDATE "Transporte"
-			SET "PagoConfirmado"=true
+			SET %s
 			WHERE "ID"=?;
 			""";
 	
-	private static final String UPDATE_ENTREGA = """
-			UPDATE "Transporte"
-			SET "EntregaConfirmada"=true
-			WHERE "ID"=?;
+	private static final String SET_INICIO = """
+			"FechaInicio"=?
 			""";
-
+	
+	private static final String SET_FIN = """
+			"FechaFin"=?
+			""";
+	
+	private static final String SET_PAGO = """
+			"PagoConfirmado"=?
+			""";
+	
+	private static final String SET_ENTREGA = """
+			"EntregaConfirmada"=?
+			""";
+	
 	@Inject
 	TransporteDao(DataSource ds) {
 		super(ds);
@@ -140,9 +150,8 @@ public class TransporteDao extends Dao {
 		}
 	}
 	
-	public void updatePago(Transaction t,Long id) throws NotFoundException, PersistenceException {
-		try (var update = t.prepareStatement(UPDATE_PAGO)) {
-			update.setLong(1, id);
+	public void update(Transaction t, Transporte tr) throws NotFoundException, PersistenceException {
+		try (var update = createUpdate(t, tr)) {
 			int insertions = update.executeUpdate();
 			if (insertions == 0) {
 				throw new NotFoundException("No existe el transporte a actualizar.");
@@ -151,18 +160,6 @@ public class TransporteDao extends Dao {
 			throw new PersistenceException("error updating transporte", e);
 		}
 	}
-	
-	public void updateEntrega(Transaction t,Long id) throws NotFoundException, PersistenceException {
-		try (var update = t.prepareStatement(UPDATE_ENTREGA)) {
-			update.setLong(1, id);
-			int insertions = update.executeUpdate();
-			if (insertions == 0) {
-				throw new NotFoundException("No existe el transporte a actualizar.");
-			}
-		} catch (SQLException e) {
-			throw new PersistenceException("error updating transporte", e);
-		}
-	}	
 	
 	private PreparedStatement createSelect(Transaction t, TransporteFilter f, TransporteExpand x)
 			throws PersistenceException, SQLException {
@@ -201,6 +198,40 @@ public class TransporteDao extends Dao {
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i + 1, parameters.get(i));
 
+		return p;
+	}
+	
+	private PreparedStatement createUpdate(Transaction t, Transporte tr) throws PersistenceException, SQLException {
+		val set = new ArrayList<String>();
+		List<Object> parameters = new ArrayList<>();
+		
+		if(tr.pagoConfirmado != null) {
+			set.add(SET_PAGO);
+			parameters.add(tr.pagoConfirmado);
+		}
+		
+		if(tr.entregaConfirmada != null) {
+			set.add(SET_ENTREGA);
+			parameters.add(tr.entregaConfirmada);
+		}
+		
+		if(tr.fechaInicio != null) {
+			set.add(SET_INICIO);
+			parameters.add(Timestamp.from(tr.fechaInicio.toInstant()));
+		}
+		
+		if(tr.fechaFin != null) {
+			set.add(SET_FIN);
+			parameters.add(Timestamp.from(tr.fechaFin.toInstant()));
+		}
+		
+		parameters.add(tr.id);
+		
+		val sets = String.join(", ", set);
+		val sql = String.format(UPDATE, sets);
+		var p = t.prepareStatement(sql);
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
 		return p;
 	}
 	

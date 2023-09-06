@@ -52,21 +52,12 @@ public class TransporteService {
 		}
 	}	
 	
-	public TransporteDto confirmarPago(long id) throws ServiceException {
+	public TransporteDto update(TransporteDto tr) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			dao.updatePago(t, id);
-			return get(id, TransporteExpand.EMPTY);
+			dao.update(t, tr.toEntity());
+			return get(tr.id, TransporteExpand.EMPTY);
 		} catch ( PersistenceException e ) {
-			throw new ServiceError("Ha ocurrido un error al buscar la solicitud", e);
-		}
-	}	
-	
-	public TransporteDto confirmarEntrega(long id) throws ServiceException {
-		try ( val t = dao.open(true) ) {
-			dao.updateEntrega(t, id);
-			return get(id, TransporteExpand.EMPTY);
-		} catch ( PersistenceException e ) {
-			throw new ServiceError("Ha ocurrido un error al buscar la solicitud", e);
+			throw new ServiceError("Ha ocurrido un error al actualizar el transporte.", e);
 		}
 	}	
 }
