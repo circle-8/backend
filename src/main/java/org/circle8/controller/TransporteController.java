@@ -132,19 +132,39 @@ public class TransporteController {
 	 * POST /transporte/{id}/pago
 	 */
 	public ApiResponse confirmarPago(Context ctx) {
-		return mock.toBuilder()
-			.id(Long.parseLong(ctx.pathParam("id")))
-			.pagoConfirmado(true)
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
+		}		
+
+		try {
+			return this.service.confirmarPago(id).toResponse();
+		} catch ( ServiceError e ) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
 	 * POST /transporte/{id}/confirmacion_entrega
 	 */
 	public ApiResponse confirmarEntrega(Context ctx) {
-		return mock.toBuilder()
-			.id(Long.parseLong(ctx.pathParam("id")))
-			.entregaConfirmada(true)
-			.build();
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
+		}		
+
+		try {
+			return this.service.confirmarEntrega(id).toResponse();
+		} catch ( ServiceError e ) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 }

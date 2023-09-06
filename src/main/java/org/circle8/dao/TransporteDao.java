@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 
 import org.circle8.entity.Transporte;
 import org.circle8.entity.Transportista;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.TransporteExpand;
 import org.circle8.filter.TransporteFilter;
@@ -86,6 +87,18 @@ public class TransporteDao extends Dao {
 	private static final String WHERE_TRANSPORTISTA_NULL = """
 			AND t."TransportistaId" IS NULL
 			""";
+	
+	private static final String UPDATE_PAGO = """
+			UPDATE "Transporte"
+			SET "PagoConfirmado"=true
+			WHERE "ID"=?;
+			""";
+	
+	private static final String UPDATE_ENTREGA = """
+			UPDATE "Transporte"
+			SET "EntregaConfirmada"=true
+			WHERE "ID"=?;
+			""";
 
 	@Inject
 	TransporteDao(DataSource ds) {
@@ -127,6 +140,29 @@ public class TransporteDao extends Dao {
 		}
 	}
 	
+	public void updatePago(Transaction t,Long id) throws NotFoundException, PersistenceException {
+		try (var update = t.prepareStatement(UPDATE_PAGO)) {
+			update.setLong(1, id);
+			int insertions = update.executeUpdate();
+			if (insertions == 0) {
+				throw new NotFoundException("No existe el transporte a actualizar.");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating transporte", e);
+		}
+	}
+	
+	public void updateEntrega(Transaction t,Long id) throws NotFoundException, PersistenceException {
+		try (var update = t.prepareStatement(UPDATE_ENTREGA)) {
+			update.setLong(1, id);
+			int insertions = update.executeUpdate();
+			if (insertions == 0) {
+				throw new NotFoundException("No existe el transporte a actualizar.");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating transporte", e);
+		}
+	}	
 	
 	private PreparedStatement createSelect(Transaction t, TransporteFilter f, TransporteExpand x)
 			throws PersistenceException, SQLException {
