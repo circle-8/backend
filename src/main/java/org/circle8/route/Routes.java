@@ -129,7 +129,8 @@ public class Routes {
 			.delete("/transaccion/{id}/residuo/{id_residuo}", result(transaccionController::removeResiduo))
 			.post("/transaccion/{id}/transporte/{id_transporte}", result(transaccionController::setTransporte))
 			.delete("/transaccion/{id}/transporte/{id_transporte}", result(transaccionController::unsetTransporte))
-			.post("/transaccion/{id}/solicitud_transporte", result(transaccionController::solicitudTransporte))
+			.post("/transaccion/{id}/transporte", result(transaccionController::solicitudTransporte))
+			.delete("/transaccion/{id}/transporte", result(transaccionController::deleteTransporte))
 			// ZONA
 			.get("/zonas", result(zonaController::list))
 			.get("/organizacion/{organizacion_id}/zona/{id}", result(zonaController::get))

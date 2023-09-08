@@ -3,6 +3,7 @@ package org.circle8.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,11 @@ import com.google.inject.Inject;
 import lombok.val;
 
 public class TransporteDao extends Dao {
+	
+	private static final String INSERT_SQL = """
+			INSERT INTO "Transporte"("PrecioSugerido")
+			VALUES (?);
+			""";
 	
 	private static final String SELECT_FMT = """
 			SELECT
@@ -113,6 +119,27 @@ public class TransporteDao extends Dao {
 	@Inject
 	TransporteDao(DataSource ds) {
 		super(ds);
+	}
+	
+	public Transporte save(Transaction t, Transporte transporte) throws PersistenceException {
+		try (var insert = t.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
+			insert.setBigDecimal(1, transporte.precioSugerido);
+			
+			int insertions = insert.executeUpdate();
+			if (insertions == 0)
+				throw new SQLException("Creating the transporte failed, no affected rows");
+
+			try (var rs = insert.getGeneratedKeys()) {
+				if (rs.next())
+					transporte.id = rs.getLong(1);
+				else
+					throw new SQLException("Creating the transporte failed, no ID obtained");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error inserting Transaccion", e);
+		}
+
+		return transporte;
 	}
 
 	public Optional<Transporte> get(Transaction t, TransporteFilter f, TransporteExpand x) throws PersistenceException {
@@ -265,7 +292,5 @@ public class TransporteDao extends Dao {
 				.usuarioId(rs.getLong("UsuarioId"))
 				.polyline(PuntoUtils.getPolyline(rs.getString("Polyline")))
 				.build();
-
 	}
-
 }

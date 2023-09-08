@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(ApiTestExtension.class)
-public class TransaccionSetTransporteTest {
+public class TransaccionDeleteTransporteTest {
 
 	@Test
-	void testPostOk() {
+	void testDeleteOk() {
 		RestAssured.given()
-					  .post("/transaccion/4/transporte/1")
+					  .delete("/transaccion/1/transporte/1")
 					  .then()
 					  .statusCode(200)
 		;
@@ -20,7 +20,7 @@ public class TransaccionSetTransporteTest {
 	@Test
 	void testInvalidTransaccionId() {
 		RestAssured.given()
-					  .post("/transaccion/1a2/transporte/1")
+					  .delete("/transaccion/1a2/transporte/1")
 					  .then()
 					  .statusCode(400)
 		;
@@ -29,7 +29,7 @@ public class TransaccionSetTransporteTest {
 	@Test
 	void testInvalidTransporteId() {
 		RestAssured.given()
-					  .post("/transaccion/1/transporte/1a")
+					  .delete("/transaccion/1/transporte/1a")
 					  .then()
 					  .statusCode(400)
 		;
@@ -38,16 +38,17 @@ public class TransaccionSetTransporteTest {
 	@Test
 	void testWhitoutTransaccionId() {
 		RestAssured.given()
-					  .post("/transaccion//transporte/1")
+					  .delete("/transaccion//transporte/1")
 					  .then()
 					  .statusCode(404)
 		;
 	}
 
+	
 	@Test
 	void testWhithInexistingTransaccionId() {
 		RestAssured.given()
-					  .post("/transaccion/0/transporte/1")
+					  .delete("/transaccion/5/transporte/1")
 					  .then()
 					  .statusCode(404)
 		;
@@ -56,18 +57,18 @@ public class TransaccionSetTransporteTest {
 	@Test
 	void testWhithInexistingTransporteId() {
 		RestAssured.given()
-					  .post("/transaccion/1/transporte/6")
+					  .delete("/transaccion/1/transporte/6")
 					  .then()
-					  .statusCode(400)
+					  .statusCode(404)
 		;
 	}
 
 	@Test
-	void testWhithTransaccionThatAlreadyHasTransporte() {
+	void testWhithTransporteIdFromAnotherTransaccionId() {
 		RestAssured.given()
-					  .post("/transaccion/1/transporte/2")
+					  .delete("/transaccion/1/transporte/2")
 					  .then()
-					  .statusCode(400)
+					  .statusCode(404)
 		;
 	}
 

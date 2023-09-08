@@ -180,7 +180,6 @@ public class TransaccionDao extends Dao {
 		val f = TransaccionFilter.builder().id(id).build();
 		try (val ps = createSelect(t, f, expand)) {
 			ps.setLong(1, id);
-			val a = ps.toString();
 			try (val rs = ps.executeQuery()) {
 				if (!rs.next()) {
 					return Optional.empty();
@@ -241,7 +240,6 @@ public class TransaccionDao extends Dao {
 			rs.getBoolean("PagoConfirmado"),
 			rs.getBoolean("EntregaConfirmada"),
 			rs.getBigDecimal("Precio"));
-
 	}
 
 	private Residuo buildResiduo(ResultSet rs) throws SQLException {

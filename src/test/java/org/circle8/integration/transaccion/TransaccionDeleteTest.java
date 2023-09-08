@@ -38,7 +38,7 @@ public class TransaccionDeleteTest {
 	@Test
 	void testWhithInexistingTransaccionId() {
 		RestAssured.given()
-					  .delete("/transaccion/5")
+					  .delete("/transaccion/0")
 					  .then()
 					  .statusCode(404)
 		;
