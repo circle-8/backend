@@ -135,6 +135,7 @@ CREATE TABLE IF NOT EXISTS public."Transporte"
     "PagoConfirmado" boolean,
     "EntregaConfirmada" boolean,
     "TransportistaId" bigint,
+    "PrecioSugerido" numeric NOT NULL DEFAULT 0,
     CONSTRAINT "Transporte_pkey" PRIMARY KEY ("ID")
 );
 

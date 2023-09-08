@@ -177,7 +177,6 @@ public class TransaccionDao extends Dao {
 		val f = TransaccionFilter.builder().id(id).build();
 		try (val ps = createSelect(t, f, expand)) {
 			ps.setLong(1, id);
-			val a = ps.toString();
 			try (val rs = ps.executeQuery()) {
 				if (!rs.next()) {
 					return Optional.empty();
@@ -227,10 +226,17 @@ public class TransaccionDao extends Dao {
 		val fechaInicioTimestamp = rs.getTimestamp("FechaInicio");
 		val fechaAcordadaTimestamp = rs.getTimestamp("FechaAcordada");
 		val fechaFinTimestamp = rs.getTimestamp("FechaFin");
-		return new Transporte(rs.getLong("TransporteId"), fechaAcordadaTimestamp != null ? fechaAcordadaTimestamp.toInstant().atZone(Dates.UTC) : null,
-			fechaInicioTimestamp != null ? fechaInicioTimestamp.toInstant().atZone(Dates.UTC) : null,
-			fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null, rs.getBigDecimal("Precio"),
-			rs.getLong("TransportistaId"), null, rs.getLong("ID"), rs.getBoolean("PagoConfirmado"), rs.getBoolean("EntregaConfirmada"));
+		return new Transporte(
+				rs.getLong("TransporteId"),
+				fechaAcordadaTimestamp != null ? fechaAcordadaTimestamp.toInstant().atZone(Dates.UTC) : null,
+				fechaInicioTimestamp != null ? fechaInicioTimestamp.toInstant().atZone(Dates.UTC) : null,
+				fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null, rs.getBigDecimal("Precio"),
+				rs.getLong("TransportistaId"),
+				null,
+				rs.getLong("ID"),
+				rs.getBoolean("PagoConfirmado"),
+				rs.getBoolean("EntregaConfirmada"),
+				null);
 
 	}
 

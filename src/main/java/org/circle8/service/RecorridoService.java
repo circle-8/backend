@@ -13,6 +13,8 @@ import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
+import org.circle8.utils.PuntoUtils;
+
 import java.util.List;
 
 public class RecorridoService {
@@ -42,29 +44,10 @@ public class RecorridoService {
 
 	private void sortRetiro(Punto initialPoint, List<Retiro> points) {
 		points.sort((a, b) -> {
-			val d1 = calculateDistance(initialPoint, new Punto(a.latitud, a.longitud));
-			val d2 = calculateDistance(initialPoint, new Punto(b.latitud, b.longitud));
+			val d1 = PuntoUtils.calculateDistance(initialPoint, new Punto(a.latitud, a.longitud));
+			val d2 = PuntoUtils.calculateDistance(initialPoint, new Punto(b.latitud, b.longitud));
 			return Double.compare(d1, d2);
 		});
-	}
-
-	private double calculateDistance(Punto pointA, Punto pointB) {
-		val earthRadiusKm = 6371.0;
-		val lat1Rad = Math.toRadians(pointA.latitud);
-		val lon1Rad = Math.toRadians(pointA.longitud);
-		val lat2Rad = Math.toRadians(pointB.latitud);
-		val lon2Rad = Math.toRadians(pointB.longitud);
-
-		val dLat = lat2Rad - lat1Rad;
-		val dLon = lon2Rad - lon1Rad;
-
-		val a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-			+ Math.cos(lat1Rad) * Math.cos(lat2Rad)
-			* Math.sin(dLon / 2) * Math.sin(dLon / 2);
-
-		val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-		return earthRadiusKm * c;
 	}
 
 	public RecorridoDto save(RecorridoDto dto) throws ServiceException {

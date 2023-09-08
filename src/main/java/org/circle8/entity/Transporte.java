@@ -21,4 +21,5 @@ public class Transporte {
 	public Long transaccionId;
 	public boolean pagoConfirmado;
 	public boolean entregaConfirmada;
+	public BigDecimal precioSugerido;
 }
