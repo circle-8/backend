@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class TransporteFilter {
 
 	public Long id;
+	public Long userId;
 	public Long transportistaId;
 	public Boolean entregaConfirmada;
 	public Boolean pagoConfirmado;

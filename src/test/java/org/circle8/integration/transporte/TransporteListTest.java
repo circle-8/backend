@@ -100,8 +100,8 @@ public class TransporteListTest {
 			.body("data[2].transaccionUri", equalTo("/transaccion/3"))
 			
 			.body("data[3].id", equalTo(3))
-			.body("data[3].transaccionId", is(nullValue()))			
-			.body("data[3].transaccionUri", is(nullValue()))
+			.body("data[3].transaccionId", equalTo(5))			
+			.body("data[3].transaccionUri", equalTo("/transaccion/5"))
 		;
 	}
 	
@@ -178,6 +178,44 @@ public class TransporteListTest {
 	void ListWithInvalidTransportistaFilter() {
 		RestAssured.given()
 			.get("/transportes?transportista_id=aa")
+			.then()
+			.statusCode(400)			
+		;
+	}
+	
+	
+	@Test
+	void ListWithUserFilter() {
+		RestAssured.given()
+			.get("/transportes?user_id=1")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(greaterThan(0)))
+			.body("data[0].id", equalTo(1))
+			.body("data[0].precioAcordado", equalTo(40.0F))
+			.body("data[0].fechaAcordada", is(nullValue()))
+			.body("data[0].fechaInicio", equalTo("2020-01-01T08:00:00Z"))
+			.body("data[0].fechaFin", equalTo("2020-01-02T08:00:00Z"))
+			.body("data[0].pagoConfirmado", equalTo(false))
+			.body("data[0].entregaConfirmada", equalTo(false))
+			.body("data[0].precioSugerido", equalTo(2500.0F))			
+		;
+	}
+	
+	@Test
+	void ListWithNotFoundUserFilter() {
+		RestAssured.given()
+			.get("/transportes?user_id=0")
+			.then()
+			.statusCode(200)
+			.body("data", hasSize(0))			
+		;
+	}
+	
+	@Test
+	void ListWithInvalidUserFilter() {
+		RestAssured.given()
+			.get("/transportes?user_id=aa")
 			.then()
 			.statusCode(400)			
 		;

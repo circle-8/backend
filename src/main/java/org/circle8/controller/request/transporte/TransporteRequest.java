@@ -12,6 +12,7 @@ import java.util.Map;
 public class TransporteRequest implements IRequest {
 	private final Validation validation = new Validation();
 
+	public Long userId;
 	public Long transportistaId;
 	public Boolean entregaConfirmada;
 	public Boolean pagoConfirmado;
@@ -20,6 +21,7 @@ public class TransporteRequest implements IRequest {
 	public Long transaccionId;
 	
 	public TransporteRequest(Map<String, List<String>> queryParams) {
+		this.userId = Parser.parseLong(validation, queryParams, "user_id");
 		this.transportistaId = Parser.parseLong(validation, queryParams, "transportista_id");
 		this.entregaConfirmada = Parser.parseBoolean(validation, queryParams, "entrega_confirmada");
 		this.pagoConfirmado = Parser.parseBoolean(validation, queryParams, "pago_confirmado");

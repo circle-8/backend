@@ -53,8 +53,7 @@ public class TransporteDao extends Dao {
 	
 	private static final String JOIN_X_TRANSPORTISTA = """
 			LEFT JOIN "Transportista" AS transp on transp."ID" = t."TransportistaId"
-			""";
-	
+			""";	
 	private static final String JOIN_X_TRANSACCION = """
 			LEFT JOIN "TransaccionResiduo" AS trans on trans."TransporteId" = t."ID"
 			""";
@@ -69,6 +68,10 @@ public class TransporteDao extends Dao {
 	
 	private static final String WHERE_TRANSPORTISTA_ID = """
 			AND t."TransportistaId" = ?
+			""";
+	
+	private static final String WHERE_USER_TRANSPORTISTA_ID = """
+			AND transp."UsuarioId" = ?
 			""";
 	
 	private static final String WHERE_FECHA = """
@@ -194,7 +197,7 @@ public class TransporteDao extends Dao {
 		var selectFields = SELECT_SIMPLE;
 		var joinFields = "";
 
-		if (x.transportista) {
+		if (x.transportista || f.userId != null) {
 			selectFields += SELECT_X_TRANSPORTISTA;
 			joinFields += JOIN_X_TRANSPORTISTA;
 		}
@@ -208,6 +211,7 @@ public class TransporteDao extends Dao {
 		List<Object> parameters = new ArrayList<>();
 		
 		appendCondition(f.id, WHERE_ID, b, parameters);
+		appendCondition(f.userId, WHERE_USER_TRANSPORTISTA_ID, b, parameters);
 		appendCondition(f.transportistaId, WHERE_TRANSPORTISTA_ID, b, parameters);
 		appendCondition(f.fechaRetiro, WHERE_FECHA, b, parameters);
 		appendCondition(f.transaccionId, WHERE_TRANSACCION_ID, b, parameters);

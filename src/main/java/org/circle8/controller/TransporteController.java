@@ -53,6 +53,7 @@ public class TransporteController {
 			return new ErrorResponse(valid);
 		
 		val filter = TransporteFilter.builder()
+				.userId(req.userId)
 				.transportistaId(req.transportistaId)
 				.entregaConfirmada(req.entregaConfirmada)
 				.pagoConfirmado(req.pagoConfirmado)
