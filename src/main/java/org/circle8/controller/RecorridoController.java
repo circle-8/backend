@@ -1,20 +1,13 @@
 package org.circle8.controller;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import io.javalin.http.Context;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
+import java.util.List;
+
 import org.circle8.controller.request.recorrido.PostRecorridoRequest;
 import org.circle8.controller.request.recorrido.PutRecorridoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
-import org.circle8.controller.response.PuntoResponse;
-import org.circle8.controller.response.RecorridoResponse;
-import org.circle8.controller.response.ResiduoResponse;
-import org.circle8.controller.response.RetiroResponse;
 import org.circle8.controller.response.SuccessResponse;
 import org.circle8.dto.RecorridoDto;
 import org.circle8.exception.ServiceError;
@@ -24,8 +17,12 @@ import org.circle8.filter.RecorridoFilter;
 import org.circle8.service.RecorridoService;
 import org.circle8.service.RecorridoService.UpdateEnum;
 
-import java.time.LocalDate;
-import java.util.List;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import io.javalin.http.Context;
+import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Singleton
@@ -40,17 +37,6 @@ public class RecorridoController {
 	public RecorridoController(RecorridoService service) {
 		this.service = service;
 	}
-
-	private final RecorridoResponse mock = RecorridoResponse.builder()
-		.fechaRetiro(LocalDate.of(2023, 1, 1))
-		.recicladorId(1L).recicladorUri("/reciclador/1")
-		.zonaId(1L).zonaUri("/organizacion/1/zona/1")
-		.puntoInicio(new PuntoResponse(-34.6347176f,-58.5587959f))
-		.puntoFin(new PuntoResponse(-34.6516556f,-58.5356009f))
-		.puntos(List.of(
-			new RetiroResponse(-34.6347176f,-58.5587959f, new ResiduoResponse())
-		))
-		.build();
 
 	/**
 	 * GET /recorrido/{id}
