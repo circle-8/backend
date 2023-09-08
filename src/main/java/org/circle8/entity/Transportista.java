@@ -1,9 +1,19 @@
 package org.circle8.entity;
 
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
-@RequiredArgsConstructor
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class Transportista {
-	public long id;
-	public final long usuarioId;
+	public Long id;
+	public Long usuarioId;
+	public List<Punto> polyline;
+	
+	public Transportista(long id ) { this.id = id; }
+
 }

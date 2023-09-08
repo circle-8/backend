@@ -4,8 +4,8 @@ import org.circle8.controller.response.PuntoResponse;
 import org.circle8.entity.Punto;
 
 public class PuntoDto {
-	public float latitud;
-	public float longitud;
+	public double latitud;
+	public double longitud;
 
 	public static PuntoDto from(Punto entity) {
 		if ( entity == null ) return null;

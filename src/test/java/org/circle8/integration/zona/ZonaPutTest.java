@@ -163,7 +163,7 @@ public class ZonaPutTest {
 	}
 	
 	@Test
-	void testWithZonaId() {
+	void testWithOutZonaId() {
 		RestAssured.given()
 		.put("/organizacion/1/zona/")
 		.then()
