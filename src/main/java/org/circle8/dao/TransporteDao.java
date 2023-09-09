@@ -119,6 +119,18 @@ public class TransporteDao extends Dao {
 			"EntregaConfirmada"=?
 			""";
 	
+	private static final String SET_PRECIO = """
+			"Precio"=?
+			""";
+	
+	private static final String SET_FECHA_ACORDADA = """
+			"FechaAcordada"=?
+			""";
+	
+	private static final String SET_TRANSPORTISTA = """
+			"TransportistaId"=?
+			""";
+	
 	@Inject
 	TransporteDao(DataSource ds) {
 		super(ds);
@@ -254,6 +266,21 @@ public class TransporteDao extends Dao {
 		if(tr.fechaFin != null) {
 			set.add(SET_FIN);
 			parameters.add(Timestamp.from(tr.fechaFin.toInstant()));
+		}
+		
+		if(tr.precioAcordado != null) {
+			set.add(SET_PRECIO);
+			parameters.add(tr.precioAcordado);
+		}
+		
+		if(tr.fechaAcordada != null) {
+			set.add(SET_FECHA_ACORDADA);
+			parameters.add(tr.fechaAcordada);
+		}
+		
+		if(tr.transaccionId != null) {
+			set.add(SET_TRANSPORTISTA);
+			parameters.add(tr.transaccionId);
 		}
 		
 		parameters.add(tr.id);

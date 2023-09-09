@@ -1,5 +1,6 @@
 package org.circle8.dto;
 
+import org.circle8.controller.request.transporte.TransportePutRequest;
 import org.circle8.controller.response.TransporteResponse;
 import org.circle8.entity.Transporte;
 
@@ -19,6 +20,14 @@ public class TransporteDto {
 	public Boolean pagoConfirmado;
 	public Boolean entregaConfirmada;
 	public BigDecimal precioSugerido;
+	
+	public static TransporteDto from(TransportePutRequest req) {
+		var t = new TransporteDto();
+		t.fechaAcordada = req.fechaAcordada;
+		t.precioAcordado = req.precioAcordado;
+		t.transaccionId = req.transportistaId;		
+		return t;
+	}
 
 	public static TransporteDto from(Transporte entity) {
 		if ( entity == null ) return null;

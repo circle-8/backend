@@ -155,6 +155,7 @@ public class Routes {
 			.post("/transporte/{id}/fin", result(transporteController::fin))
 			.post("/transporte/{id}/pago", result(transporteController::confirmarPago))
 			.post("/transporte/{id}/confirmacion_entrega", result(transporteController::confirmarEntrega))
+			.put("/transporte/{id}", result(transporteController::put))
 			// USER
 			.get("/users", result(userController::list))
 			.get("/user/{id}", result(userController::get))

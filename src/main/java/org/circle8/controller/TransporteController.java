@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import org.circle8.controller.request.transporte.TransportePutRequest;
 import org.circle8.controller.request.transporte.TransporteRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
@@ -106,6 +107,34 @@ public class TransporteController {
 			.id(Long.parseLong(ctx.pathParam("id")))
 			.precioAcordado(BigDecimal.TEN)
 			.build();
+	}
+	
+	
+	/**
+	 * POST /transporte/{id}
+	 */
+	public ApiResponse put(Context ctx) {
+		final long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
+		}		
+		
+		val req = ctx.bodyAsClass(TransportePutRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+		
+		try {
+			val tr = TransporteDto.from(req);
+			tr.id = id;
+			return this.service.update(tr).toResponse();
+		} catch ( ServiceError e ) {
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
