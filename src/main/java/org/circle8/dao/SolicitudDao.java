@@ -185,7 +185,7 @@ public class SolicitudDao extends Dao {
 
 			return l;
 		} catch (SQLException e) {
-			throw new PersistenceException("error getting punto reciclaje", e);
+			throw new PersistenceException("error getting solicitudes", e);
 		}
 	}
 
