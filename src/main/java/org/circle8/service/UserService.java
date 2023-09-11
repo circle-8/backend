@@ -1,5 +1,9 @@
 package org.circle8.service;
 
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import lombok.val;
 import org.circle8.dao.Transaction;
 import org.circle8.dao.UserDao;
 import org.circle8.dto.TipoUsuario;
@@ -11,12 +15,9 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.filter.UserFilter;
 
-import com.google.common.base.Strings;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import lombok.val;
+import java.util.List;
 
 @Singleton
 public class UserService {
@@ -58,14 +59,14 @@ public class UserService {
 			throw new ServiceError("Ha ocurrido un error al obtener el usuario", e);
 		}
 	}
-	
+
 	public UserDto get(Long id) throws NotFoundException, ServiceError {
 		try {
 			var u = this.dao.get(null,id).orElseThrow(() -> new NotFoundException("No existe el usuario con id " + id));
 			return UserDto.from(u);
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al obtener el usuario", e);
-		}		
+		}
 	}
 
 	/**
@@ -109,14 +110,14 @@ public class UserService {
 
 		return dto;
 	}
-	
+
 	public UserDto put(Long id, UserDto dto) throws ServiceException {
 		var user = dto.toEntity();
 		user.id = id;
 		try ( var t = dao.open() ) {
-			updateUser(t, user);		
+			updateUser(t, user);
 			if(user.tipo != null && TipoUsuario.TRANSPORTISTA.equals(user.tipo)) {
-				updateTransportista(t, user);				
+				updateTransportista(t, user);
 			}
 			updateReciclador(t, user);
 			updateOrganizacion(t, user);
@@ -129,7 +130,7 @@ public class UserService {
 			throw new ServiceError("Ha ocurrido un error al actualizar el usuario", e);
 		}
 	}
-	
+
 	private void updateUser(Transaction t, User user) throws NotFoundException, PersistenceException {
 		if( !Strings.isNullOrEmpty(user.nombre)
 				|| !Strings.isNullOrEmpty(user.username)
@@ -137,21 +138,29 @@ public class UserService {
 				|| !Strings.isNullOrEmpty(user.email) )
 			dao.update(t, user);
 	}
-	
+
 	private void updateTransportista(Transaction t, User user) throws PersistenceException, ServiceException {
 		val transOp = transportista.getByUsuarioId(t, user.id);
 		if(!transOp.isPresent())
 			transportista.save(t, user.id);
 		//TODO: ver caso en el que era transportista y ya no
 	}
-	
+
 	private void updateReciclador(Transaction t, User user) throws NotFoundException, ServiceError {
 		if(user.zonaId != null || user.organizacionId != null)
 			reciclador.update(t, user);
 	}
-	
+
 	private void updateOrganizacion(Transaction t, User user) throws NotFoundException, ServiceError {
 		if(!Strings.isNullOrEmpty(user.razonSocial))
 			organizacion.update(t, user);
+	}
+
+	public List<UserDto> list(UserFilter f) throws ServiceException {
+		try {
+			return this.dao.list(f).stream().map(UserDto::from).toList();
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al obtener el listado de usuarios", e);
+		}
 	}
 }
