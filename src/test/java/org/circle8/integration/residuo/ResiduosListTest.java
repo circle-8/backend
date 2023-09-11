@@ -21,7 +21,7 @@ import io.restassured.RestAssured;
 		RestAssured.given()
 			.get("/residuos")
 			.then()
-			.body("data", hasSize(13))
+			.body("data", hasSize(14))
 		;
 	}
 

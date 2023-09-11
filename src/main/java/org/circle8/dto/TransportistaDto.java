@@ -22,8 +22,10 @@ public class TransportistaDto {
 	}
 
 	public TransportistaResponse toResponse() {
-		//TODO: implementar
-		return new TransportistaResponse();
+		return TransportistaResponse.builder()
+				.id(id)
+				.polylineAlcance(polyline.stream().map(PuntoDto::toResponse).toList())
+				.build();
 	}
 
 	public Transportista toEntity() {

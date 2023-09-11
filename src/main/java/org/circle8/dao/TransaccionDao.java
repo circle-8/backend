@@ -1,7 +1,19 @@
 package org.circle8.dao;
 
-import com.google.inject.Inject;
-import lombok.val;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.sql.DataSource;
+
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.PuntoResiduo;
@@ -16,18 +28,9 @@ import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
 import org.circle8.utils.Dates;
 
-import javax.sql.DataSource;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import com.google.inject.Inject;
+
+import lombok.val;
 
 public class TransaccionDao extends Dao {
 
@@ -105,7 +108,7 @@ public class TransaccionDao extends Dao {
 		""";
 
 	private static final String SELECT_TRANSPORTE = """
-		, tra."FechaAcordada", tra."FechaInicio", tra."FechaFin", tra."Precio", tra."TransportistaId", tra."PagoConfirmado", tra."EntregaConfirmada"
+		, tra."FechaAcordada", tra."FechaInicio", tra."FechaFin", tra."Precio", tra."TransportistaId", tra."PagoConfirmado", tra."EntregaConfirmada", tra."PrecioSugerido"
 		""";
 
 	private static final String SELECT_PUNTO_RECICLAJE = """
@@ -177,7 +180,6 @@ public class TransaccionDao extends Dao {
 		val f = TransaccionFilter.builder().id(id).build();
 		try (val ps = createSelect(t, f, expand)) {
 			ps.setLong(1, id);
-			val a = ps.toString();
 			try (val rs = ps.executeQuery()) {
 				if (!rs.next()) {
 					return Optional.empty();
@@ -224,14 +226,20 @@ public class TransaccionDao extends Dao {
 		if (!expand)
 			return null;
 
-		val fechaInicioTimestamp = rs.getTimestamp("FechaInicio");
-		val fechaAcordadaTimestamp = rs.getTimestamp("FechaAcordada");
+		val fechaAcordada = rs.getDate("FechaAcordada");
+		val fechaInicioTimestamp = rs.getTimestamp("FechaInicio");		
 		val fechaFinTimestamp = rs.getTimestamp("FechaFin");
-		return new Transporte(rs.getLong("TransporteId"), fechaAcordadaTimestamp != null ? fechaAcordadaTimestamp.toInstant().atZone(Dates.UTC) : null,
+		return new Transporte(rs.getLong("TransporteId"),
+				fechaAcordada != null ? fechaAcordada.toLocalDate() : null,
 			fechaInicioTimestamp != null ? fechaInicioTimestamp.toInstant().atZone(Dates.UTC) : null,
-			fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null, rs.getBigDecimal("Precio"),
-			rs.getLong("TransportistaId"), null, rs.getLong("ID"), rs.getBoolean("PagoConfirmado"), rs.getBoolean("EntregaConfirmada"));
-
+			fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null,
+			rs.getBigDecimal("Precio"),
+			rs.getLong("TransportistaId"),
+			null,
+			rs.getLong("ID"),
+			rs.getBoolean("PagoConfirmado"),
+			rs.getBoolean("EntregaConfirmada"),
+			rs.getBigDecimal("Precio"));
 	}
 
 	private Residuo buildResiduo(ResultSet rs) throws SQLException {
