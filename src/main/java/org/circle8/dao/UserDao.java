@@ -9,6 +9,7 @@ import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
+import org.circle8.filter.UserFilter;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
@@ -33,20 +34,16 @@ public class UserDao extends Dao {
 		   "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId",
 		   o."ID" AS "OOrganizacionId"
 		     FROM "Usuario" u
-		LEFT JOIN "Ciudadano" c on c."UsuarioId" = u."ID"
-		LEFT JOIN "RecicladorUrbano" r on r."UsuarioId" = u."ID"
-		LEFT JOIN "Organizacion" o on o."UsuarioId" = u."ID"
+		LEFT JOIN "Ciudadano" c ON c."UsuarioId" = u."ID"
+		LEFT JOIN "RecicladorUrbano" r ON r."UsuarioId" = u."ID"
+		LEFT JOIN "Organizacion" o ON o."UsuarioId" = u."ID"
 		    WHERE 1 = 1
 		""";
 
-	private static final String WHERE_ID = """
-			AND u."ID" = ?
-			""";
-
-	private static final String WHERE_USER_NAME = """
-			AND u."Username" = ?
-			""";
-
+	private static final String WHERE_ID = "AND u.\"ID\" = ?\n";
+	private static final String WHERE_USER_NAME = "AND u.\"Username\" = ?\n";
+	private static final String WHERE_ORGANIZACION_ID = "AND (r.\"OrganizacionId\" = ? OR o.\"ID\" = ?)\n";
+	private static final String WHERE_TIPO_USUARIO = "AND u.\"TipoUsuario\" = ?\n";
 
 	private static final String UPDATE = """
 			UPDATE "Usuario"
@@ -124,9 +121,10 @@ public class UserDao extends Dao {
 		return user;
 	}
 
-	public Optional<User> get(String userName, Long id) throws PersistenceException {
-		try ( var t = open(true); var select = createSelect(t, userName, id) ) {
-			try ( var rs = select.executeQuery() ) {
+	public Optional<User> get(String username, Long id) throws PersistenceException {
+		val f = UserFilter.builder().id(id).username(username).build();
+		try (val t = open(true); val select = createSelect(t, f) ) {
+			try ( val rs = select.executeQuery() ) {
 				if ( !rs.next() )
 					return Optional.empty();
 				return Optional.of(buildUser(rs));
@@ -136,18 +134,18 @@ public class UserDao extends Dao {
 		}
 	}
 
-	private PreparedStatement createSelect(Transaction t, String userName, Long id) throws PersistenceException, SQLException {
+	private PreparedStatement createSelect(Transaction t, UserFilter f) throws PersistenceException, SQLException {
 		var b = new StringBuilder(SELECT_GET);
 		List<Object> parameters = new ArrayList<>();
 
-		if(!Strings.isNullOrEmpty(userName)) {
-			b.append(WHERE_USER_NAME);
-			parameters.add(userName);
-		}
+		appendCondition(f.username, WHERE_USER_NAME, b, parameters);
+		appendCondition(f.id, WHERE_ID, b, parameters);
+		appendCondition(f.tipoUsuario, WHERE_TIPO_USUARIO, b, parameters);
 
-		if(id != null) {
-			b.append(WHERE_ID);
-			parameters.add(id);
+		if ( f.organizacionId != null ) {
+			b.append(WHERE_ORGANIZACION_ID);
+			parameters.add(f.organizacionId);
+			parameters.add(f.organizacionId);
 		}
 
 		var p = t.prepareStatement(b.toString());
@@ -210,5 +208,19 @@ public class UserDao extends Dao {
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i + 1, parameters.get(i));
 		return p;
+	}
+
+	public List<User> list(UserFilter f) throws PersistenceException {
+		try (
+			val t = open();
+			val select = createSelect(t, f);
+			val rs = select.executeQuery()
+		) {
+			val l = new ArrayList<User>();
+			while ( rs.next() ) l.add(buildUser(rs));
+			return l;
+		} catch (SQLException e) {
+			throw new PersistenceException("error getting users", e);
+		}
 	}
 }

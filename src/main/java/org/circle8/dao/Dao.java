@@ -70,6 +70,7 @@ abstract class Dao {
 			conditions.append(where);
 			if ( o instanceof LocalDate ld ) params.add(Date.valueOf(ld));
 			else if ( o instanceof ZonedDateTime zd ) params.add(Timestamp.from(zd.toInstant()));
+			else if ( o instanceof Enum<?> e ) params.add(e.toString());
 			else params.add(o);
 		}
 	}
