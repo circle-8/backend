@@ -1,12 +1,19 @@
 package org.circle8.controller;
 
-import java.util.List;
-
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
+import io.javalin.http.Cookie;
+import io.javalin.http.SameSite;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.commons.configuration2.Configuration;
 import org.circle8.controller.request.user.RefreshTokenRequest;
 import org.circle8.controller.request.user.TokenRequest;
 import org.circle8.controller.request.user.UserPutRequest;
 import org.circle8.controller.request.user.UserRequest;
+import org.circle8.controller.request.user.UsersRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -18,18 +25,9 @@ import org.circle8.dto.UserDto;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.filter.UserFilter;
 import org.circle8.security.JwtService;
 import org.circle8.service.UserService;
-
-import com.google.common.base.Strings;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import io.javalin.http.Cookie;
-import io.javalin.http.SameSite;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
 
 @Singleton
 @Slf4j
@@ -56,12 +54,25 @@ public class UserController {
 	 * GET /users
 	 */
 	public ApiResponse list(Context ctx) {
-		val l = List.of(
-			mock,
-			mock.toBuilder().id(2).build()
-		);
+		val req = new UsersRequest(ctx.queryParamMap());
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(valid);
 
-		return new ListResponse<>(0, 1, 2, null, null, l);
+		val filter = UserFilter.builder()
+			.organizacionId(req.organizacionId)
+			.tipoUsuario(req.tipoUsuario != null ? req.tipoUsuario.to() : null)
+			.build();
+
+		try {
+			val users = service.list(filter);
+			return new ListResponse<>(users.stream().map(UserDto::toResponse).toList());
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error list users", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
@@ -74,7 +85,7 @@ public class UserController {
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del usuario debe ser numérico", "");
 		}
-		
+
 		try {
 			return service.get(id).toResponse();
 		} catch ( ServiceError e ) {
@@ -187,7 +198,7 @@ public class UserController {
 	public ApiResponse restorePassword(Context ctx) {
 		return mock;
 	}
-	
+
 	/**
 	 * PUT /user/id
 	 */
@@ -198,14 +209,14 @@ public class UserController {
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del usuario debe ser numérico", "");
 		}
-		
+
 		val req = ctx.bodyAsClass(UserPutRequest.class);
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(valid);
 
 		var dto = UserDto.from(req);
-		
+
 		try {
 			dto = service.put(id, dto);
 		} catch ( ServiceError e ) {
