@@ -22,10 +22,11 @@ public class UserDto {
 	public SuscripcionDto suscripcion;
 	public Long ciudadanoId;
 	public Long recicladorUrbanoId;
-	public Long organizacionId;
-	public Long transportistaId;
-	public String razonSocial;
+	public RecicladorUrbanoDto reciclador;
 	public Long zonaId;
+	public Long organizacionId;
+	public String razonSocial;
+	public Long transportistaId;
 
 	public static UserDto from(UserRequest request) {
 		val u = new UserDto();
@@ -66,6 +67,7 @@ public class UserDto {
 		u.suscripcion = SuscripcionDto.from(entity.suscripcion);
 		u.ciudadanoId = entity.ciudadanoId;
 		u.recicladorUrbanoId = entity.recicladorUrbanoId;
+		u.reciclador = RecicladorUrbanoDto.from(entity.reciclador);
 		u.organizacionId = entity.organizacionId;
 		u.transportistaId = entity.transportistaId;
 		u.razonSocial = entity.razonSocial;
@@ -83,6 +85,7 @@ public class UserDto {
 			suscripcion != null ? suscripcion.toResponse() : null,
 			ciudadanoId,
 			recicladorUrbanoId,
+			reciclador != null ? reciclador.toResponse() : null,
 			organizacionId,
 			transportistaId,
 			zonaId
