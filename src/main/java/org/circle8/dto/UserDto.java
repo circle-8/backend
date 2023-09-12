@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.val;
-
 import org.circle8.controller.request.user.UserPutRequest;
 import org.circle8.controller.request.user.UserRequest;
 import org.circle8.controller.response.TipoUsuarioResponse;
@@ -24,6 +23,7 @@ public class UserDto {
 	public Long ciudadanoId;
 	public Long recicladorUrbanoId;
 	public Long organizacionId;
+	public Long transportistaId;
 	public String razonSocial;
 	public Long zonaId;
 
@@ -39,7 +39,7 @@ public class UserDto {
 		u.razonSocial = request.razonSocial;
 		return u;
 	}
-	
+
 	public static UserDto from(UserPutRequest request) {
 		val u = new UserDto();
 		u.username = request.username;
@@ -67,6 +67,7 @@ public class UserDto {
 		u.ciudadanoId = entity.ciudadanoId;
 		u.recicladorUrbanoId = entity.recicladorUrbanoId;
 		u.organizacionId = entity.organizacionId;
+		u.transportistaId = entity.transportistaId;
 		u.razonSocial = entity.razonSocial;
 		u.zonaId = entity.zonaId;
 		return u;
@@ -83,6 +84,7 @@ public class UserDto {
 			ciudadanoId,
 			recicladorUrbanoId,
 			organizacionId,
+			transportistaId,
 			zonaId
 		);
 	}
@@ -95,6 +97,7 @@ public class UserDto {
 			.tipo(tipo)
 			.email(email)
 			.organizacionId(organizacionId)
+			.transportistaId(transportistaId)
 			.razonSocial(razonSocial)
 			.zonaId(zonaId)
 			.build();

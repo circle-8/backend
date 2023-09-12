@@ -17,5 +17,6 @@ public class UserResponse implements ApiResponse {
 	public Long ciudadanoId;
 	public Long recicladorUrbanoId;
 	public Long organizacionId;
+	public Long transportistaId;
 	public Long zonaId;
 }

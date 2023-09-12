@@ -32,10 +32,11 @@ public class UserDao extends Dao {
 	private static final String SELECT_GET = """
 		   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario",
 		   "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId",
-		   o."ID" AS "OOrganizacionId"
+		   o."ID" AS "OOrganizacionId", t."ID" AS TransportistaId
 		     FROM "Usuario" u
 		LEFT JOIN "Ciudadano" c ON c."UsuarioId" = u."ID"
 		LEFT JOIN "RecicladorUrbano" r ON r."UsuarioId" = u."ID"
+		LEFT JOIN "Transportista" t ON t."UsuarioId" = u."ID"
 		LEFT JOIN "Organizacion" o ON o."UsuarioId" = u."ID"
 		    WHERE 1 = 1
 		""";
@@ -172,6 +173,8 @@ public class UserDao extends Dao {
 				: null;
 		} else if ( TipoUsuario.ORGANIZACION.equals(u.tipo) ) {
 			u.organizacionId = rs.getLong("OOrganizacionId");
+		} else if ( TipoUsuario.TRANSPORTISTA.equals(u.tipo) ) {
+			u.transportistaId = rs.getLong("TransportistaId");
 		}
 		return u;
 	}
