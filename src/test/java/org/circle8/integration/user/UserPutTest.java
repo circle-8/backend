@@ -1,18 +1,15 @@
 package org.circle8.integration.user;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.stringContainsInOrder;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import javax.sql.DataSource;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import javax.sql.DataSource;
+
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(ApiTestExtension.class)
 public class UserPutTest {
@@ -32,8 +29,8 @@ public class UserPutTest {
 			.statusCode(200)
 			.body("username", equalTo("nuevo-usuario-1"))
 			;
-	}	
-	
+	}
+
 	@Test
 	void testExistingUsername() throws Exception {
 		var request = """
@@ -49,8 +46,8 @@ public class UserPutTest {
 			.body("code", equalTo("BAD_REQUEST"))
 			.body("message", stringContainsInOrder("usuario", "registrado"))
 			;
-	}	
-	
+	}
+
 	@Test
 	void testPutNombreOk() throws Exception {
 		var request = """
@@ -65,8 +62,8 @@ public class UserPutTest {
 			.statusCode(200)
 			.body("nombre", equalTo("Nuevo Usuario 1"))
 			;
-	}	
-	
+	}
+
 	@Test
 	void testPutEmailOk() throws Exception {
 		var request = """
@@ -79,9 +76,9 @@ public class UserPutTest {
 			.put("/user/1")
 			.then()
 			.statusCode(200)
-			.body("email", is(nullValue()))
+			.body("email", equalTo("nuevo@email.com"))
 			;
-		
+
 		var checkEmailSQL = """
 				SELECT
 				u."Email"
@@ -95,9 +92,9 @@ public class UserPutTest {
 			assertTrue(rs.next());
 			assertTrue(rs.getString("Email").equals("nuevo@email.com"));
 		}
-	}	
-	
-	
+	}
+
+
 	@Test
 	void testExistingEmail() throws Exception {
 		var request = """
@@ -113,9 +110,9 @@ public class UserPutTest {
 			.body("code", equalTo("BAD_REQUEST"))
 			.body("message", stringContainsInOrder("email", "registrado"))
 			;
-	}	
-	
-	
+	}
+
+
 	@Test
 	void testPutTransportistaOk() throws Exception {
 		var request = """
@@ -127,10 +124,10 @@ public class UserPutTest {
 			.body(request)
 			.put("/user/1")
 			.then()
-			.statusCode(200)			
+			.statusCode(200)
 			.body("tipoUsuario", equalTo("TRANSPORTISTA"))
 			;
-		
+
 		var checkTransportistaSQL = """
 				SELECT
 				t."ID", t."UsuarioId", t."Polyline"
@@ -142,8 +139,8 @@ public class UserPutTest {
 			ps.setLong(1, 1);
 			assertTrue(ps.executeQuery().next());
 		}
-	}	
-	
+	}
+
 	@Test
 	void testPutOrganizacionOk() throws Exception {
 		var request = """
@@ -158,8 +155,8 @@ public class UserPutTest {
 			.statusCode(200)
 			.body("organizacionId", equalTo(2))
 			;
-	}	
-	
+	}
+
 	@Test
 	void testPutZonaOk() throws Exception {
 		var request = """
@@ -174,9 +171,28 @@ public class UserPutTest {
 			.statusCode(200)
 			.body("zonaId", equalTo(3))
 			;
-	}	
-	
-	
+	}
+
+	@Test
+	void testPutDatosReciclador() throws Exception {
+		var request = """
+				{
+				 "reciclador": {
+				   "fechaNacimiento": "1980-09-12",
+				   "dni": "40123456"
+				 }
+				}""";
+
+		RestAssured.given()
+			.body(request)
+			.put("/user/3")
+			.then()
+			.statusCode(200)
+			.body("reciclador.fechaNacimiento", equalTo("1980-09-12"))
+			.body("reciclador.dni", equalTo("40123456"))
+		;
+	}
+
 	@Test
 	void testPutRazonSocialOk() throws Exception {
 		var request = """
@@ -190,7 +206,7 @@ public class UserPutTest {
 			.then()
 			.statusCode(200)
 			;
-		
+
 		var checkRazonSocialSQL = """
 				SELECT
 				o."RazonSocial"
@@ -204,8 +220,8 @@ public class UserPutTest {
 			assertTrue(rs.next());
 			assertTrue(rs.getString("RazonSocial").equals("Organizacion 1 S.A"));
 		}
-	}	
-	
+	}
+
 
 	@Test
 	void testWithOutRequest() {
@@ -215,7 +231,7 @@ public class UserPutTest {
 			.statusCode(500)
 		;
 	}
-	
+
 	@Test
 	void testEmptyRequest() {
 		RestAssured.given()

@@ -18,6 +18,7 @@ public class UserRequest implements IRequest {
 	public TipoUsuarioResponse tipoUsuario;
 
 	/* Opcionales */
+	public RecicladorUrbanoRequest reciclador;
 	public String razonSocial;
 	public Long zonaId;
 	public Long organizacionId;

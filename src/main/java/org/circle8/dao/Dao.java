@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,16 +69,36 @@ abstract class Dao {
 	) {
 		if ( o != null ) {
 			conditions.append(where);
-			if ( o instanceof LocalDate ld ) params.add(Date.valueOf(ld));
-			else if ( o instanceof ZonedDateTime zd ) params.add(Timestamp.from(zd.toInstant()));
-			else if ( o instanceof Enum<?> e ) params.add(e.toString());
-			else params.add(o);
+			addObject(o, params);
 		}
+	}
+
+	protected void appendUpdate(
+		Object o,
+		String where,
+		Collection<String> sets,
+		List<Object> params
+	) {
+		if ( o != null ) {
+			sets.add(where);
+			addObject(o, params);
+		}
+	}
+
+	private static void addObject(Object o, List<Object> params) {
+		if ( o instanceof LocalDate ld ) params.add(Date.valueOf(ld));
+		else if ( o instanceof ZonedDateTime zd ) params.add(Timestamp.from(zd.toInstant()));
+		else if ( o instanceof Enum<?> e ) params.add(e.toString());
+		else params.add(o);
 	}
 
 	protected <T> List<T> buildList(ResultSet rs, FromList<T> fromList) throws SQLException {
 		val l = new ArrayList<T>();
 		while ( rs.next() ) l.add(fromList.map(rs));
 		return l;
+	}
+
+	protected Date date(LocalDate date) {
+		return date != null ? Date.valueOf(date) : null;
 	}
 }

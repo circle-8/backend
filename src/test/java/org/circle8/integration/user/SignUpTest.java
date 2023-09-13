@@ -91,6 +91,47 @@ class SignUpTest {
 	}
 
 	@Test
+	void testNewRecicladorWithExtraInfo() throws Exception {
+		var request = """
+   {
+     "username": "nuevo-usuario-reciclador-extra-info",
+     "password": "1234",
+     "nombre": "Nuevo Usuario reciclador",
+     "email": "nuevoRecicladorExtraInfo@email.com",
+     "tipoUsuario": "RECICLADOR_URBANO",
+     "organizacionId": 1,
+     "reciclador": {
+       "domicilio": "Somewhere over the rainbow 123",
+       "fechaNacimiento": "1980-09-12"
+     }
+   }""";
+
+		RestAssured.given()
+			.body(request)
+			.post("/user")
+			.then()
+			.statusCode(200)
+			.body("id", is(not(emptyOrNullString())))
+			.body("username", equalTo("nuevo-usuario-reciclador-extra-info"))
+			.body("nombre", equalTo("Nuevo Usuario reciclador"))
+			.body("email", equalTo("nuevoRecicladorExtraInfo@email.com"))
+			.body("tipoUsuario", equalTo("RECICLADOR_URBANO"))
+			.body("ciudadanoId", nullValue())
+			.body("recicladorUrbanoId", is(not(empty())))
+			.body("organizacionId", equalTo(1))
+			.body("password", is(nullValue()))
+			.body("suscripcion", is(not(empty())))
+		;
+
+		var checkUserSQL = "SELECT \"Username\" FROM public.\"Usuario\" WHERE \"Username\" = ? AND \"Email\" = ?";
+		try ( var conn = ds.getConnection(); var ps = conn.prepareStatement(checkUserSQL) ) {
+			ps.setString(1, "nuevo-usuario-reciclador-extra-info");
+			ps.setString(2, "nuevoRecicladorExtraInfo@email.com");
+			assertTrue(ps.executeQuery().next());
+		}
+	}
+
+	@Test
 	void testNewOrganizacion() throws Exception {
 		var request = """
    {
