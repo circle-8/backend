@@ -11,6 +11,9 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import org.circle8.dto.Dia;
+import org.circle8.entity.PuntoReciclaje;
+import org.circle8.entity.Transaccion;
 import org.circle8.entity.Transporte;
 import org.circle8.entity.Transportista;
 import org.circle8.exception.NotFoundException;
@@ -51,11 +54,20 @@ public class TransporteDao extends Dao {
 			, trans."ID" AS transaccionID
 			""";
 	
+	private static final String SELECT_X_PUNTO_RECICLAJE = """
+			, pr."ID" AS PuntoReciclajeId, pr."CiudadanoId", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."Titulo"
+			""";
+	
 	private static final String JOIN_X_TRANSPORTISTA = """
 			LEFT JOIN "Transportista" AS transp on transp."ID" = t."TransportistaId"
 			""";	
+	
 	private static final String JOIN_X_TRANSACCION = """
 			LEFT JOIN "TransaccionResiduo" AS trans on trans."TransporteId" = t."ID"
+			""";
+	
+	private static final String JOIN_X_PUNTO_RECICLAJE = """
+			LEFT JOIN "PuntoReciclaje" AS pr on pr."ID" = trans."PuntoReciclajeId"
 			""";
 	
 	private static final String WHERE_TRANSACCION_ID = """
@@ -216,7 +228,9 @@ public class TransporteDao extends Dao {
 		
 		if(x.transaccion || f.transaccionId != null) {
 			selectFields += SELECT_X_TRANSACCION;
+			selectFields += SELECT_X_PUNTO_RECICLAJE;
 			joinFields += JOIN_X_TRANSACCION;
+			joinFields += JOIN_X_PUNTO_RECICLAJE;
 		}
 
 		var b = new StringBuilder(String.format(SELECT_FMT, selectFields, joinFields));
@@ -305,13 +319,29 @@ public class TransporteDao extends Dao {
 		t.precioAcordado = rs.getBigDecimal("Precio");
 		t.transportistaId = rs.getLong("TransportistaId") != 0 ? rs.getLong("TransportistaId"): null;
 		t.transportista = buildTransportista(rs, x.transportista);
-		if(x.transaccion && rs.getLong("TransaccionId") != 0)
-			t.transaccionId = rs.getLong("TransaccionId");
+		t.transaccion = buildTransaccion(t, rs, x.transaccion);		
 		t.pagoConfirmado = rs.getBoolean("PagoConfirmado");
 		t.entregaConfirmada = rs.getBoolean("EntregaConfirmada");
 		t.precioSugerido = rs.getBigDecimal("PrecioSugerido");
 
 		return t;
+	}
+	
+	private Transaccion buildTransaccion(Transporte t, ResultSet rs, boolean expand) throws SQLException{
+		if ( !expand || rs.getLong("TransaccionId") == 0)
+			return null;
+				
+		t.transaccionId = rs.getLong("TransaccionId");
+		
+		val puntoReciclaje = new PuntoReciclaje(rs.getLong("PuntoReciclajeId"), rs.getString("Titulo"),
+				rs.getDouble("Latitud"), rs.getDouble("Longitud"),
+				Dia.getDia(rs.getString("DiasAbierto")), new ArrayList<>(), rs.getLong("CiudadanoId"), null);
+		
+		return Transaccion.builder()
+				.id(rs.getLong("TransaccionId"))
+				.puntoReciclaje(puntoReciclaje)
+				.puntoReciclajeId(rs.getLong("PuntoReciclajeId"))
+				.build();
 	}
 	
 	private Transportista buildTransportista(ResultSet rs, boolean expand) throws SQLException {
