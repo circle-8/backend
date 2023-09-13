@@ -17,6 +17,7 @@ public class TransporteDto {
 	public Long transportistaId;
 	public TransportistaDto transportista;
 	public Long transaccionId;
+	public TransaccionDto transaccion;
 	public Boolean pagoConfirmado;
 	public Boolean entregaConfirmada;
 	public BigDecimal precioSugerido;
@@ -41,6 +42,8 @@ public class TransporteDto {
 		t.transportista = entity.transportista != null ?
 				TransportistaDto.from(entity.transportista) : null;
 		t.transaccionId = entity.transaccionId;
+		t.transaccion = entity.transaccion != null ?
+				TransaccionDto.from(entity.transaccion) : null;
 		t.pagoConfirmado = entity.pagoConfirmado;
 		t.entregaConfirmada = entity.entregaConfirmada;
 		t.precioSugerido = entity.precioSugerido;
@@ -59,6 +62,7 @@ public class TransporteDto {
 			transportista != null ? transportista.toResponse() : null,
 			transaccionId != null ? "/transaccion/" + transaccionId : null,
 			transaccionId,
+			transaccion != null ? transaccion.toResponse() : null,
 			pagoConfirmado,
 			entregaConfirmada,
 			precioSugerido
