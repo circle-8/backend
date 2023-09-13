@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.val;
 import org.circle8.dto.TipoUsuario;
+import org.circle8.entity.RecicladorUrbano;
 import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
@@ -31,8 +32,14 @@ public class UserDao extends Dao {
 
 	private static final String SELECT_GET = """
 		   SELECT u."ID", "NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario",
-		   "Email", c."ID" AS CiudadanoId , r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId",
-		   o."ID" AS "OOrganizacionId", t."ID" AS TransportistaId
+		          "Email", c."ID" AS CiudadanoId,
+		       -- Reciclador Urbano
+		          r."ID" AS RecicladorId, r."OrganizacionId", r."ZonaId",
+		          r."FechaNacimiento", r."DNI", r."Domicilio", r."Telefono",
+		       -- Organizacion
+		          o."ID" AS "OOrganizacionId",
+		       -- Transportista
+		          t."ID" AS TransportistaId
 		     FROM "Usuario" u
 		LEFT JOIN "Ciudadano" c ON c."UsuarioId" = u."ID"
 		LEFT JOIN "RecicladorUrbano" r ON r."UsuarioId" = u."ID"
@@ -163,18 +170,30 @@ public class UserDao extends Dao {
 		u.hashedPassword = rs.getString("Password");
 		u.nombre = rs.getString("NombreApellido");
 		u.tipo = TipoUsuario.valueOf(rs.getString("TipoUsuario"));
-		if ( TipoUsuario.CIUDADANO.equals(u.tipo) ) {
-			u.ciudadanoId = rs.getLong("CiudadanoId");
-		} else if( TipoUsuario.RECICLADOR_URBANO.equals(u.tipo) ) {
-			u.recicladorUrbanoId = rs.getLong("RecicladorId");
-			u.organizacionId = rs.getLong("OrganizacionId");
-			u.zonaId = rs.getLong("ZonaId") != 0
-				? rs.getLong("ZonaId")
-				: null;
-		} else if ( TipoUsuario.ORGANIZACION.equals(u.tipo) ) {
-			u.organizacionId = rs.getLong("OOrganizacionId");
-		} else if ( TipoUsuario.TRANSPORTISTA.equals(u.tipo) ) {
-			u.transportistaId = rs.getLong("TransportistaId");
+		u.email = rs.getString("Email");
+
+		switch ( u.tipo ) {
+			case CIUDADANO -> u.ciudadanoId = rs.getLong("CiudadanoId");
+			case TRANSPORTISTA -> u.transportistaId = rs.getLong("TransportistaId");
+			case ORGANIZACION -> u.organizacionId = rs.getLong("OOrganizacionId");
+			case RECICLADOR_URBANO -> {
+				u.recicladorUrbanoId = rs.getLong("RecicladorId");
+				u.organizacionId = rs.getLong("OrganizacionId");
+				u.zonaId = rs.getLong("ZonaId") != 0
+					? rs.getLong("ZonaId")
+					: null;
+				var date = rs.getDate("FechaNacimiento");
+				u.reciclador = new RecicladorUrbano(
+					rs.getLong("RecicladorId"),
+					rs.getLong("ID"),
+					rs.getLong("OrganizacionId"),
+					u.zonaId,
+					date != null ? date.toLocalDate() : null,
+					rs.getString("DNI"),
+					rs.getString("Domicilio"),
+					rs.getString("Telefono")
+				);
+			}
 		}
 		return u;
 	}

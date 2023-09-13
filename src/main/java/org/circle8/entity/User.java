@@ -16,10 +16,14 @@ public class User {
 	public String email;
 	public Suscripcion suscripcion;
 	public TipoUsuario tipo;
+
 	public Long ciudadanoId;
+
 	public Long recicladorUrbanoId;
+	public RecicladorUrbano reciclador;
 	public Long organizacionId;
-	public Long transportistaId;
 	public String razonSocial;
 	public Long zonaId;
+
+	public Long transportistaId;
 }

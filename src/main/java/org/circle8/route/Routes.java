@@ -118,6 +118,7 @@ public class Routes {
 			.put("/reciclador/{reciclador_id}/punto_reciclaje/{id}", result(puntoReciclajeController::put))
 			.delete("/reciclador/{reciclador_id}/punto_reciclaje/{id}", result(puntoReciclajeController::delete))
 			.post("/reciclador/{reciclador_id}/punto_reciclaje", result(puntoReciclajeController::post))
+			.post("/reciclador/{reciclador_id}/punto_reciclaje/{id}", result(puntoReciclajeController::post)) // TODO: remove
 			.post("/reciclador/{reciclador_id}/punto_reciclaje/{id}/notificacion/{id_residuo}", result(puntoReciclajeController::notificacion))
 			// TRANSACCION
 			.get("/transacciones", result(transaccionController::list))
