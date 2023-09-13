@@ -80,4 +80,8 @@ abstract class Dao {
 		while ( rs.next() ) l.add(fromList.map(rs));
 		return l;
 	}
+
+	protected Date date(LocalDate date) {
+		return date != null ? Date.valueOf(date) : null;
+	}
 }

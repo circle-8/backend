@@ -1,50 +1,50 @@
 package org.circle8.dao;
 
+import com.google.inject.Inject;
+import lombok.val;
+import org.circle8.entity.User;
+import org.circle8.exception.DuplicatedEntry;
+import org.circle8.exception.NotFoundException;
+import org.circle8.exception.PersistenceException;
+
+import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.circle8.entity.User;
-import org.circle8.exception.DuplicatedEntry;
-import org.circle8.exception.NotFoundException;
-import org.circle8.exception.PersistenceException;
-
-import lombok.val;
-
-public class RecicladorUrbanoDao {
+public class RecicladorUrbanoDao extends Dao {
 	private static final String INSERT = """
 			INSERT INTO public."RecicladorUrbano"(
-			"UsuarioId", "OrganizacionId", "ZonaId")
-			VALUES (?, ?, ?);
+			"UsuarioId", "OrganizacionId", "ZonaId",
+			"FechaNacimiento", "DNI", "Domicilio", "Telefono"
+			)
+			VALUES (?, ?, ?, ?, ?, ?, ?);
 			""";
-	
+
 	private static final String UPDATE = """
 			UPDATE "RecicladorUrbano"
 			SET %s
 			WHERE "UsuarioId"=?
 			""";
-	
+
 	private static final String SET_ORGANIZACION = """
 			"OrganizacionId"=?
 			""";
-	
+
 	private static final String SET_ZONA = """
 			"ZonaId"=?
 			""";
 
-	private static final String INSERT_WITHOUT_ZONA = """
-			INSERT INTO public."RecicladorUrbano"(
-			"UsuarioId", "OrganizacionId")
-			VALUES (?, ?);
-			""";
-	
 	private static final String UPDATE_ZONA_NULL = """
 			UPDATE "RecicladorUrbano"
 			SET "ZonaId" = NULL
 			WHERE "ZonaId" = ?;
 			""";
+
+	@Inject
+	public RecicladorUrbanoDao(DataSource ds) { super(ds); }
 
 
 	public Long save(Transaction t, User u) throws PersistenceException, NotFoundException {
@@ -68,7 +68,7 @@ public class RecicladorUrbanoDao {
 				throw new PersistenceException("error inserting ciudadano", e);
 		}
 	}
-	
+
 	public void update(Transaction t, User u) throws PersistenceException, NotFoundException {
 		try ( var put = createUpdate(t, u) ) {
 			int puts = put.executeUpdate();
@@ -78,42 +78,44 @@ public class RecicladorUrbanoDao {
 			throw new PersistenceException("error updating user", e);
 		}
 	}
-	
+
 	public void desasociarZona(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
 		try ( val update =  t.prepareStatement(UPDATE_ZONA_NULL) ) {
 			update.setLong(1, zonaId);
 			update.executeUpdate();
-		} catch (SQLException e) {			
+		} catch (SQLException e) {
 			throw new PersistenceException("error Updating zona in reciclador", e);
 		}
-	}	
+	}
 
 	private PreparedStatement createInsert(Transaction t,User u) throws PersistenceException, SQLException {
-		val insert = u.zonaId != null ? INSERT : INSERT_WITHOUT_ZONA;
-		val ps = t.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS);
+		val ps = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
 		ps.setLong(1, u.id);
 		ps.setLong(2, u.organizacionId);
-		if(u.zonaId != null)
-			ps.setLong(3, u.zonaId);
+		ps.setObject(3, u.zonaId);
+		ps.setDate(4, u.reciclador != null ? date(u.reciclador.fechaNacimiento) : null);
+		ps.setString(5, u.reciclador != null ? u.reciclador.dni : null);
+		ps.setString(6, u.reciclador != null ? u.reciclador.domicilio : null);
+		ps.setString(7, u.reciclador != null ? u.reciclador.telefono : null);
 		return ps;
-	}	
-	
+	}
+
 	private PreparedStatement createUpdate(Transaction t, User u) throws PersistenceException, SQLException {
 		val set = new ArrayList<String>();
 		List<Object> parameters = new ArrayList<>();
-		
+
 		if(u.organizacionId != null) {
 			set.add(SET_ORGANIZACION);
 			parameters.add(u.organizacionId);
 		}
-		
+
 		if(u.zonaId != null) {
 			set.add(SET_ZONA);
 			parameters.add(u.zonaId);
-		}		
-		
+		}
+
 		parameters.add(u.id);
-		
+
 		val sets = String.join(", ", set);
 		val sql = String.format(UPDATE, sets);
 		var p = t.prepareStatement(sql);

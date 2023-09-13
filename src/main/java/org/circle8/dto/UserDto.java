@@ -35,6 +35,7 @@ public class UserDto {
 		u.email = request.email;
 		u.tipo = request.tipoUsuario.to();
 		u.organizacionId = request.organizacionId;
+		u.reciclador = RecicladorUrbanoDto.from(request.reciclador);
 		u.razonSocial = request.razonSocial;
 		u.zonaId = request.zonaId;
 		u.razonSocial = request.razonSocial;
@@ -101,6 +102,7 @@ public class UserDto {
 			.email(email)
 			.organizacionId(organizacionId)
 			.transportistaId(transportistaId)
+			.reciclador(reciclador != null ? reciclador.toEntity() : null)
 			.razonSocial(razonSocial)
 			.zonaId(zonaId)
 			.build();
