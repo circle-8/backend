@@ -173,6 +173,25 @@ public class UserPutTest {
 			;
 	}
 
+	@Test
+	void testPutDatosReciclador() throws Exception {
+		var request = """
+				{
+				 "reciclador": {
+				   "fechaNacimiento": "1980-09-12",
+				   "dni": "40123456"
+				 }
+				}""";
+
+		RestAssured.given()
+			.body(request)
+			.put("/user/3")
+			.then()
+			.statusCode(200)
+			.body("reciclador.fechaNacimiento", equalTo("1980-09-12"))
+			.body("reciclador.dni", equalTo("40123456"))
+		;
+	}
 
 	@Test
 	void testPutRazonSocialOk() throws Exception {

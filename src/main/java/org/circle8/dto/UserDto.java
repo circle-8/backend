@@ -47,9 +47,9 @@ public class UserDto {
 		u.username = request.username;
 		u.nombre = request.nombre;
 		u.email = request.email;
-		u.tipo = request.tipoUsuario != null ?
-				request.tipoUsuario.to() : null;
+		u.tipo = request.tipoUsuario != null ? request.tipoUsuario.to() : null;
 		u.organizacionId = request.organizacionId;
+		u.reciclador = RecicladorUrbanoDto.from(request.reciclador);
 		u.razonSocial = request.razonSocial;
 		u.zonaId = request.zonaId;
 		u.razonSocial = request.razonSocial;

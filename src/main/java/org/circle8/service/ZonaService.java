@@ -1,9 +1,7 @@
 package org.circle8.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.dao.PuntoResiduoDao;
 import org.circle8.dao.RecicladorUrbanoDao;
 import org.circle8.dao.RecorridoDao;
@@ -23,9 +21,9 @@ import org.circle8.expand.PuntoResiduoExpand;
 import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ZonaFilter;
 
-import com.google.inject.Inject;
-
-import lombok.val;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class ZonaService {
 
@@ -153,7 +151,7 @@ public class ZonaService {
 			this.dao.deleteTipos(t, zonaId);
 			this.dao.deletePuntos(t, zonaId);
 			this.recicladorUrbanoDao.desasociarZona(t, zonaId);
-			this.recorridoDao.desasociarZona(t, zonaId);			
+			this.recorridoDao.desasociarZona(t, zonaId);
 			this.dao.delete(t, organizacionId, zonaId);
 		}catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al eliminar la zona", e);

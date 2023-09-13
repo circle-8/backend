@@ -29,13 +29,12 @@ public class RecicladorUrbanoDao extends Dao {
 			WHERE "UsuarioId"=?
 			""";
 
-	private static final String SET_ORGANIZACION = """
-			"OrganizacionId"=?
-			""";
-
-	private static final String SET_ZONA = """
-			"ZonaId"=?
-			""";
+	private static final String SET_ORGANIZACION = "\"OrganizacionId\" = ?\n";
+	private static final String SET_ZONA = "\"ZonaId\" = ?\n";
+	private static final String SET_FECHA_NACIMIENTO = "\"FechaNacimiento\" = ?\n";
+	private static final String SET_DNI = "\"DNI\" = ?\n";
+	private static final String SET_DOMICILIO = "\"Domicilio\" = ?\n";
+	private static final String SET_TELEFONO = "\"Telefono\" = ?\n";
 
 	private static final String UPDATE_ZONA_NULL = """
 			UPDATE "RecicladorUrbano"
@@ -79,7 +78,7 @@ public class RecicladorUrbanoDao extends Dao {
 		}
 	}
 
-	public void desasociarZona(Transaction t,Long zonaId) throws NotFoundException, PersistenceException {
+	public void desasociarZona(Transaction t, Long zonaId) throws PersistenceException {
 		try ( val update =  t.prepareStatement(UPDATE_ZONA_NULL) ) {
 			update.setLong(1, zonaId);
 			update.executeUpdate();
@@ -104,14 +103,13 @@ public class RecicladorUrbanoDao extends Dao {
 		val set = new ArrayList<String>();
 		List<Object> parameters = new ArrayList<>();
 
-		if(u.organizacionId != null) {
-			set.add(SET_ORGANIZACION);
-			parameters.add(u.organizacionId);
-		}
-
-		if(u.zonaId != null) {
-			set.add(SET_ZONA);
-			parameters.add(u.zonaId);
+		appendUpdate(u.organizacionId, SET_ORGANIZACION, set, parameters);
+		appendUpdate(u.zonaId, SET_ZONA, set, parameters);
+		if ( u.reciclador != null ) {
+			appendUpdate(u.reciclador.fechaNacimiento, SET_FECHA_NACIMIENTO, set, parameters);
+			appendUpdate(u.reciclador.dni, SET_DNI, set, parameters);
+			appendUpdate(u.reciclador.domicilio, SET_DOMICILIO, set, parameters);
+			appendUpdate(u.reciclador.telefono, SET_TELEFONO, set, parameters);
 		}
 
 		parameters.add(u.id);
