@@ -38,7 +38,7 @@ public class PuntoReciclajeDto {
 		pr.latitud = request.latitud;
 		pr.longitud = request.longitud;
 		pr.dias = Dia.getDia(request.dias);
-		pr.tipoResiduo = request.tipoResiduo != null ? request.tipoResiduo.stream().map(TipoResiduoDto::from).toList() : null;
+		pr.tipoResiduo = request.tiposResiduo != null ? request.tiposResiduo.stream().map(TipoResiduoDto::from).toList() : null;
 		pr.recicladorId = request.recicladorId;
 		return pr;
 	}
