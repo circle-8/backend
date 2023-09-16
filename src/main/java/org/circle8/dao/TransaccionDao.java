@@ -237,6 +237,7 @@ public class TransaccionDao extends Dao {
 			rs.getLong("TransportistaId"),
 			null,
 			rs.getLong("ID"),
+			null,
 			rs.getBoolean("PagoConfirmado"),
 			rs.getBoolean("EntregaConfirmada"),
 			rs.getBigDecimal("Precio"));

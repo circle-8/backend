@@ -55,6 +55,12 @@ public class TransporteGetTest {
 			.statusCode(200)
 			.body("transaccionId", equalTo(1))			
 			.body("transaccionUri", equalTo("/transaccion/1"))
+			.body("transaccion", notNullValue())
+			.body("transaccion.id", equalTo(1))
+			.body("transaccion.puntoReciclaje", notNullValue())
+			.body("transaccion.puntoReciclaje.id", notNullValue())
+			.body("transaccion.puntoReciclaje.latitud", equalTo(-34.65199F))	
+			.body("transaccion.puntoReciclaje.longitud", equalTo(-58.58509F))	
 		;
 	}	
 
