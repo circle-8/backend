@@ -35,64 +35,63 @@ import lombok.val;
 public class TransaccionDao extends Dao {
 
 	private static final String INSERT_SQL = """
-		INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "PuntoReciclajeId")
+		INSERT INTO "TransaccionResiduo"("FechaPrimerContacto", "PuntoReciclajeId")
 		VALUES (?, ?);
 		""";
 
 	private static final String UPDATE_RESIDUO_ADD_TRANSACCION_ID = """
-		UPDATE public."Residuo" as r
+		UPDATE "Residuo" as r
 		SET "TransaccionId" = ?
 		WHERE r."ID"= ?;
 		""";
 
 	private static final String UPDATE_RESIDUOS_REMOVE_TRANSACCION_ID = """
-		UPDATE public."Residuo" as r
+		UPDATE "Residuo" as r
 		SET "TransaccionId" = NULL
 		WHERE r."TransaccionId"= ?;
 		""";
 
 	private static final String UPDATE_RESIDUO_REMOVE_TRANSACCION_ID = """
-		UPDATE public."Residuo" as r
+		UPDATE "Residuo" as r
 		SET "TransaccionId" = NULL
 		WHERE r."ID"= ?
 		AND r."TransaccionId"= ?;
 		""";
 
 	private static final String DELETE = """
-		DELETE FROM public."TransaccionResiduo" AS tr
+		DELETE FROM "TransaccionResiduo" AS tr
 		WHERE tr."ID"= ?;
 		""";
 
 	private static final String UPDATE_TRANSACCION_REMOVE_TRANSPORTE_ID = """
-		UPDATE public."TransaccionResiduo" as tr
+		UPDATE "TransaccionResiduo" as tr
 		SET "TransporteId" = NULL
 		WHERE tr."ID"= ?
 		AND tr."TransporteId"= ?;
 		""";
 
 	private static final String UPDATE_TRANSACCION_ADD_TRANSPORTE_ID = """
-		UPDATE public."TransaccionResiduo" as tr
+		UPDATE "TransaccionResiduo" as tr
 		SET "TransporteId" = ?
 		WHERE tr."ID"= ?;
 		""";
 
-
 	private static final String PUT = """
-		UPDATE public."TransaccionResiduo" as tr
+		UPDATE "TransaccionResiduo" as tr
 		SET "FechaEfectiva"=?
 		WHERE tr."ID"=?;
 		""";
 
 	private static final String SELECT_TRANSPORTE_ID = """
 		SELECT "TransporteId"
-		FROM public."TransaccionResiduo" AS tr
+		FROM "TransaccionResiduo" AS tr
 		WHERE tr."ID"= ?;
 		""";
 
 	private static final String SELECT_FMT = """
 		SELECT
 		%s
-		FROM public."TransaccionResiduo" AS tr
+		FROM "TransaccionResiduo" AS tr
 		%s
 		WHERE 1 = 1
 		""";
@@ -104,7 +103,8 @@ public class TransaccionDao extends Dao {
 	private static final String SELECT_RESIDUOS = """
 		, re."ID" AS residuoId, re."FechaCreacion", re."FechaRetiro", re."PuntoResiduoId", re."Descripcion", re."FechaLimiteRetiro",
 		re."TipoResiduoId", re."RecorridoId", tre."Nombre" AS TipoResiduoNombre,
-		pr."CiudadanoId"
+		pr."CiudadanoId", puntre."CiudadanoId" AS ciudadanoPuntoResiduo,
+		puntre."Latitud" as latitudPuntoResiduo, puntre."Longitud" as longitudPuntoResiduo
 		""";
 
 	private static final String SELECT_TRANSPORTE = """
@@ -116,17 +116,18 @@ public class TransaccionDao extends Dao {
 		""";
 
 	private static final String JOIN_PUNTO_RECICLAJE = """
-		JOIN Public."PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
+		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
 		""";
 
 	private static final String JOIN_RESIDUOS = """
-		JOIN Public."PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
-		JOIN Public."Residuo" AS re on tr."ID" = re."TransaccionId"
-		JOIN Public."TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
+		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
+		JOIN "Residuo" AS re on tr."ID" = re."TransaccionId"
+		JOIN "TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
+		JOIN "PuntoResiduo" AS puntre on puntre."ID" = re."PuntoResiduoId"
 		""";
 
 	private static final String JOIN_TRANSPORTE = """
-		JOIN Public."Transporte" AS tra on tr."TransporteId"=tra."ID"
+		JOIN "Transporte" AS tra on tr."TransporteId"=tra."ID"
 		""";
 
 	private static final String WHERE_ID = """
@@ -221,6 +222,18 @@ public class TransaccionDao extends Dao {
 		return new PuntoReciclaje(rs.getLong("PuntoReciclajeId"), rs.getString("Titulo"), rs.getDouble("Latitud"), rs.getDouble("Longitud"),
 			Dia.getDia(rs.getString("DiasAbierto")), new ArrayList<>(), rs.getLong("CiudadanoId"), null);
 	}
+	
+	private PuntoResiduo buildPuntoResiduo(ResultSet rs) throws SQLException {
+		if(rs.getLong("PuntoResiduoId") == 0)
+			return null;
+		
+		return PuntoResiduo.builder()
+				.id(rs.getLong("PuntoResiduoId"))
+				.ciudadanoId(rs.getLong("ciudadanoPuntoResiduo"))
+				.latitud(rs.getDouble("latitudPuntoResiduo"))
+				.longitud(rs.getDouble("longitudPuntoResiduo"))
+				.build();
+	}
 
 	private Transporte buildTransporte(ResultSet rs, boolean expand) throws SQLException {
 		if (!expand)
@@ -257,7 +270,7 @@ public class TransaccionDao extends Dao {
 			.fechaRetiro(retiroDate)
 			.fechaLimiteRetiro(limitDate)
 			.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
-			.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId")))
+			.puntoResiduo(buildPuntoResiduo(rs))
 			.descripcion(rs.getString("Descripcion"))
 			.build();
 	}
@@ -276,6 +289,7 @@ public class TransaccionDao extends Dao {
 			joinFields += JOIN_RESIDUOS;
 		else if (exp.puntoReciclaje || f.hasPuntos())
 			joinFields += JOIN_PUNTO_RECICLAJE;
+		
 		if (exp.transporte || f.transportistaId != null)
 			joinFields += JOIN_TRANSPORTE;
 
@@ -290,7 +304,6 @@ public class TransaccionDao extends Dao {
 
 		if (f.hasPuntos()) {
 			val marks = f.puntosReciclaje.stream().map(pr -> "?").collect(Collectors.joining(","));
-
 			conditions.append(String.format(WHERE_PUNTO_RECICLAJE, marks));
 			parameters.addAll(f.puntosReciclaje);
 		}
