@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 
 @ExtendWith(ApiTestExtension.class)
 public class TransaccionGetTest {
@@ -58,7 +59,9 @@ public class TransaccionGetTest {
 					  .body("puntoReciclajeId", equalTo(1))
 					  .body("residuos", hasSize(2))
 					  .body("residuos[0].id", equalTo(7))
+					  .body("residuos[0].puntoResiduo", notNullValue())
 					  .body("residuos[1].id", equalTo(8))
+					  .body("residuos[1].puntoResiduo", notNullValue())
 		;
 	}
 
