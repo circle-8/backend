@@ -20,6 +20,15 @@ public class InequalityFilter<T> {
 	public T le;
 	public Boolean isNull;
 
+	/**
+	 * Parsea los query params para inecuaciones.
+	 * Si el parametro es `fecha_retiro`, va a buscar todos los parametros posibles:
+	 * - `gt`: greater than. Ejemplo, `fecha_retiro_gt`
+	 * - `ge`: greater equal
+	 * - `lt`: less than
+	 * - `le`: less equal
+	 * - `null`: is null (true o false)
+	 */
 	public InequalityFilter(
 		Map<String, List<String>> queryParams,
 		String paramName,
