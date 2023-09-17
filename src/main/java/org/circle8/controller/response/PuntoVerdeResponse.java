@@ -16,4 +16,5 @@ public class PuntoVerdeResponse implements ApiResponse {
 	public double longitud;
 	public List<DiaResponse> dias;
 	public List<TipoResiduoResponse> tipoResiduo;
+	public String email;
 }

@@ -33,7 +33,6 @@ public class PuntoVerdeController {
 		this.service = puntoReciclajeService;
 	}
 
-
 	private final PuntoVerdeResponse mock = PuntoVerdeResponse.builder()
 		.id(1)
 		.latitud(-34.6516556f).longitud(-58.5356009f)
@@ -43,6 +42,7 @@ public class PuntoVerdeController {
 			new TipoResiduoResponse(2, "PLASTICO")
 		))
 		.build();
+
 	/**
 	 * GET /punto_verde/{id}
 	 */

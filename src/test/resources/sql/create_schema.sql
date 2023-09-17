@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS public."PuntoReciclaje"
     "Longitud" double precision NOT NULL,
     "DiasAbierto" character varying NOT NULL,
     "Titulo" character varying NOT NULL,
+    "Email" character varying,
     CONSTRAINT "PuntoReciclaje_pkey" PRIMARY KEY ("ID")
 );
 

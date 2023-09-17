@@ -216,7 +216,7 @@ public class TransaccionDao extends Dao {
 			return null;
 
 		return new PuntoReciclaje(rs.getLong("PuntoReciclajeId"), rs.getString("Titulo"), rs.getDouble("Latitud"), rs.getDouble("Longitud"),
-			Dia.getDia(rs.getString("DiasAbierto")), new ArrayList<>(), rs.getLong("CiudadanoId"), null);
+			Dia.getDia(rs.getString("DiasAbierto")), new ArrayList<>(), rs.getLong("CiudadanoId"), null, "");
 	}
 
 	private PuntoResiduo buildPuntoResiduo(ResultSet rs) throws SQLException {

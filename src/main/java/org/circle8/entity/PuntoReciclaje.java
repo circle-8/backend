@@ -19,6 +19,7 @@ public class PuntoReciclaje {
 	public List<TipoResiduo> tipoResiduo;
 	public Long recicladorId;
 	public User reciclador;
+	public String email;
 
 	public PuntoReciclaje(long id, long recicladorId) {
 		this.id = id;
