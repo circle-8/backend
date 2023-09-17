@@ -66,7 +66,7 @@ public class OrganizacionController {
 		}
 
 		try {
-			recicladorService.removeZona(organizacionId, recicladorId);
+			recicladorService.removeZona(recicladorId);
 			return new SuccessResponse();
 		} catch ( ServiceError e ) {
 			log.error(

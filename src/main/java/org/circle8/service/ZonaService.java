@@ -147,12 +147,13 @@ public class ZonaService {
 	}
 
 	public void delete(Long organizacionId, Long zonaId) throws ServiceException {
-		try (val t = dao.open(true)) {
+		try (val t = dao.open(false)) {
 			this.dao.deleteTipos(t, zonaId);
 			this.dao.deletePuntos(t, zonaId);
-			this.recicladorUrbanoDao.desasociarZona(t, zonaId);
+			this.recicladorUrbanoDao.desasociarZona(t, null, zonaId);
 			this.recorridoDao.desasociarZona(t, zonaId);
 			this.dao.delete(t, organizacionId, zonaId);
+			t.commit();
 		}catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al eliminar la zona", e);
 		}

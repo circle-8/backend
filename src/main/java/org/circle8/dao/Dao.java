@@ -8,6 +8,7 @@ import org.circle8.filter.InequalityFilter;
 
 import javax.sql.DataSource;
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -36,6 +37,17 @@ abstract class Dao {
 
 	public Transaction open(boolean autoCommit) throws PersistenceException {
 		return new Transaction(this.ds, autoCommit);
+	}
+
+	protected PreparedStatement prepareStatement(
+		Transaction t,
+		String sql,
+		List<Object> parameters
+	) throws PersistenceException, SQLException{
+		var p = t.prepareStatement(sql);
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+		return p;
 	}
 
 	/**

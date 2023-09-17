@@ -143,16 +143,21 @@ public class RecorridoDao extends Dao {
 		}
 	}
 
-	public List<Recorrido> list(RecorridoFilter f) throws PersistenceException {
+	public List<Recorrido> list(Transaction t, RecorridoFilter f) throws PersistenceException {
 		val x = RecorridoExpand.EMPTY;
 		try (
-			val t = open(true);
 			val select = createSelect(t, f, x);
 			val rs = select.executeQuery()
 		) {
 			return new ArrayList<>(buildRecorridos(rs, x));
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error listing recorrido", e);
+		}
+	}
+
+	public List<Recorrido> list(RecorridoFilter f) throws PersistenceException {
+		try ( val t = open(true) ) {
+			return list(t, f);
 		}
 	}
 
