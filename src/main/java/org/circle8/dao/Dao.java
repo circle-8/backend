@@ -4,9 +4,11 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.val;
 import org.circle8.exception.PersistenceException;
+import org.circle8.filter.InequalityFilter;
 
 import javax.sql.DataSource;
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -35,6 +37,17 @@ abstract class Dao {
 
 	public Transaction open(boolean autoCommit) throws PersistenceException {
 		return new Transaction(this.ds, autoCommit);
+	}
+
+	protected PreparedStatement prepareStatement(
+		Transaction t,
+		String sql,
+		List<Object> parameters
+	) throws PersistenceException, SQLException{
+		var p = t.prepareStatement(sql);
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+		return p;
 	}
 
 	/**
@@ -70,6 +83,27 @@ abstract class Dao {
 		if ( o != null ) {
 			conditions.append(where);
 			addObject(o, params);
+		}
+	}
+
+	protected void appendInequality(
+		InequalityFilter<?> f,
+		String whereFmt,
+		StringBuilder conditions,
+		List<Object> params
+	) {
+		if ( f == null ) return;
+
+		appendCondition(f.equal, whereFmt.formatted("= ?"), conditions, params);
+		appendCondition(f.gt, whereFmt.formatted("> ?"), conditions, params);
+		appendCondition(f.ge, whereFmt.formatted(">= ?"), conditions, params);
+		appendCondition(f.lt, whereFmt.formatted("< ?"), conditions, params);
+		appendCondition(f.le, whereFmt.formatted("<= ?"), conditions, params);
+
+		if ( Boolean.TRUE.equals(f.isNull) ) {
+			conditions.append(whereFmt.formatted("IS NULL"));
+		} else if ( Boolean.FALSE.equals(f.isNull) ) {
+			conditions.append(whereFmt.formatted("IS NOT NULL"));
 		}
 	}
 

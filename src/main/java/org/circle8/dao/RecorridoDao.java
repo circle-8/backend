@@ -1,20 +1,8 @@
 package org.circle8.dao;
 
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import javax.sql.DataSource;
-
+import com.google.inject.Inject;
+import lombok.SneakyThrows;
+import lombok.val;
 import org.circle8.entity.Ciudadano;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Recorrido;
@@ -31,10 +19,19 @@ import org.circle8.service.RecorridoService.UpdateEnum;
 import org.circle8.utils.Dates;
 import org.circle8.utils.PuntoUtils;
 
-import com.google.inject.Inject;
-
-import lombok.SneakyThrows;
-import lombok.val;
+import javax.sql.DataSource;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class RecorridoDao extends Dao {
 	private static final String SELECT_FMT = """
@@ -146,16 +143,21 @@ public class RecorridoDao extends Dao {
 		}
 	}
 
-	public List<Recorrido> list(RecorridoFilter f) throws PersistenceException {
+	public List<Recorrido> list(Transaction t, RecorridoFilter f) throws PersistenceException {
 		val x = RecorridoExpand.EMPTY;
 		try (
-			val t = open(true);
 			val select = createSelect(t, f, x);
 			val rs = select.executeQuery()
 		) {
 			return new ArrayList<>(buildRecorridos(rs, x));
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error listing recorrido", e);
+		}
+	}
+
+	public List<Recorrido> list(RecorridoFilter f) throws PersistenceException {
+		try ( val t = open(true) ) {
+			return list(t, f);
 		}
 	}
 
@@ -182,7 +184,9 @@ public class RecorridoDao extends Dao {
 		appendCondition(f.recicladorId, "AND r.\"RecicladorId\" = ?\n", where, parameters);
 		appendCondition(f.organizacionId, "AND z.\"OrganizacionId\" = ?\n", where, parameters);
 		appendCondition(f.zonaId, "AND z.\"ID\" = ?\n", where, parameters);
-		appendCondition(f.fechaRetiro, "AND r.\"FechaRetiro\" = ?\n", where, parameters);
+		appendInequality(f.fechaRetiro, "AND r.\"FechaRetiro\" %s\n", where, parameters);
+		appendInequality(f.fechaInicio, "AND r.\"FechaInicio\" %s\n", where, parameters);
+		appendInequality(f.fechaFin, "AND r.\"FechaFin\" %s\n", where, parameters);
 
 		val sql = String.format(SELECT_FMT, select, join, where);
 		return t.prepareStatement(sql, parameters);
