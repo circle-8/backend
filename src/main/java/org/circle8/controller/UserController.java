@@ -22,7 +22,6 @@ import org.circle8.controller.response.TipoUsuarioResponse;
 import org.circle8.controller.response.TokenResponse;
 import org.circle8.controller.response.UserResponse;
 import org.circle8.dto.UserDto;
-import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.filter.UserFilter;
@@ -116,13 +115,11 @@ public class UserController {
 			setTokenCookies(ctx, jwt.token(), refreshJwt.token());
 
 			return new TokenResponse(jwt.token(), refreshJwt.token(), u.toResponse());
-		} catch ( NotFoundException e ) {
-			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceError e ) {
 			log.error("[Request:{}] error login in", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
-			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), e.getDevMessage());
+			return new ErrorResponse(e);
 		}
 	}
 
@@ -159,12 +156,18 @@ public class UserController {
 		try {
 			val jwt = jwtService.token(req.refreshToken, req.accessToken);
 			val refresh = jwtService.refreshToken(jwt);
+			val u = service.get(Long.parseLong(jwt.userId()));
 
 			setTokenCookies(ctx, jwt.token(), refresh.token());
 
-			return new TokenResponse(jwt.token(), refresh.token(), null);
+			return new TokenResponse(jwt.token(), refresh.token(), u.toResponse());
 		} catch ( SecurityException e ) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, e.getMessage(), "");
+		} catch ( ServiceError e ) {
+			log.error("[Request:{}] error login in", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
 		}
 
 	}

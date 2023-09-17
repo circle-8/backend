@@ -1,19 +1,7 @@
 package org.circle8.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.sql.DataSource;
-
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.PuntoResiduo;
@@ -28,9 +16,17 @@ import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
 import org.circle8.utils.Dates;
 
-import com.google.inject.Inject;
-
-import lombok.val;
+import javax.sql.DataSource;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class TransaccionDao extends Dao {
 
@@ -92,18 +88,19 @@ public class TransaccionDao extends Dao {
 		SELECT
 		%s
 		FROM "TransaccionResiduo" AS tr
+		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"= pr."ID"
 		%s
 		WHERE 1 = 1
 		""";
 
 	private static final String SELECT_SIMPLE = """
-		tr."ID", tr."FechaPrimerContacto", tr."FechaEfectiva", tr."PuntoReciclajeId", tr."TransporteId"
+		tr."ID", tr."FechaPrimerContacto", tr."FechaEfectiva", tr."PuntoReciclajeId", pr."CiudadanoId", tr."TransporteId"
 		""";
 
 	private static final String SELECT_RESIDUOS = """
 		, re."ID" AS residuoId, re."FechaCreacion", re."FechaRetiro", re."PuntoResiduoId", re."Descripcion", re."FechaLimiteRetiro",
 		re."TipoResiduoId", re."RecorridoId", tre."Nombre" AS TipoResiduoNombre,
-		pr."CiudadanoId", puntre."CiudadanoId" AS ciudadanoPuntoResiduo,
+		puntre."CiudadanoId" AS ciudadanoPuntoResiduo,
 		puntre."Latitud" as latitudPuntoResiduo, puntre."Longitud" as longitudPuntoResiduo
 		""";
 
@@ -115,12 +112,7 @@ public class TransaccionDao extends Dao {
 		, pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."CiudadanoId"
 		""";
 
-	private static final String JOIN_PUNTO_RECICLAJE = """
-		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
-		""";
-
 	private static final String JOIN_RESIDUOS = """
-		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
 		JOIN "Residuo" AS re on tr."ID" = re."TransaccionId"
 		JOIN "TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
 		JOIN "PuntoResiduo" AS puntre on puntre."ID" = re."PuntoResiduoId"
@@ -140,6 +132,10 @@ public class TransaccionDao extends Dao {
 
 	private static final String WHERE_TRANSPORTISTA = """
 		AND tra."TransportistaId" = ?
+		""";
+
+	private static final String WHERE_CIUDADANO = """
+		AND pr."CiudadanoId" = ?
 		""";
 
 	@Inject
@@ -222,11 +218,11 @@ public class TransaccionDao extends Dao {
 		return new PuntoReciclaje(rs.getLong("PuntoReciclajeId"), rs.getString("Titulo"), rs.getDouble("Latitud"), rs.getDouble("Longitud"),
 			Dia.getDia(rs.getString("DiasAbierto")), new ArrayList<>(), rs.getLong("CiudadanoId"), null);
 	}
-	
+
 	private PuntoResiduo buildPuntoResiduo(ResultSet rs) throws SQLException {
 		if(rs.getLong("PuntoResiduoId") == 0)
 			return null;
-		
+
 		return PuntoResiduo.builder()
 				.id(rs.getLong("PuntoResiduoId"))
 				.ciudadanoId(rs.getLong("ciudadanoPuntoResiduo"))
@@ -240,7 +236,7 @@ public class TransaccionDao extends Dao {
 			return null;
 
 		val fechaAcordada = rs.getDate("FechaAcordada");
-		val fechaInicioTimestamp = rs.getTimestamp("FechaInicio");		
+		val fechaInicioTimestamp = rs.getTimestamp("FechaInicio");
 		val fechaFinTimestamp = rs.getTimestamp("FechaFin");
 		return new Transporte(rs.getLong("TransporteId"),
 				fechaAcordada != null ? fechaAcordada.toLocalDate() : null,
@@ -287,35 +283,22 @@ public class TransaccionDao extends Dao {
 		var joinFields = "";
 		if (exp.residuos)
 			joinFields += JOIN_RESIDUOS;
-		else if (exp.puntoReciclaje || f.hasPuntos())
-			joinFields += JOIN_PUNTO_RECICLAJE;
-		
+
 		if (exp.transporte || f.transportistaId != null)
 			joinFields += JOIN_TRANSPORTE;
 
 		var sql = String.format(SELECT_FMT, selectFields, joinFields);
 		var conditions = new StringBuilder(sql);
-		List<Long> parameters = new ArrayList<>();
+		List<Object> parameters = new ArrayList<>();
 
-		if (f.id != null) {
-			conditions.append(WHERE_ID);
-			parameters.add(f.id);
-		}
-
-		if (f.hasPuntos()) {
-			val marks = f.puntosReciclaje.stream().map(pr -> "?").collect(Collectors.joining(","));
-			conditions.append(String.format(WHERE_PUNTO_RECICLAJE, marks));
-			parameters.addAll(f.puntosReciclaje);
-		}
-
-		if (f.transportistaId != null) {
-			conditions.append(WHERE_TRANSPORTISTA);
-			parameters.add(f.transportistaId);
-		}
+		appendCondition(f.id, WHERE_ID, conditions, parameters);
+		appendListCondition(f.puntosReciclaje, WHERE_PUNTO_RECICLAJE, conditions, parameters);
+		appendCondition(f.transportistaId, WHERE_TRANSPORTISTA, conditions, parameters);
+		appendCondition(f.ciudadanoId, WHERE_CIUDADANO, conditions, parameters);
 
 		var p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
-			p.setLong(i + 1, parameters.get(i));
+			p.setObject(i + 1, parameters.get(i));
 		return p;
 	}
 

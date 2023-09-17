@@ -55,7 +55,7 @@ abstract class Dao {
 		StringBuilder conditions,
 		List<Object> params
 	) {
-		if ( !l.isEmpty() ) {
+		if ( l != null && !l.isEmpty() ) {
 			conditions.append(String.format(whereFmt, listParam(l)));
 			params.addAll(l);
 		}

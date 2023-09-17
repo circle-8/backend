@@ -174,7 +174,10 @@ public class UserDao extends Dao {
 
 		switch ( u.tipo ) {
 			case CIUDADANO -> u.ciudadanoId = rs.getLong("CiudadanoId");
-			case TRANSPORTISTA -> u.transportistaId = rs.getLong("TransportistaId");
+			case TRANSPORTISTA -> {
+				u.transportistaId = rs.getLong("TransportistaId");
+				u.ciudadanoId = rs.getLong("CiudadanoId");
+			}
 			case ORGANIZACION -> u.organizacionId = rs.getLong("OOrganizacionId");
 			case RECICLADOR_URBANO -> {
 				u.recicladorUrbanoId = rs.getLong("RecicladorId");

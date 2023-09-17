@@ -1,7 +1,10 @@
 package org.circle8.controller;
 
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.circle8.controller.request.transaccion.TransaccionPostRequest;
 import org.circle8.controller.request.transaccion.TransaccionPutRequest;
 import org.circle8.controller.request.transaccion.TransaccionesRequest;
@@ -19,12 +22,7 @@ import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.TransaccionFilter;
 import org.circle8.service.TransaccionService;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 @Singleton
 @Slf4j
@@ -217,7 +215,7 @@ public class TransaccionController {
 			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
 		}
 	}
-	
+
 	/**
 	 * DELETE /transaccion/{id}/transporte
 	 */
@@ -272,7 +270,11 @@ public class TransaccionController {
 		if (!valid.valid())
 			return new ErrorResponse(valid);
 
-		val filter = TransaccionFilter.builder().puntosReciclaje(req.puntosReciclaje).transportistaId(req.transportistaId).build();
+		val filter = TransaccionFilter.builder()
+			.ciudadanoId(req.ciudadanoId)
+			.puntosReciclaje(req.puntosReciclaje)
+			.transportistaId(req.transportistaId)
+			.build();
 
 		val expand = new TransaccionExpand(req.expands);
 

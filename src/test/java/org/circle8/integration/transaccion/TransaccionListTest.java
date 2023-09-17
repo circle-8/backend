@@ -25,7 +25,7 @@ public class TransaccionListTest {
 	@Test
 	void testListTransportistaFilter() {
 		RestAssured.given()
-					  .get("/transacciones?transportista=1")
+					  .get("/transacciones?transportista_id=1")
 					  .then()
 					  .statusCode(200)
 					  .body("data", hasSize(1))
@@ -35,7 +35,7 @@ public class TransaccionListTest {
 	@Test
 	void testListTransportistaFilterTransporteExpand() {
 		RestAssured.given()
-					  .get("/transacciones?transportista=1&expand=transporte")
+					  .get("/transacciones?transportista_id=1&expand=transporte")
 					  .then()
 					  .statusCode(200)
 					  .body("data", hasSize(1))
@@ -77,7 +77,7 @@ public class TransaccionListTest {
 	@Test
 	void testListPuntoResiduoAndTransportistaFilter() {
 		RestAssured.given()
-					  .get("/transacciones?punto_reciclaje=1&transportista=1")
+					  .get("/transacciones?punto_reciclaje=1&transportista_id=1")
 					  .then()
 					  .statusCode(200)
 					  .body("data", hasSize(1))
