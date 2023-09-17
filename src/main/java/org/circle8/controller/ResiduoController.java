@@ -13,6 +13,7 @@ import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.PuntoResiduoResponse;
 import org.circle8.controller.response.ResiduoResponse;
+import org.circle8.controller.response.SuccessResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.ResiduoDto;
 import org.circle8.exception.ServiceError;
@@ -86,13 +87,26 @@ public class ResiduoController {
 		}
 	}
 
+	/**
+	 * Delete /residuo/{id}
+	 */
 	public ApiResponse delete(Context ctx) {
-		return new ApiResponse() {
-			@Override
-			public HttpStatus status() {
-				return HttpStatus.ACCEPTED;
-			}
-		};
+		long id;
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del residuo deben ser numérico", "");
+		}
+
+		try{
+			this.service.delete(id);
+			return new SuccessResponse();
+		} catch ( ServiceError e ) {
+			log.error("id:{}] error deleting residuo", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

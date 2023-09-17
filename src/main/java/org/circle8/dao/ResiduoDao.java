@@ -80,6 +80,11 @@ public class ResiduoDao extends Dao {
 		       "FechaLimiteRetiro" = ?
 		 WHERE "ID" = ?
 		""";
+	
+	private static final String DELETE = """
+			DELETE FROM "Residuo"
+			WHERE "ID" = ?
+			""";
 
 	@Inject
 	public ResiduoDao(DataSource ds) {
@@ -171,6 +176,21 @@ public class ResiduoDao extends Dao {
 				throw new ForeignKeyException("No existe la transaccion con id " + r.transaccion.id, e);
 			else
 				throw new PersistenceException("error updating residuo", e);
+		}
+	}
+	
+	
+	public void delete(Transaction t, long id) throws PersistenceException {
+		try ( val delete = t.prepareStatement(DELETE) ) {
+			delete.setLong(1, id);
+
+			if (delete.executeUpdate() <= 0 )
+				throw new SQLException("deleting the residuo failed, no affected rows");
+
+		} catch (SQLException e) {
+			if ( e.getMessage().contains("Solicitud_ResiduoId_fkey") )
+				throw new ForeignKeyException("El residuo se encuentra asociado a una solicitud");
+			throw new PersistenceException("error deleting residuo", e);
 		}
 	}
 
