@@ -88,13 +88,13 @@ public class TransaccionDao extends Dao {
 		SELECT
 		%s
 		FROM "TransaccionResiduo" AS tr
-		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
+		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"= pr."ID"
 		%s
 		WHERE 1 = 1
 		""";
 
 	private static final String SELECT_SIMPLE = """
-		tr."ID", tr."FechaPrimerContacto", tr."FechaEfectiva", tr."PuntoReciclajeId", pr."CiudadanoId",  tr."TransporteId"
+		tr."ID", tr."FechaPrimerContacto", tr."FechaEfectiva", tr."PuntoReciclajeId", pr."CiudadanoId", tr."TransporteId"
 		""";
 
 	private static final String SELECT_RESIDUOS = """
@@ -113,7 +113,6 @@ public class TransaccionDao extends Dao {
 		""";
 
 	private static final String JOIN_RESIDUOS = """
-		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"=pr."ID"
 		JOIN "Residuo" AS re on tr."ID" = re."TransaccionId"
 		JOIN "TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
 		JOIN "PuntoResiduo" AS puntre on puntre."ID" = re."PuntoResiduoId"
