@@ -146,7 +146,7 @@ public class UserService {
 		//TODO: ver caso en el que era transportista y ya no
 	}
 
-	private void updateReciclador(Transaction t, User user) throws NotFoundException, ServiceError {
+	private void updateReciclador(Transaction t, User user) throws ServiceException {
 		if ( user.zonaId != null || user.organizacionId != null || user.reciclador != null )
 			reciclador.update(t, user);
 	}

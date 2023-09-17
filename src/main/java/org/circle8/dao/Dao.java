@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.val;
 import org.circle8.exception.PersistenceException;
+import org.circle8.filter.InequalityFilter;
 
 import javax.sql.DataSource;
 import java.sql.Date;
@@ -70,6 +71,27 @@ abstract class Dao {
 		if ( o != null ) {
 			conditions.append(where);
 			addObject(o, params);
+		}
+	}
+
+	protected void appendInequality(
+		InequalityFilter<?> f,
+		String whereFmt,
+		StringBuilder conditions,
+		List<Object> params
+	) {
+		if ( f == null ) return;
+
+		appendCondition(f.equal, whereFmt.formatted("= ?"), conditions, params);
+		appendCondition(f.gt, whereFmt.formatted("> ?"), conditions, params);
+		appendCondition(f.ge, whereFmt.formatted(">= ?"), conditions, params);
+		appendCondition(f.lt, whereFmt.formatted("< ?"), conditions, params);
+		appendCondition(f.le, whereFmt.formatted("<= ?"), conditions, params);
+
+		if ( Boolean.TRUE.equals(f.isNull) ) {
+			conditions.append(whereFmt.formatted("IS NULL"));
+		} else if ( Boolean.FALSE.equals(f.isNull) ) {
+			conditions.append(whereFmt.formatted("IS NOT NULL"));
 		}
 	}
 
