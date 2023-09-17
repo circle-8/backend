@@ -142,4 +142,14 @@ public class ResiduoService {
 			throw new ServiceError("Ha ocurrido un error al borrar residuo del recorrido", e);
 		}
 	}
+	
+	public void delete(Long id) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			dao.delete(t, id);
+		} catch ( ForeignKeyException e ) {
+			throw new ServiceException(e.getMessage(), e);
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al eliminar el residuo", e);
+		}
+	}
 }
