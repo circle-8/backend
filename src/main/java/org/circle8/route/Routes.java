@@ -200,6 +200,7 @@ public class Routes {
 			.put("/solicitud/{id}/cancelar", result(solicitudController::cancel))
 			// ORGANIZACION
 			.get("/organizacion/{id}", result(organizacionController::get))
+			.delete("/organizacion/{organizacion_id}/reciclador/{reciclador_id}", result(organizacionController::removeReciclador))
 			// Exceptions
 			.error(HttpStatus.NOT_FOUND, ctx -> {
 				if ( Strings.isNullOrEmpty(ctx.result()) || "Not Found".equalsIgnoreCase(ctx.result()) ) {

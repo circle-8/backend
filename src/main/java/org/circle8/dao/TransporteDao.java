@@ -1,16 +1,7 @@
 package org.circle8.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.sql.DataSource;
-
+import com.google.inject.Inject;
+import lombok.val;
 import org.circle8.dto.Dia;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.Transaccion;
@@ -23,17 +14,23 @@ import org.circle8.filter.TransporteFilter;
 import org.circle8.utils.Dates;
 import org.circle8.utils.PuntoUtils;
 
-import com.google.inject.Inject;
-
-import lombok.val;
+import javax.sql.DataSource;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class TransporteDao extends Dao {
-	
+
 	private static final String INSERT_SQL = """
 			INSERT INTO "Transporte"("PrecioSugerido")
 			VALUES (?);
 			""";
-	
+
 	private static final String SELECT_FMT = """
 			SELECT
 			      %s
@@ -41,67 +38,67 @@ public class TransporteDao extends Dao {
 			    %s
 			 WHERE 1 = 1
 			""";
-	
+
 	private static final String SELECT_SIMPLE = """
 			t."ID", t."Precio", t."FechaAcordada", t."FechaInicio", t."FechaFin", t."PagoConfirmado", t."EntregaConfirmada", t."TransportistaId", t."PrecioSugerido"
 			""";
-	
+
 	private static final String SELECT_X_TRANSPORTISTA = """
 			, transp."UsuarioId", transp."Polyline"
 			""";
-	
+
 	private static final String SELECT_X_TRANSACCION = """
 			, trans."ID" AS transaccionID
 			""";
-	
+
 	private static final String SELECT_X_PUNTO_RECICLAJE = """
 			, pr."ID" AS PuntoReciclajeId, pr."CiudadanoId", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."Titulo"
 			""";
-	
+
 	private static final String JOIN_X_TRANSPORTISTA = """
 			LEFT JOIN "Transportista" AS transp on transp."ID" = t."TransportistaId"
-			""";	
-	
+			""";
+
 	private static final String JOIN_X_TRANSACCION = """
 			LEFT JOIN "TransaccionResiduo" AS trans on trans."TransporteId" = t."ID"
 			""";
-	
+
 	private static final String JOIN_X_PUNTO_RECICLAJE = """
 			LEFT JOIN "PuntoReciclaje" AS pr on pr."ID" = trans."PuntoReciclajeId"
 			""";
-	
+
 	private static final String WHERE_TRANSACCION_ID = """
 			AND trans."ID" = ?
 			""";
-	
+
 	private static final String WHERE_ID = """
 			AND t."ID" = ?
 			""";
-	
+
 	private static final String WHERE_TRANSPORTISTA_ID = """
 			AND t."TransportistaId" = ?
 			""";
-	
+
 	private static final String WHERE_USER_TRANSPORTISTA_ID = """
 			AND transp."UsuarioId" = ?
 			""";
-	
+
 	private static final String WHERE_FECHA = """
 			AND t."FechaAcordada" = ?
 			""";
-	
+
 	private static final String WHERE_ENTREGA_CONFIRMADA = """
 			AND t."EntregaConfirmada" = true
 			""";
-	
+
 	private static final String WHERE_ENTREGA_NO_CONFIRMADA = """
 			AND t."EntregaConfirmada" = false
 			""";
-	
+
 	private static final String WHERE_PAGO_CONFIRMADO = """
 			AND t."PagoConfirmado" = true
 			""";
-	
+
 	private static final String WHERE_PAGO_NO_CONFIRMADO = """
 			AND t."PagoConfirmado" = false
 			""";
@@ -114,44 +111,44 @@ public class TransporteDao extends Dao {
 			SET %s
 			WHERE "ID"=?;
 			""";
-	
+
 	private static final String SET_INICIO = """
 			"FechaInicio"=?
 			""";
-	
+
 	private static final String SET_FIN = """
 			"FechaFin"=?
 			""";
-	
+
 	private static final String SET_PAGO = """
 			"PagoConfirmado"=?
 			""";
-	
+
 	private static final String SET_ENTREGA = """
 			"EntregaConfirmada"=?
 			""";
-	
+
 	private static final String SET_PRECIO = """
 			"Precio"=?
 			""";
-	
+
 	private static final String SET_FECHA_ACORDADA = """
 			"FechaAcordada"=?
 			""";
-	
+
 	private static final String SET_TRANSPORTISTA = """
 			"TransportistaId"=?
 			""";
-	
+
 	@Inject
 	TransporteDao(DataSource ds) {
 		super(ds);
 	}
-	
+
 	public Transporte save(Transaction t, Transporte transporte) throws PersistenceException {
 		try (var insert = t.prepareStatement(INSERT_SQL, Statement.RETURN_GENERATED_KEYS)) {
 			insert.setBigDecimal(1, transporte.precioSugerido);
-			
+
 			int insertions = insert.executeUpdate();
 			if (insertions == 0)
 				throw new SQLException("Creating the transporte failed, no affected rows");
@@ -181,13 +178,13 @@ public class TransporteDao extends Dao {
 			throw new PersistenceException("error getting transporte", e);
 		}
 	}
-	
+
 	public List<Transporte> list(TransporteFilter f, TransporteExpand x) throws PersistenceException {
 		try ( var t = open(true) ) {
 			return list(t, f, x);
 		}
 	}
-	
+
 	public List<Transporte> list(Transaction t, TransporteFilter f, TransporteExpand x) throws PersistenceException {
 		try (
 			var select = createSelect(t, f, x);
@@ -203,7 +200,7 @@ public class TransporteDao extends Dao {
 			throw new PersistenceException("error getting transportes", e);
 		}
 	}
-	
+
 	public void update(Transaction t, Transporte tr) throws NotFoundException, PersistenceException {
 		try (var update = createUpdate(t, tr)) {
 			int insertions = update.executeUpdate();
@@ -214,10 +211,10 @@ public class TransporteDao extends Dao {
 			throw new PersistenceException("error updating transporte", e);
 		}
 	}
-	
+
 	private PreparedStatement createSelect(Transaction t, TransporteFilter f, TransporteExpand x)
 			throws PersistenceException, SQLException {
-		
+
 		var selectFields = SELECT_SIMPLE;
 		var joinFields = "";
 
@@ -225,7 +222,7 @@ public class TransporteDao extends Dao {
 			selectFields += SELECT_X_TRANSPORTISTA;
 			joinFields += JOIN_X_TRANSPORTISTA;
 		}
-		
+
 		if(x.transaccion || f.transaccionId != null) {
 			selectFields += SELECT_X_TRANSACCION;
 			selectFields += SELECT_X_PUNTO_RECICLAJE;
@@ -235,70 +232,70 @@ public class TransporteDao extends Dao {
 
 		var b = new StringBuilder(String.format(SELECT_FMT, selectFields, joinFields));
 		List<Object> parameters = new ArrayList<>();
-		
+
 		appendCondition(f.id, WHERE_ID, b, parameters);
 		appendCondition(f.userId, WHERE_USER_TRANSPORTISTA_ID, b, parameters);
 		appendCondition(f.transportistaId, WHERE_TRANSPORTISTA_ID, b, parameters);
 		appendCondition(f.fechaRetiro, WHERE_FECHA, b, parameters);
 		appendCondition(f.transaccionId, WHERE_TRANSACCION_ID, b, parameters);
-		
+
 		if(f.entregaConfirmada != null)
 			b.append(f.entregaConfirmada ? WHERE_ENTREGA_CONFIRMADA : WHERE_ENTREGA_NO_CONFIRMADA);
-		
+
 		if(f.pagoConfirmado != null)
 			b.append(f.pagoConfirmado ? WHERE_PAGO_CONFIRMADO : WHERE_PAGO_NO_CONFIRMADO);
-		
+
 		if(f.soloSinTransportista != null && f.soloSinTransportista)
-			b.append(WHERE_TRANSPORTISTA_NULL);	
-		
+			b.append(WHERE_TRANSPORTISTA_NULL);
+
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i + 1, parameters.get(i));
 
 		return p;
 	}
-	
+
 	private PreparedStatement createUpdate(Transaction t, Transporte tr) throws PersistenceException, SQLException {
 		val set = new ArrayList<String>();
 		List<Object> parameters = new ArrayList<>();
-		
+
 		if(tr.pagoConfirmado != null) {
 			set.add(SET_PAGO);
 			parameters.add(tr.pagoConfirmado);
 		}
-		
+
 		if(tr.entregaConfirmada != null) {
 			set.add(SET_ENTREGA);
 			parameters.add(tr.entregaConfirmada);
 		}
-		
+
 		if(tr.fechaInicio != null) {
 			set.add(SET_INICIO);
 			parameters.add(Timestamp.from(tr.fechaInicio.toInstant()));
 		}
-		
+
 		if(tr.fechaFin != null) {
 			set.add(SET_FIN);
 			parameters.add(Timestamp.from(tr.fechaFin.toInstant()));
 		}
-		
+
 		if(tr.precioAcordado != null) {
 			set.add(SET_PRECIO);
 			parameters.add(tr.precioAcordado);
 		}
-		
+
 		if(tr.fechaAcordada != null) {
 			set.add(SET_FECHA_ACORDADA);
 			parameters.add(tr.fechaAcordada);
 		}
-		
+
 		if(tr.transaccionId != null) {
 			set.add(SET_TRANSPORTISTA);
 			parameters.add(tr.transaccionId);
 		}
-		
+
 		parameters.add(tr.id);
-		
+
 		val sets = String.join(", ", set);
 		val sql = String.format(UPDATE, sets);
 		var p = t.prepareStatement(sql);
@@ -306,7 +303,7 @@ public class TransporteDao extends Dao {
 			p.setObject(i + 1, parameters.get(i));
 		return p;
 	}
-	
+
 	private Transporte buildTransporte(ResultSet rs, TransporteExpand x) throws SQLException {
 		val t = new Transporte();
 		t.id = rs.getLong("ID");
@@ -319,35 +316,35 @@ public class TransporteDao extends Dao {
 		t.precioAcordado = rs.getBigDecimal("Precio");
 		t.transportistaId = rs.getLong("TransportistaId") != 0 ? rs.getLong("TransportistaId"): null;
 		t.transportista = buildTransportista(rs, x.transportista);
-		t.transaccion = buildTransaccion(t, rs, x.transaccion);		
+		t.transaccion = buildTransaccion(t, rs, x.transaccion);
 		t.pagoConfirmado = rs.getBoolean("PagoConfirmado");
 		t.entregaConfirmada = rs.getBoolean("EntregaConfirmada");
 		t.precioSugerido = rs.getBigDecimal("PrecioSugerido");
 
 		return t;
 	}
-	
+
 	private Transaccion buildTransaccion(Transporte t, ResultSet rs, boolean expand) throws SQLException{
 		if ( !expand || rs.getLong("TransaccionId") == 0)
 			return null;
-				
+
 		t.transaccionId = rs.getLong("TransaccionId");
-		
+
 		val puntoReciclaje = new PuntoReciclaje(rs.getLong("PuntoReciclajeId"), rs.getString("Titulo"),
 				rs.getDouble("Latitud"), rs.getDouble("Longitud"),
-				Dia.getDia(rs.getString("DiasAbierto")), new ArrayList<>(), rs.getLong("CiudadanoId"), null);
-		
+				Dia.getDia(rs.getString("DiasAbierto")), new ArrayList<>(), rs.getLong("CiudadanoId"), null, "");
+
 		return Transaccion.builder()
 				.id(rs.getLong("TransaccionId"))
 				.puntoReciclaje(puntoReciclaje)
 				.puntoReciclajeId(rs.getLong("PuntoReciclajeId"))
 				.build();
 	}
-	
+
 	private Transportista buildTransportista(ResultSet rs, boolean expand) throws SQLException {
 		if ( !expand || rs.getLong("TransportistaId") == 0)
 			return null;
-		
+
 		return Transportista.builder()
 				.id(rs.getLong("TransportistaId"))
 				.usuarioId(rs.getLong("UsuarioId"))

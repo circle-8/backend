@@ -290,7 +290,8 @@ public class SolicitudDao extends Dao {
 			Dia.getDia(rs.getString("DiasAbierto")),
 			List.of(),
 			ciudadanoId,
-			User.builder().id(usuarioId).build()
+			User.builder().id(usuarioId).build(),
+			""
 		);
 	}
 

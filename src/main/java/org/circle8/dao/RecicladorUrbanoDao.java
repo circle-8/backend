@@ -39,7 +39,8 @@ public class RecicladorUrbanoDao extends Dao {
 	private static final String UPDATE_ZONA_NULL = """
 			UPDATE "RecicladorUrbano"
 			SET "ZonaId" = NULL
-			WHERE "ZonaId" = ?;
+			WHERE 1=1
+			%s
 			""";
 
 	@Inject
@@ -68,25 +69,6 @@ public class RecicladorUrbanoDao extends Dao {
 		}
 	}
 
-	public void update(Transaction t, User u) throws PersistenceException, NotFoundException {
-		try ( var put = createUpdate(t, u) ) {
-			int puts = put.executeUpdate();
-			if ( puts == 0 )
-				throw new NotFoundException("No existe el reciclador");
-		} catch ( SQLException e ) {
-			throw new PersistenceException("error updating user", e);
-		}
-	}
-
-	public void desasociarZona(Transaction t, Long zonaId) throws PersistenceException {
-		try ( val update =  t.prepareStatement(UPDATE_ZONA_NULL) ) {
-			update.setLong(1, zonaId);
-			update.executeUpdate();
-		} catch (SQLException e) {
-			throw new PersistenceException("error Updating zona in reciclador", e);
-		}
-	}
-
 	private PreparedStatement createInsert(Transaction t,User u) throws PersistenceException, SQLException {
 		val ps = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
 		ps.setLong(1, u.id);
@@ -97,6 +79,16 @@ public class RecicladorUrbanoDao extends Dao {
 		ps.setString(6, u.reciclador != null ? u.reciclador.domicilio : null);
 		ps.setString(7, u.reciclador != null ? u.reciclador.telefono : null);
 		return ps;
+	}
+
+	public void update(Transaction t, User u) throws PersistenceException, NotFoundException {
+		try ( var put = createUpdate(t, u) ) {
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe el reciclador");
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error updating user", e);
+		}
 	}
 
 	private PreparedStatement createUpdate(Transaction t, User u) throws PersistenceException, SQLException {
@@ -114,11 +106,30 @@ public class RecicladorUrbanoDao extends Dao {
 
 		parameters.add(u.id);
 
-		val sets = String.join(", ", set);
-		val sql = String.format(UPDATE, sets);
-		var p = t.prepareStatement(sql);
-		for (int i = 0; i < parameters.size(); i++)
-			p.setObject(i + 1, parameters.get(i));
-		return p;
+		val sql = String.format(UPDATE, String.join(", ", set));
+		return prepareStatement(t, sql, parameters);
+	}
+
+	public void desasociarZona(Transaction t, Long recicladorId, Long zonaId) throws PersistenceException {
+		try ( val update =  createUpdateZona(t, recicladorId, zonaId) ) {
+			update.executeUpdate();
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error updating zona in reciclador", e);
+		}
+	}
+
+	private PreparedStatement createUpdateZona(
+		Transaction t,
+		Long recicladorId,
+		Long zonaId
+	) throws PersistenceException, SQLException {
+		val conditions = new StringBuilder();
+		val parameters = new ArrayList<>();
+
+		appendCondition(recicladorId, "AND \"ID\" = ?", conditions, parameters);
+		appendCondition(zonaId, "AND \"ZonaId\" = ?", conditions, parameters);
+
+		val sql = String.format(UPDATE_ZONA_NULL, conditions);
+		return prepareStatement(t, sql, parameters);
 	}
 }
