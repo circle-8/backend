@@ -1,6 +1,9 @@
 package org.circle8.dto;
 
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.circle8.controller.request.residuo.PostResiduoRequest;
 import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.entity.Residuo;
@@ -8,6 +11,9 @@ import org.circle8.entity.Residuo;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ResiduoDto {
 	public long id;
 	public ZonedDateTime fechaCreacion;

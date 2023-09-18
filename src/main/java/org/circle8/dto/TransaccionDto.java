@@ -69,15 +69,14 @@ public class TransaccionDto {
 
 	public static TransaccionDto from(TransaccionPostRequest req) {
 		if ( req == null) return null;
-		var t = new TransaccionDto();
-		t.residuos = req.residuosId.stream()
-											.map(id -> {
-												ResiduoDto residuoDto = new ResiduoDto();
-												residuoDto.id =id;
-												return residuoDto;
-											})
-											.toList();
-		t.puntoReciclajeId = req.puntoReciclajeId;
+
+		val t = new TransaccionDto();
+		t.id = 0L;
+		t.residuos = req.residuoId.stream()
+			.map(id -> ResiduoDto.builder().id(id).build())
+			.toList();
+		t.puntoReciclajeId = req.puntoReciclaje;
+
 		return t;
 	}
 }
