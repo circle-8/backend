@@ -108,19 +108,19 @@ public class TransaccionController {
 	 * POST /transaccion
 	 */
 	public ApiResponse post(Context ctx) {
-		val req = new TransaccionPostRequest(ctx.queryParamMap());
+		val req = ctx.bodyAsClass(TransaccionPostRequest.class);
 		val valid = req.valid();
 		if (!valid.valid())
 			return new ErrorResponse(valid);
+
 		val dto = TransaccionDto.from(req);
-		dto.id = 0L;
 		try {
 			return service.save(dto).toResponse();
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error saving new Transaccion", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
-		} catch (NotFoundException e) {
-			return new ErrorResponse(ErrorCode.NOT_FOUND, e.getMessage(), e.getDevMessage());
+		} catch (ServiceException e) {
+			return new ErrorResponse(e);
       }
    }
 
