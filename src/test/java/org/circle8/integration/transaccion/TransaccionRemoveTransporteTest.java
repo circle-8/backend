@@ -26,7 +26,7 @@ public class TransaccionRemoveTransporteTest {
 		RestAssured.given()
 					  .delete("/transaccion/4/transporte/")
 					  .then()
-					  .statusCode(404)
+					  .statusCode(400)
 		;
 	}
 	
