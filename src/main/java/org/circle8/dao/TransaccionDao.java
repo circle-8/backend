@@ -295,6 +295,7 @@ public class TransaccionDao extends Dao {
 		appendListCondition(f.puntosReciclaje, WHERE_PUNTO_RECICLAJE, conditions, parameters);
 		appendCondition(f.transportistaId, WHERE_TRANSPORTISTA, conditions, parameters);
 		appendCondition(f.ciudadanoId, WHERE_CIUDADANO, conditions, parameters);
+		appendInequality(f.fechaRetiro, "AND tr.\"FechaEfectiva\" %s\n", conditions, parameters);
 
 		var p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
@@ -324,6 +325,7 @@ public class TransaccionDao extends Dao {
 		return transaccion;
 	}
 
+	// TODO: esto aca esta mal, deberia ir en el DAO de residuos
 	public void saveResiduo(Transaction t, long idResiduo, long idTransaccion) throws PersistenceException, NotFoundException {
 		try (var insert = t.prepareStatement(UPDATE_RESIDUO_ADD_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
 			insert.setLong(1, idTransaccion);

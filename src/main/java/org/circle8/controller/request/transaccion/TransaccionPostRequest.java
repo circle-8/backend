@@ -7,16 +7,18 @@ import java.util.List;
 public class TransaccionPostRequest implements IRequest{
 	private final IRequest.Validation validation = new IRequest.Validation();
 
-	// TODO solicitud Id
-	public Long puntoReciclaje;
+	public Long puntoReciclaje; // TODO: esto queda mal, deberia ser puntoReciclajeId
 	public List<Long> residuoId;
+	public Long solicitudId;
 
 	@Override
 	public IRequest.Validation valid() {
 		if(puntoReciclaje == null)
-			validation.add("El punto de reciclaje no puede ser nulo");
+			validation.add("Se debe especificar el `puntoReciclaje`");
 		if(residuoId == null || residuoId.isEmpty())
-			validation.add("Se debe especificar al menos el id de un residuo");
+			validation.add("Se debe especificar al menos un `residuoId`");
+		if ( solicitudId == null )
+			validation.add("Se debe especificar `solicitudId`");
 		return validation;
 	}
 }

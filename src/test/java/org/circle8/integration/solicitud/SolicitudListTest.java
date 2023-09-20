@@ -5,6 +5,7 @@ import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThan;
@@ -33,6 +34,7 @@ class SolicitudListTest {
 		.body("data[0].estado", equalTo("PENDIENTE"))
 		.body("data[1].id", equalTo(2))
 		.body("data[1].estado", equalTo("EXPIRADA"))
+		.body("data.estado", everyItem(anyOf(equalTo("PENDIENTE"), equalTo("EXPIRADA"), equalTo("APROBADA")))) // SIN CANCELADA
 		;
 	}
 

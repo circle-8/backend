@@ -15,8 +15,9 @@ class TransaccionPostTest {
 	void testInsertOk() {
 		val body = """
 		{
-			"puntoReciclaje": 2,
-			"residuoId": [3, 4]
+			"puntoReciclaje": 5,
+			"residuoId": [1],
+			"solicitudId": 1
 		}
 		""";
 		RestAssured.given()
@@ -25,9 +26,8 @@ class TransaccionPostTest {
 			.then()
 			.statusCode(200)
 			.body("id", equalTo(6))
-			.body("puntoReciclajeId", equalTo(2))
-			.body("residuos[0].id", equalTo(3))
-			.body("residuos[1].id", equalTo(4));
+			.body("puntoReciclajeId", equalTo(5))
+			.body("residuos[0].id", equalTo(1));
 	}
 
 	@Test
@@ -53,7 +53,7 @@ class TransaccionPostTest {
 		""";
 		RestAssured.given()
 			.body(body)
-			.post("/transaccion?punto_reciclaje=4")
+			.post("/transaccion")
 			.then()
 			.statusCode(400);
 	}

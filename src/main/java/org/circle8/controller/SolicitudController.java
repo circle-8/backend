@@ -111,6 +111,7 @@ public class SolicitudController {
 		val filter = SolicitudFilter.builder()
 				.solicitadoId(req.solicitadoId)
 				.solicitanteId(req.solicitanteId)
+				.notEstados(List.of(EstadoSolicitud.CANCELADA))
 				.build();
 
 		val expand = new SolicitudExpand(req.expands);

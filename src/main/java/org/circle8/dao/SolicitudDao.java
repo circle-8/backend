@@ -69,6 +69,10 @@ public class SolicitudDao extends Dao {
 		AND s."ResiduoId" = ?
 		""";
 
+	private static final String WHERE_NOT_ESTADOS = """
+		AND s."Estado" NOT IN ( %S )
+		""";
+
 	private static final String SELECT_FMT = """
 		SELECT
 		       %s
@@ -79,6 +83,7 @@ public class SolicitudDao extends Dao {
 		  JOIN "PuntoReciclaje" AS prc ON prc."ID" = s."PuntoReciclajeId"
 		    %s
 		 WHERE 1 = 1
+		   AND s."TransaccionId" IS NULL
 		""";
 	private static final String SELECT_SIMPLE = """
 		s."ID", s."FechaCreacion", "FechaModificacion", "Estado",
@@ -118,6 +123,12 @@ public class SolicitudDao extends Dao {
 		UPDATE "Solicitud"
 		SET "FechaModificacion" = ?, "Estado" = ?, "CiudadanoCancelaId" = ?
 		WHERE "ID"=?
+		""";
+
+	private static final String UPDATE_TRANSACCION = """
+		UPDATE "Solicitud"
+		SET "TransaccionId" = ?
+		WHERE "ID" = ?
 		""";
 
 	@Inject
@@ -322,6 +333,19 @@ public class SolicitudDao extends Dao {
 		}
 	}
 
+	// TODO: se puede hacer que aprobar, cancelar, y set transaccion sean uno solo, y recibir una especie de SolicitudUpdate
+	public void setTransaccion(Transaction t, Long id, Long transaccionId) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(UPDATE_TRANSACCION) ) {
+			put.setLong(1, transaccionId);
+			put.setLong(2, id);
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe la solicitud con id "+id);
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating solicitud", e);
+		}
+	}
+
 	private PreparedStatement createSelect(
 		Transaction t,
 		SolicitudFilter f,
@@ -345,6 +369,7 @@ public class SolicitudDao extends Dao {
 		appendCondition(f.solicitanteId, WHERE_SOLICITANTE, b, parameters);
 		appendCondition(f.solicitadoId, WHERE_SOLICITADO, b, parameters);
 		appendCondition(f.residuoId, WHERE_RESIDUO_ID, b, parameters);
+		appendListCondition(f.notEstados, WHERE_NOT_ESTADOS, b, parameters);
 
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++)

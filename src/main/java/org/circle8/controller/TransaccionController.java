@@ -19,9 +19,11 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.TransaccionExpand;
+import org.circle8.filter.InequalityFilter;
 import org.circle8.filter.TransaccionFilter;
 import org.circle8.service.TransaccionService;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Singleton
@@ -115,7 +117,7 @@ public class TransaccionController {
 
 		val dto = TransaccionDto.from(req);
 		try {
-			return service.save(dto).toResponse();
+			return service.save(dto, req.solicitudId).toResponse();
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error saving new Transaccion", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -274,6 +276,7 @@ public class TransaccionController {
 			.ciudadanoId(req.ciudadanoId)
 			.puntosReciclaje(req.puntosReciclaje)
 			.transportistaId(req.transportistaId)
+			.fechaRetiro(InequalityFilter.<ZonedDateTime>builder().isNull(true).build()) // TODO: esto deberia cambiarse en la APP
 			.build();
 
 		val expand = new TransaccionExpand(req.expands);
