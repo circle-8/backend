@@ -79,6 +79,7 @@ public class SolicitudDao extends Dao {
 		  JOIN "PuntoReciclaje" AS prc ON prc."ID" = s."PuntoReciclajeId"
 		    %s
 		 WHERE 1 = 1
+		   AND s."TransaccionId" IS NULL
 		""";
 	private static final String SELECT_SIMPLE = """
 		s."ID", s."FechaCreacion", "FechaModificacion", "Estado",
