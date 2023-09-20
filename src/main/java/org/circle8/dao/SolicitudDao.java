@@ -69,6 +69,10 @@ public class SolicitudDao extends Dao {
 		AND s."ResiduoId" = ?
 		""";
 
+	private static final String WHERE_NOT_ESTADOS = """
+		AND s."Estado" NOT IN ( %S )
+		""";
+
 	private static final String SELECT_FMT = """
 		SELECT
 		       %s
@@ -365,6 +369,7 @@ public class SolicitudDao extends Dao {
 		appendCondition(f.solicitanteId, WHERE_SOLICITANTE, b, parameters);
 		appendCondition(f.solicitadoId, WHERE_SOLICITADO, b, parameters);
 		appendCondition(f.residuoId, WHERE_RESIDUO_ID, b, parameters);
+		appendListCondition(f.notEstados, WHERE_NOT_ESTADOS, b, parameters);
 
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++)

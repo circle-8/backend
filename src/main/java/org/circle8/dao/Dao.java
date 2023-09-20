@@ -70,7 +70,7 @@ abstract class Dao {
 	) {
 		if ( l != null && !l.isEmpty() ) {
 			conditions.append(String.format(whereFmt, listParam(l)));
-			params.addAll(l);
+			l.forEach(p -> addObject(p, params));
 		}
 	}
 
