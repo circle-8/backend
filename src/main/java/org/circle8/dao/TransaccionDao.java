@@ -324,6 +324,7 @@ public class TransaccionDao extends Dao {
 		return transaccion;
 	}
 
+	// TODO: esto aca esta mal, deberia ir en el DAO de residuos
 	public void saveResiduo(Transaction t, long idResiduo, long idTransaccion) throws PersistenceException, NotFoundException {
 		try (var insert = t.prepareStatement(UPDATE_RESIDUO_ADD_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
 			insert.setLong(1, idTransaccion);

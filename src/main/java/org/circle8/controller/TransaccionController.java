@@ -115,7 +115,7 @@ public class TransaccionController {
 
 		val dto = TransaccionDto.from(req);
 		try {
-			return service.save(dto).toResponse();
+			return service.save(dto, req.solicitudId).toResponse();
 		} catch (ServiceError e) {
 			log.error("[Request:{}] error saving new Transaccion", req, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());

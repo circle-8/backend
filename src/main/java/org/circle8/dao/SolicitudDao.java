@@ -120,6 +120,12 @@ public class SolicitudDao extends Dao {
 		WHERE "ID"=?
 		""";
 
+	private static final String UPDATE_TRANSACCION = """
+		UPDATE "Solicitud"
+		SET "TransaccionId" = ?
+		WHERE "ID" = ?
+		""";
+
 	@Inject
 	public SolicitudDao(DataSource ds) { super(ds); }
 
@@ -314,6 +320,19 @@ public class SolicitudDao extends Dao {
 			put.setString(2, estado.name());
 			put.setLong(3, ciudadanoID);
 			put.setLong(4, id);
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe la solicitud con id "+id);
+		} catch (SQLException e) {
+			throw new PersistenceException("error updating solicitud", e);
+		}
+	}
+
+	// TODO: se puede hacer que aprobar, cancelar, y set transaccion sean uno solo, y recibir una especie de SolicitudUpdate
+	public void setTransaccion(Transaction t, Long id, Long transaccionId) throws PersistenceException, NotFoundException {
+		try ( var put = t.prepareStatement(UPDATE_TRANSACCION) ) {
+			put.setLong(1, transaccionId);
+			put.setLong(2, id);
 			int puts = put.executeUpdate();
 			if ( puts == 0 )
 				throw new NotFoundException("No existe la solicitud con id "+id);
