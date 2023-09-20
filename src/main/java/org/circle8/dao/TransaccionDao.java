@@ -113,13 +113,13 @@ public class TransaccionDao extends Dao {
 		""";
 
 	private static final String JOIN_RESIDUOS = """
-		JOIN "Residuo" AS re on tr."ID" = re."TransaccionId"
-		JOIN "TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
-		JOIN "PuntoResiduo" AS puntre on puntre."ID" = re."PuntoResiduoId"
+		LEFT JOIN "Residuo" AS re on tr."ID" = re."TransaccionId"
+		LEFT JOIN "TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
+		LEFT JOIN "PuntoResiduo" AS puntre on puntre."ID" = re."PuntoResiduoId"
 		""";
 
 	private static final String JOIN_TRANSPORTE = """
-		JOIN "Transporte" AS tra on tr."TransporteId"=tra."ID"
+		LEFT JOIN "Transporte" AS tra on tr."TransporteId"=tra."ID"
 		""";
 
 	private static final String WHERE_ID = """
@@ -194,7 +194,6 @@ public class TransaccionDao extends Dao {
 	}
 
 	private Transaccion buildTransaccion(ResultSet rs, TransaccionExpand expand) throws SQLException {
-
 		val transporte = buildTransporte(rs, expand.transporte);
 		val puntoReciclaje = buildPuntoReciclaje(rs, expand.puntoReciclaje);
 		List<Residuo> residuos = new ArrayList<>();
@@ -202,9 +201,14 @@ public class TransaccionDao extends Dao {
 		val creacionTimestamp = rs.getTimestamp("FechaPrimerContacto");
 		val retiroTimestamp = rs.getTimestamp("FechaEfectiva");
 
-		val tr = new Transaccion(rs.getLong("ID"), creacionTimestamp != null ? creacionTimestamp.toInstant().atZone(Dates.UTC) : null,
-			retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null, rs.getLong("TransporteId"), transporte,
-			rs.getLong("PuntoReciclajeId"), puntoReciclaje, residuos);
+		val tr = new Transaccion(rs.getLong("ID"),
+			creacionTimestamp != null ? creacionTimestamp.toInstant().atZone(Dates.UTC) : null,
+			retiroTimestamp != null ? retiroTimestamp.toInstant().atZone(Dates.UTC) : null,
+			rs.getLong("TransporteId") != 0 ? rs.getLong("TransporteId") : null,
+			transporte,
+			rs.getLong("PuntoReciclajeId"),
+			puntoReciclaje,
+			residuos);
 
 		if (expand.residuos)
 			residuos.add(buildResiduo(rs));
@@ -215,8 +219,10 @@ public class TransaccionDao extends Dao {
 		if (!expand)
 			return null;
 
-		return new PuntoReciclaje(rs.getLong("PuntoReciclajeId"), rs.getString("Titulo"), rs.getDouble("Latitud"), rs.getDouble("Longitud"),
-			Dia.getDia(rs.getString("DiasAbierto")), new ArrayList<>(), rs.getLong("CiudadanoId"), null, "");
+		return new PuntoReciclaje(rs.getLong("PuntoReciclajeId"),
+				rs.getString("Titulo"), rs.getDouble("Latitud"), rs.getDouble("Longitud"),
+				Dia.getDia(rs.getString("DiasAbierto")),
+				new ArrayList<>(), rs.getLong("CiudadanoId"), null, "");
 	}
 
 	private PuntoResiduo buildPuntoResiduo(ResultSet rs) throws SQLException {
@@ -232,7 +238,7 @@ public class TransaccionDao extends Dao {
 	}
 
 	private Transporte buildTransporte(ResultSet rs, boolean expand) throws SQLException {
-		if (!expand)
+		if (!expand || rs.getLong("TransporteId") == 0)
 			return null;
 
 		val fechaAcordada = rs.getDate("FechaAcordada");
@@ -295,6 +301,7 @@ public class TransaccionDao extends Dao {
 		appendListCondition(f.puntosReciclaje, WHERE_PUNTO_RECICLAJE, conditions, parameters);
 		appendCondition(f.transportistaId, WHERE_TRANSPORTISTA, conditions, parameters);
 		appendCondition(f.ciudadanoId, WHERE_CIUDADANO, conditions, parameters);
+		appendInequality(f.fechaRetiro, "AND tr.\"FechaEfectiva\" %s\n", conditions, parameters);
 
 		var p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
@@ -324,6 +331,7 @@ public class TransaccionDao extends Dao {
 		return transaccion;
 	}
 
+	// TODO: esto aca esta mal, deberia ir en el DAO de residuos
 	public void saveResiduo(Transaction t, long idResiduo, long idTransaccion) throws PersistenceException, NotFoundException {
 		try (var insert = t.prepareStatement(UPDATE_RESIDUO_ADD_TRANSACCION_ID, Statement.RETURN_GENERATED_KEYS)) {
 			insert.setLong(1, idTransaccion);

@@ -1,6 +1,9 @@
 package org.circle8.filter;
 
 import lombok.Builder;
+import org.circle8.entity.EstadoSolicitud;
+
+import java.util.List;
 
 @Builder
 public class SolicitudFilter {
@@ -8,4 +11,5 @@ public class SolicitudFilter {
 	public Long solicitanteId;
 	public Long solicitadoId;
 	public Long residuoId;
+	public List<EstadoSolicitud> notEstados;
 }

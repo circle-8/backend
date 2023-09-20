@@ -229,17 +229,22 @@ public class PuntoResiduoDao extends Dao {
 		var join = JOIN_TIPO;
 		if ( x.ciudadano ) join += JOIN_CIUDADANO;
 
+		val sql = String.format(SELECT_FMT, select, join);
+		var conditions = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
-		val where = new StringBuilder(WHERE_ID);
-		appendCondition(ciudadanoId, WHERE_CIUDADANO, where, parameters);
-		parameters.add(id);
+		
+		appendCondition(id, WHERE_ID, conditions, parameters);
+		appendCondition(ciudadanoId, WHERE_CIUDADANO, conditions, parameters);
+		
 		if ( x.residuos ) {
-			where.append(WHERE_RESIDUO);
+			conditions.append(WHERE_RESIDUO);
 			parameters.add(Timestamp.from(ZonedDateTime.now().toInstant()));
-		}
-
-		val sql = String.format(SELECT_FMT, select, join) + where;
-		return t.prepareStatement(sql, parameters);
+		}	
+		
+		var p = t.prepareStatement(conditions.toString());
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+		return p;
 	}
 
 	public PuntoResiduo save(Transaction t,PuntoResiduo punto) throws PersistenceException, NotFoundException {
