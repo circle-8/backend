@@ -69,6 +69,16 @@ public class ResiduoService {
 		}
 	}
 
+	public ResiduoDto get(long id) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			return this.get(t, id)
+				.map(ResiduoDto::from)
+				.orElseThrow(() -> new NotFoundException("No existe el residuo"));
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al buscar el residuo", e);
+		}
+	}
+
 	Optional<Residuo> get(Transaction t, long id) throws PersistenceException {
 		return dao.get(t, id);
 	}
@@ -142,7 +152,7 @@ public class ResiduoService {
 			throw new ServiceError("Ha ocurrido un error al borrar residuo del recorrido", e);
 		}
 	}
-	
+
 	public void delete(Long id) throws ServiceException {
 		try ( val t = dao.open(true) ) {
 			dao.delete(t, id);

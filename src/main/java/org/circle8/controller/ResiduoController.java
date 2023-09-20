@@ -3,7 +3,6 @@ package org.circle8.controller;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.circle8.controller.request.residuo.PostResiduoRequest;
@@ -51,7 +50,22 @@ public class ResiduoController {
 	 * GET /residuo/{id}
 	 */
 	public ApiResponse get(Context ctx) {
-		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
+		final long id;
+
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del residuo debe ser numérico", "");
+		}
+
+		try {
+			return this.service.get(id).toResponse();
+		} catch ( ServiceError e ) {
+			log.error("[Request: id={}] error get residuo", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**
