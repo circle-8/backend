@@ -295,6 +295,7 @@ public class TransaccionDao extends Dao {
 		appendListCondition(f.puntosReciclaje, WHERE_PUNTO_RECICLAJE, conditions, parameters);
 		appendCondition(f.transportistaId, WHERE_TRANSPORTISTA, conditions, parameters);
 		appendCondition(f.ciudadanoId, WHERE_CIUDADANO, conditions, parameters);
+		appendInequality(f.fechaRetiro, "AND tr.\"FechaEfectiva\" %s\n", conditions, parameters);
 
 		var p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
