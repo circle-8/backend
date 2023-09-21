@@ -195,6 +195,9 @@ public class PuntoResiduoDao extends Dao {
 
 			if ( x.residuos ) {
 				do {
+					val residuoId = rs.getLong("ResiduoId");
+					if ( residuoId == 0 ) break;
+
 					val limit = rs.getTimestamp("FechaLimiteRetiro");
 					val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
 					val fechaTimestamp = rs.getTimestamp("FechaCreacion");
