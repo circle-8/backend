@@ -1,5 +1,10 @@
 package org.circle8.integration.residuo;
 
+import io.restassured.RestAssured;
+import org.circle8.ApiTestExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -9,14 +14,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
-import org.circle8.ApiTestExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import io.restassured.RestAssured;
-
 @ExtendWith(ApiTestExtension.class)
- class ResiduosListTest {
+class ResiduosListTest {
 	@Test void testListWithoutFilter() {
 		RestAssured.given()
 			.get("/residuos")
