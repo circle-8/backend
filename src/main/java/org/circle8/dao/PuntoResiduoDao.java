@@ -197,11 +197,11 @@ public class PuntoResiduoDao extends Dao {
 				do {
 					val limit = rs.getTimestamp("FechaLimiteRetiro");
 					val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
-					val fechaTimestamp = rs.getTimestamp("FechaCreacion").toInstant();
+					val fechaTimestamp = rs.getTimestamp("FechaCreacion");
 					val r = Residuo.builder()
 						.id(rs.getLong("ResiduoId"))
 						.ciudadanoId(ciudadanoId)
-						.fechaCreacion(fechaTimestamp != null ? fechaTimestamp.atZone(Dates.UTC) : null)
+						.fechaCreacion(fechaTimestamp != null ? fechaTimestamp.toInstant().atZone(Dates.UTC) : null)
 						.fechaLimiteRetiro(limitDate)
 						.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
 						.puntoResiduo(new PuntoResiduo(p.id)) // para evitar recursividad dentro de residuo
