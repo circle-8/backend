@@ -6,6 +6,7 @@ import io.javalin.http.Context;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.circle8.controller.request.residuo.PostResiduoRequest;
+import org.circle8.controller.request.residuo.PutResiduoRequest;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -15,6 +16,7 @@ import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.SuccessResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.ResiduoDto;
+import org.circle8.dto.TipoResiduoDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.filter.ResiduosFilter;
@@ -73,7 +75,33 @@ public class ResiduoController {
 	 * Puede cambiar el tipo de residuo
 	 */
 	public ApiResponse put(Context ctx) {
-		return mock.toBuilder().id(Integer.parseInt(ctx.pathParam("id"))).build();
+		final long id;
+
+		try {
+			id = Long.parseLong(ctx.pathParam("id"));
+		} catch ( NumberFormatException e) {
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del residuo debe ser numérico", "");
+		}
+
+		val req = ctx.bodyAsClass(PutResiduoRequest.class);
+		val valid = req.valid();
+		if ( !valid.valid() )
+			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
+
+		var dto = ResiduoDto.builder()
+			.id(id)
+			.tipoResiduo(TipoResiduoDto.builder().id(req.tipoResiduoId).build())
+			.fechaLimiteRetiro(req.fechaLimite)
+			.descripcion(req.descripcion)
+			.build();
+		try {
+			return service.update(dto, id).toResponse();
+		} catch (ServiceError e) {
+			log.error("[Request:{}] error saving new residuo", req, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 
 	/**

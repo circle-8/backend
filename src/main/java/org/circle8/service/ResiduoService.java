@@ -105,13 +105,7 @@ public class ResiduoService {
 			if ( r.recorrido != null && r.recorrido.id != 0 )
 				throw new ServiceException("El residuo ya es parte de un recorrido");
 
-			/* residuo no debe tener solicitudes pendientes */
-			var solicitudes = solicitudDao.list(
-				t,
-				SolicitudFilter.builder().residuoId(id).build(),
-				SolicitudExpand.EMPTY
-			);
-			if ( solicitudes.stream().anyMatch(s -> s.estado != EstadoSolicitud.CANCELADA) )
+			if ( residuoHasSolicitudes(t, id) )
 				throw new ServiceException("El residuo tiene solicitudes pendientes");
 
 			var f = ZonaFilter.builder().puntoResiduoId(r.puntoResiduo.id).build();
@@ -134,6 +128,15 @@ public class ResiduoService {
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al agregar residuo a recorrido", e);
 		}
+	}
+
+	private boolean residuoHasSolicitudes(Transaction t, long id) throws PersistenceException {
+		var solicitudes = solicitudDao.list(
+			t,
+			SolicitudFilter.builder().residuoId(id).notEstados(List.of(EstadoSolicitud.CANCELADA)).build(),
+			SolicitudExpand.EMPTY
+		);
+		return !solicitudes.isEmpty();
 	}
 
 	public ResiduoDto deleteFromRecorrido(long id) throws ServiceException {
@@ -160,6 +163,30 @@ public class ResiduoService {
 			throw new ServiceException(e.getMessage(), e);
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al eliminar el residuo", e);
+		}
+	}
+
+	// TODO: los updates no deberian hacerse con el DTO. Crearia un ResiduoUpdate
+	public ResiduoDto update(ResiduoDto dto, long id) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			var r = find(t, id);
+
+			if ( r.transaccion != null && r.transaccion.id != 0L )
+				throw new ServiceException("El residuo ya pertenece a una transaccion");
+			if ( r.recorrido != null && r.recorrido.id != 0L )
+				throw new ServiceException("El residuo ya pertenece a un recorrido");
+			if ( residuoHasSolicitudes(t, id) )
+				throw new ServiceException("El residuo tiene solicitudes pendientes");
+
+			r.tipoResiduo = dto.tipoResiduo.toEntity();
+			r.fechaLimiteRetiro = dto.fechaLimiteRetiro;
+			r.descripcion = dto.descripcion;
+
+			dao.update(t, r);
+
+			return ResiduoDto.from(r);
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al borrar residuo del recorrido", e);
 		}
 	}
 }
