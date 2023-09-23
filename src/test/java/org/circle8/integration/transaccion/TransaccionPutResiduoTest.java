@@ -8,16 +8,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(ApiTestExtension.class)
-public class TransaccionPutResiduoTest {
+class TransaccionPutResiduoTest {
+
+	@Test
+	void testPutSinSolicitud() {
+		RestAssured.given()
+					  .put("/transaccion/2/residuo/1")
+					  .then()
+					  .statusCode(404);
+	}
 
 	@Test
 	void testPutOk() {
 		RestAssured.given()
-					  .put("/transaccion/2/residuo/1")
-					  .then()
-					  .statusCode(200)
-					  .body("id", equalTo(2))
-					  .body("residuos[0].id", equalTo(1));
+			.put("/transaccion/2/residuo/12")
+			.then()
+			.statusCode(200)
+			.body("id", equalTo(2))
+			.body("residuos[0].id", equalTo(12));
 	}
 
 	@Test
@@ -25,7 +33,7 @@ public class TransaccionPutResiduoTest {
 		RestAssured.given()
 					  .put("/transaccion/0/residuo/1")
 					  .then()
-					  .statusCode(500);
+					  .statusCode(404);
 	}
 
 	@Test
@@ -33,7 +41,7 @@ public class TransaccionPutResiduoTest {
 		RestAssured.given()
 					  .put("/transaccion/2/residuo/50")
 					  .then()
-					  .statusCode(500);
+					  .statusCode(404);
 	}
 
 	@Test
