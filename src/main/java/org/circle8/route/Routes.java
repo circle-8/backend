@@ -12,6 +12,7 @@ import io.javalin.http.HttpStatus;
 import io.javalin.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.Configuration;
+import org.circle8.controller.ConsejoController;
 import org.circle8.controller.OrganizacionController;
 import org.circle8.controller.PlanController;
 import org.circle8.controller.PuntoReciclajeController;
@@ -53,6 +54,7 @@ public class Routes {
 	private final PuntoVerdeController puntoVerdeController;
 	private final SolicitudController solicitudController;
 	private final OrganizacionController organizacionController;
+	private final ConsejoController consejoController;
 
 	private final JwtService jwtService;
 
@@ -77,7 +79,8 @@ public class Routes {
 		TipoResiduoController tipoResiduoController,
 		PuntoVerdeController puntoVerdeController,
 		SolicitudController solicitudController,
-		OrganizacionController organizacionController
+		OrganizacionController organizacionController,
+		ConsejoController consejoController
 	) {
 		this.gson = gson;
 		this.cfg = cfg;
@@ -96,6 +99,7 @@ public class Routes {
 		this.puntoVerdeController = puntoVerdeController;
 		this.solicitudController = solicitudController;
 		this.organizacionController = organizacionController;
+		this.consejoController = consejoController;
 	}
 
 	public Javalin initRoutes() {
@@ -201,6 +205,11 @@ public class Routes {
 			// ORGANIZACION
 			.get("/organizacion/{id}", result(organizacionController::get))
 			.delete("/organizacion/{organizacion_id}/reciclador/{reciclador_id}", result(organizacionController::removeReciclador))
+			// CONSEJOS
+			.get("/consejos", result(consejoController::list))
+			.post("/consejo", result(consejoController::post))
+			.put("/consejo/{id}", result(consejoController::put))
+			.delete("/consejo/{id}", result(consejoController::delete))
 			// Exceptions
 			.error(HttpStatus.NOT_FOUND, ctx -> {
 				if ( Strings.isNullOrEmpty(ctx.result()) || "Not Found".equalsIgnoreCase(ctx.result()) ) {
