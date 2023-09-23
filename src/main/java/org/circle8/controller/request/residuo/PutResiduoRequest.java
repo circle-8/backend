@@ -9,9 +9,11 @@ import java.time.ZonedDateTime;
 @ToString
 public class PutResiduoRequest implements IRequest {
 
+	public Long id;
 	public Long tipoResiduoId;
 	public ZonedDateTime fechaLimite;
 	public String descripcion;
+	public String base64;
 
 	@Override
 	public IRequest.Validation valid() {

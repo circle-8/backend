@@ -24,4 +24,5 @@ public class ResiduoResponse implements ApiResponse {
 	public String transaccionUri;
 	public Long transaccionId;
 	public TransaccionResponse transaccion;
+	public String base64;
 }

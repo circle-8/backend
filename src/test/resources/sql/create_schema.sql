@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS public."Residuo"
     "RecorridoId" bigint,
     "Descripcion" character varying NOT NULL,
     "FechaLimiteRetiro" timestamp with time zone,
+    "Base64" bytea,
     CONSTRAINT "Residuo_pkey" PRIMARY KEY ("ID")
 );
 

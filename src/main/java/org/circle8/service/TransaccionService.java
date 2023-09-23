@@ -84,7 +84,7 @@ public class TransaccionService {
 			solicitudDao.setTransaccion(t, solicitudId, dto.id);
 
 			t.commit();
-			return this.dao.get(t, dto.id, new TransaccionExpand(false,false,true))
+			return this.dao.get(t, dto.id, new TransaccionExpand(false, false, true, false))
 				.map(TransaccionDto::from)
 				.orElseThrow(() -> new NotFoundException("No existe la transaccion que se buscaba actualizar"));
 		} catch ( PersistenceException e ) {
@@ -113,7 +113,9 @@ public class TransaccionService {
 			t.commit();
 
 			var dto = TransaccionDto.from(transaccion);
-			return this.dao.get(t, dto.id, new TransaccionExpand(false,false,true)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+			return this.dao.get(t, dto.id, new TransaccionExpand(false, false, true, false))
+				.map(TransaccionDto::from)
+				.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al tratar de agregar un residuo a la transaccion", e);
 		}
@@ -167,7 +169,9 @@ public class TransaccionService {
 
 	public void deleteTransporte(Long id) throws ServiceException {
 		try (var t = dao.open(true)) {
-			var transaccion = dao.get(id, new TransaccionExpand(false,true,false)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+			var transaccion = dao.get(id, new TransaccionExpand(false, true, false, false))
+				.map(TransaccionDto::from)
+				.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 			if(transaccion.transporte == null)
 				throw new ServiceException("La transacción no posee un transporte asignado");
 
@@ -183,9 +187,13 @@ public class TransaccionService {
 
 	public TransaccionDto createTransporte(Long id) throws ServiceException {
 		try (var t = dao.open()) {
-			var transaccion = dao.get(id, new TransaccionExpand(true,false,true)).map(TransaccionDto::from).orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+			var transaccion = dao.get(id, new TransaccionExpand(true, false, true, false))
+				.map(TransaccionDto::from)
+				.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
+
 			if(transaccion.transporteId != null && transaccion.transporteId != 0L)
 				throw new ServiceException("La transaccion ya posee un transporte");
+
 			var transporte = Transporte.builder().precioSugerido(getPrecioSugerido(transaccion)).build();
 			this.transporteDao.save(t, transporte);
 			transaccion.transporteId = transporte.id;

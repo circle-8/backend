@@ -8,14 +8,16 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 public class TransaccionExpand {
-	public static final TransaccionExpand EMPTY = new TransaccionExpand(false, false,false);
+	public static final TransaccionExpand EMPTY = new TransaccionExpand(false, false, false, false);
 	public final boolean puntoReciclaje;
 	public final boolean transporte;
 	public final boolean residuos;
+	public final boolean residuosBase64;
 
 	public TransaccionExpand(List<String> expands) {
 		this.puntoReciclaje = expands.contains("punto_reciclaje");
 		this.transporte = expands.contains("transporte");
 		this.residuos = expands.contains("residuos");
+		this.residuosBase64 = expands.contains("residuos.base64");
 	}
 }

@@ -1,6 +1,7 @@
 package org.circle8.controller.request.residuo;
 
 import lombok.ToString;
+import lombok.val;
 import org.circle8.controller.request.IRequest;
 import org.circle8.utils.Dates;
 
@@ -8,16 +9,17 @@ import java.time.ZonedDateTime;
 
 @ToString
 public class PostResiduoRequest implements IRequest {
-	private final Validation validation = new Validation();
 
 	public Long tipoResiduoId;
 	public Long puntoResiduoId;
 	public Long ciudadanoId;
 	public ZonedDateTime fechaLimite;
 	public String descripcion;
+	public String base64;
 
 	@Override
 	public Validation valid() {
+		val validation = new Validation();
 		if(tipoResiduoId == null)
 			validation.add("Se debe especificar el tipo de residuo");
 		if(puntoResiduoId == null)

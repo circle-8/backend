@@ -14,6 +14,7 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.ResiduoExpand;
 import org.circle8.expand.SolicitudExpand;
 import org.circle8.filter.SolicitudFilter;
 
@@ -46,7 +47,7 @@ public class SolicitudService {
 		try ( val t = dao.open(true) ) {
 			// TODO: validacion extra (nice to have): que no se pueda crear una solicitud de DEPOSITO cuando hay una de RETIRO igual
 
-			val residuo = residuoDao.get(t, residuoId)
+			val residuo = residuoDao.get(t, residuoId, ResiduoExpand.EMPTY)
 				.orElseThrow(() -> new NotFoundException("No existe el residuo"));
 
 			if ( residuo.fechaRetiro != null )
