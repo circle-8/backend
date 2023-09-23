@@ -9,6 +9,7 @@ import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
 import org.circle8.exception.ForeignKeyException;
 import org.circle8.exception.PersistenceException;
+import org.circle8.expand.ResiduoExpand;
 import org.circle8.filter.ResiduosFilter;
 import org.circle8.utils.Dates;
 import org.jetbrains.annotations.NotNull;
@@ -28,14 +29,14 @@ public class ResiduoDao extends Dao {
 
 	private static final String INSERT = """
 			INSERT INTO "Residuo"(
-			"FechaCreacion", "PuntoResiduoId", "TipoResiduoId", "Descripcion", "FechaLimiteRetiro")
-			VALUES (?, ?, ?, ?, ?);
+			"FechaCreacion", "PuntoResiduoId", "TipoResiduoId", "Descripcion", "FechaLimiteRetiro", "Base64")
+			VALUES (?, ?, ?, ?, ?, ?);
 			  """;
 	private static final String SELECT = """
 		SELECT r."ID", "FechaCreacion", "FechaRetiro", "FechaLimiteRetiro", "Descripcion",
 		       "TipoResiduoId", tr."Nombre" AS TipoResiduoNombre,
 		       "PuntoResiduoId", pr."CiudadanoId",
-		       "TransaccionId", "RecorridoId"
+		       "TransaccionId", "RecorridoId", "Base64"
 		  FROM "Residuo" AS r
 		  JOIN "PuntoResiduo" AS pr ON pr."ID" = r."PuntoResiduoId"
 		  JOIN "TipoResiduo" AS tr ON tr."ID" = r."TipoResiduoId"
@@ -80,7 +81,8 @@ public class ResiduoDao extends Dao {
 		       "TransaccionId" = ?,
 		       "RecorridoId" = ?,
 		       "Descripcion" = ?,
-		       "FechaLimiteRetiro" = ?
+		       "FechaLimiteRetiro" = ?,
+		       "Base64" = ?
 		 WHERE "ID" = ?
 		""";
 
@@ -101,6 +103,7 @@ public class ResiduoDao extends Dao {
 			insert.setLong(3, residuo.tipoResiduo.id);
 			insert.setString(4, residuo.descripcion);
 			insert.setTimestamp(5, residuo.fechaLimiteRetiro != null? Timestamp.from(residuo.fechaLimiteRetiro.toInstant()) : null);
+			insert.setBytes(6, residuo.base64);
 
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
@@ -124,13 +127,13 @@ public class ResiduoDao extends Dao {
 		return residuo;
 	}
 
-	public Optional<Residuo> get(Transaction t, long residuoId) throws PersistenceException {
+	public Optional<Residuo> get(Transaction t, long residuoId, ResiduoExpand x) throws PersistenceException {
 		try ( val ps = t.prepareStatement(SELECT + WHERE_ID) ) {
 			ps.setLong(1, residuoId);
 
 			try ( val rs = ps.executeQuery() ) {
 				if ( !rs.next() ) return Optional.empty();
-				return Optional.of(buildResiduo(rs));
+				return Optional.of(buildResiduo(rs, x));
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error selecting residuo", e);
@@ -138,7 +141,11 @@ public class ResiduoDao extends Dao {
 	}
 
 	@NotNull
-	private static Residuo buildResiduo(ResultSet rs) throws SQLException {
+	private static Residuo buildResiduo(ResultSet rs, ResiduoExpand x) throws SQLException {
+		byte[] base64 = null;
+		if ( x.base64 )
+			base64 = rs.getBytes("Base64");
+
 		return new Residuo(
 			rs.getLong("ID"),
 			rs.getLong("CiudadanoId"),
@@ -149,7 +156,8 @@ public class ResiduoDao extends Dao {
 			new PuntoResiduo(rs.getLong("PuntoResiduoId")),
 			new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")),
 			new Transaccion(rs.getLong("TransaccionId")),
-			new Recorrido(rs.getLong("RecorridoId"))
+			new Recorrido(rs.getLong("RecorridoId")),
+			base64
 		);
 	}
 
@@ -163,7 +171,8 @@ public class ResiduoDao extends Dao {
 			ps.setObject(6, r.recorrido != null && r.recorrido.id != 0 ? r.recorrido.id : null);
 			ps.setString(7, r.descripcion);
 			ps.setTimestamp(8, r.fechaLimiteRetiro != null ? Timestamp.from(r.fechaLimiteRetiro.toInstant()) : null);
-			ps.setLong(9, r.id);
+			ps.setBytes(9, r.base64);
+			ps.setLong(10, r.id);
 
 			int updates = ps.executeUpdate();
 			if ( updates == 0 )
@@ -197,17 +206,17 @@ public class ResiduoDao extends Dao {
 		}
 	}
 
-	public List<Residuo> list(Transaction t, ResiduosFilter f) throws PersistenceException {
+	public List<Residuo> list(Transaction t, ResiduosFilter f, ResiduoExpand x) throws PersistenceException {
 		try (val ps = createListSelect(t, f); val rs = ps.executeQuery()) {
-			return buildList(rs, ResiduoDao::buildResiduo);
+			return buildList(rs, r -> buildResiduo(r, x));
 		} catch (SQLException e) {
 			throw new PersistenceException("error selecting residuos list", e);
 		}
 	}
 
-	public List<Residuo> list(ResiduosFilter f) throws PersistenceException {
+	public List<Residuo> list(ResiduosFilter f, ResiduoExpand x) throws PersistenceException {
 		try ( var t = open(true) ) {
-			return list(t, f);
+			return list(t, f, x);
 		}
 	}
 

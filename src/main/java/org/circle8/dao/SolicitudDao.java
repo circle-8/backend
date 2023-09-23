@@ -101,7 +101,7 @@ public class SolicitudDao extends Dao {
 	private static final String SELECT_X_RESIDUOS = """
 		, r."FechaCreacion" AS ResiduoFechaCreacion, r."FechaLimiteRetiro", r."Descripcion",
 		  pr."CiudadanoId" AS ResiduoCiudadanoId, r."PuntoResiduoId",
-		  tr."ID" AS TipoResiduoId, tr."Nombre" AS TipoResiduoNombre
+		  tr."ID" AS TipoResiduoId, tr."Nombre" AS TipoResiduoNombre, r."Base64"
 		""";
 	private static final String SELECT_X_CIUDADANOS = """
 		, u1."Username" AS SolicitanteUsername, u1."NombreApellido" AS SolicitanteNombre
@@ -230,7 +230,7 @@ public class SolicitudDao extends Dao {
 
 	@NotNull
 	private Solicitud buildSolicitud(ResultSet rs, SolicitudExpand x) throws SQLException {
-		val r = buildResiduo(rs, x.residuo);
+		val r = buildResiduo(rs, x.residuo, x.residuoBase64);
 		val solicitante = buildSolicitante(rs, x.ciudadanos);
 		val solicitado = buildSolicitado(rs, x.ciudadanos);
 		val users = Map.of(solicitado.id, solicitado.usuarioId, solicitante.id, solicitante.usuarioId);
@@ -249,8 +249,13 @@ public class SolicitudDao extends Dao {
 		);
 	}
 
-	private Residuo buildResiduo(ResultSet rs, boolean expand) throws SQLException {
+	private Residuo buildResiduo(ResultSet rs, boolean expand, boolean expandBase64) throws SQLException {
 		if ( !expand ) return Residuo.builder().id(rs.getLong("ResiduoId")).build();
+
+		byte[] base64 = null;
+		if ( expandBase64 )
+			base64 = rs.getBytes("Base64");
+
 
 		// TODO: ver si es posible evitar duplicado con PuntoResiduoDao
 		val limit = rs.getTimestamp("FechaLimiteRetiro");
@@ -263,6 +268,7 @@ public class SolicitudDao extends Dao {
 			.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
 			.puntoResiduo(new PuntoResiduo(rs.getLong("PuntoResiduoId"), rs.getLong("ResiduoCiudadanoId"))) // para evitar recursividad dentro de residuo
 			.descripcion(rs.getString("Descripcion"))
+			.base64(base64)
 			.build();
 	}
 
