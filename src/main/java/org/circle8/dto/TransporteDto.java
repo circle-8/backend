@@ -56,7 +56,7 @@ public class TransporteDto {
 			fechaAcordada,
 			fechaInicio,
 			fechaFin,
-			precioAcordado.longValue(),
+			precioAcordado != null ? precioAcordado.longValue() : null,
 			transportista != null ? "/user/" + transportista.usuarioId : null,
 			transportistaId,
 			transportista != null ? transportista.toResponse() : null,

@@ -33,6 +33,17 @@ public class TransporteGetTest {
 	}
 
 	@Test
+	void testGetPrecioAcordadoNull() {
+		RestAssured.given()
+			.get("/transporte/4")
+			.then()
+			.statusCode(200)
+			.body("id", equalTo(4))
+			.body("precioAcordado", equalTo(null))
+		;
+	}
+
+	@Test
 	void testGetOkWithExpandTransportista() {
 		RestAssured.given()
 			.get("/transporte/1?expand=transportista")
