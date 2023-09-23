@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
@@ -16,7 +15,7 @@ public class TransporteResponse implements ApiResponse {
 	public LocalDate fechaAcordada;
 	public ZonedDateTime fechaInicio;
 	public ZonedDateTime fechaFin;
-	public BigDecimal precioAcordado;
+	public Long precioAcordado;
 	public String transportistaUri;
 	public Long transportistaId;
 	public TransportistaResponse transportista;
@@ -25,5 +24,5 @@ public class TransporteResponse implements ApiResponse {
 	public TransaccionResponse transaccion;
 	public boolean pagoConfirmado;
 	public boolean entregaConfirmada;
-	public BigDecimal precioSugerido;
+	public Long precioSugerido;
 }

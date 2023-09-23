@@ -1,10 +1,10 @@
 package org.circle8.controller;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.circle8.controller.request.transporte.TransportePutRequest;
 import org.circle8.controller.request.transporte.TransporteRequest;
 import org.circle8.controller.response.ApiResponse;
@@ -20,23 +20,20 @@ import org.circle8.filter.TransporteFilter;
 import org.circle8.service.TransporteService;
 import org.circle8.utils.Dates;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 @Singleton
 @Slf4j
 public class TransporteController {
 	private final TransporteService service;
-	
+
 	@Inject
 	private TransporteController(TransporteService service) {
 		this.service = service;
 	}
-	
+
 	private final static TransporteResponse mock = TransporteResponse.builder()
 		.id(1L)
 		.fechaAcordada(LocalDate.now())
@@ -52,7 +49,7 @@ public class TransporteController {
 		val valid = req.valid();
 		if (!valid.valid())
 			return new ErrorResponse(valid);
-		
+
 		val filter = TransporteFilter.builder()
 				.userId(req.userId)
 				.transportistaId(req.transportistaId)
@@ -62,9 +59,9 @@ public class TransporteController {
 				.fechaRetiro(req.fechaRetiro)
 				.transaccionId(req.transaccionId)
 				.build();
-		
+
 		val expand = new TransporteExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
-		
+
 		try {
 			val transportes = this.service.list(filter, expand);
 			return new ListResponse<>(transportes.stream().map(TransporteDto::toResponse).toList());
@@ -84,10 +81,10 @@ public class TransporteController {
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
-		}		
-		
+		}
+
 		val expand = new TransporteExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
-		
+
 		try {
 			var dto = this.service.get(id, expand);
 			return dto.toResponse();
@@ -105,11 +102,11 @@ public class TransporteController {
 	public ApiResponse setPrecio(Context ctx) {
 		return mock.toBuilder()
 			.id(Long.parseLong(ctx.pathParam("id")))
-			.precioAcordado(BigDecimal.TEN)
+			.precioAcordado(10L)
 			.build();
 	}
-	
-	
+
+
 	/**
 	 * POST /transporte/{id}
 	 */
@@ -119,13 +116,13 @@ public class TransporteController {
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
-		}		
-		
+		}
+
 		val req = ctx.bodyAsClass(TransportePutRequest.class);
 		val valid = req.valid();
 		if ( !valid.valid() )
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
-		
+
 		try {
 			val tr = TransporteDto.from(req);
 			tr.id = id;
@@ -146,7 +143,7 @@ public class TransporteController {
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
-		}		
+		}
 
 		try {
 			val tr = new TransporteDto();
@@ -169,7 +166,7 @@ public class TransporteController {
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
-		}		
+		}
 
 		try {
 			val tr = new TransporteDto();
@@ -192,7 +189,7 @@ public class TransporteController {
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
-		}		
+		}
 
 		try {
 			val tr = new TransporteDto();
@@ -215,7 +212,7 @@ public class TransporteController {
 			id = Long.parseLong(ctx.pathParam("id"));
 		} catch ( NumberFormatException e) {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del transporte debe ser numérico", "");
-		}		
+		}
 
 		try {
 			val tr = new TransporteDto();
