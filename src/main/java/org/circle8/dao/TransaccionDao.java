@@ -97,7 +97,7 @@ public class TransaccionDao extends Dao {
 		""";
 
 	private static final String SELECT_RESIDUOS = """
-		, re."ID" AS residuoId, re."FechaCreacion", re."FechaRetiro", re."PuntoResiduoId", re."Descripcion", re."FechaLimiteRetiro",
+		, re."ID" AS residuoId, re."FechaCreacion", re."FechaRetiro", re."PuntoResiduoId", re."Descripcion", re."FechaLimiteRetiro", re."Base64",
 		re."TipoResiduoId", re."RecorridoId", tre."Nombre" AS TipoResiduoNombre,
 		puntre."CiudadanoId" AS ciudadanoPuntoResiduo,
 		puntre."Latitud" as latitudPuntoResiduo, puntre."Longitud" as longitudPuntoResiduo
@@ -152,7 +152,7 @@ public class TransaccionDao extends Dao {
 					transaccion = buildTransaccion(rs, exp);
 					mapTransacciones.put(id, transaccion);
 				} else if (exp.residuos)
-					transaccion.residuos.add(buildResiduo(rs));
+					transaccion.residuos.add(buildResiduo(rs, exp.residuosBase64));
 			}
 			return mapTransacciones.values().stream().toList();
 		} catch (SQLException e) {
@@ -183,7 +183,7 @@ public class TransaccionDao extends Dao {
 				Transaccion tr = buildTransaccion(rs, expand);
 				while (rs.next()) {
 					if (expand.residuos)
-						tr.residuos.add(buildResiduo(rs));
+						tr.residuos.add(buildResiduo(rs, expand.residuosBase64));
 				}
 				return Optional.of(tr);
 			}
@@ -210,7 +210,7 @@ public class TransaccionDao extends Dao {
 			residuos);
 
 		if (expand.residuos)
-			residuos.add(buildResiduo(rs));
+			residuos.add(buildResiduo(rs, expand.residuosBase64));
 		return tr;
 	}
 
@@ -257,11 +257,15 @@ public class TransaccionDao extends Dao {
 			rs.getBigDecimal("Precio"));
 	}
 
-	private Residuo buildResiduo(ResultSet rs) throws SQLException {
+	private Residuo buildResiduo(ResultSet rs, boolean expandBase64) throws SQLException {
 		val limit = rs.getTimestamp("FechaLimiteRetiro");
 		val retiro = rs.getTimestamp("FechaRetiro");
 		val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
 		val retiroDate = retiro != null ? retiro.toInstant().atZone(Dates.UTC) : null;
+
+		byte[] base64 = null;
+		if ( expandBase64 )
+			base64 = rs.getBytes("Base64");
 
 		return Residuo
 			.builder()
@@ -273,6 +277,7 @@ public class TransaccionDao extends Dao {
 			.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
 			.puntoResiduo(buildPuntoResiduo(rs))
 			.descripcion(rs.getString("Descripcion"))
+			.base64(base64)
 			.build();
 	}
 
