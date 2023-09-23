@@ -65,6 +65,8 @@ public class RecorridoDto {
 
 	public Recorrido toEntity() {
 		Recorrido r = new Recorrido();
+		if ( this.id != null )
+			r.id = this.id;
 		r.fechaRetiro = this.fechaRetiro;
 		r.recicladorId = this.recicladorId;
 		r.zonaId = this.zonaId;

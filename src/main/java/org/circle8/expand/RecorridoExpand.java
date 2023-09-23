@@ -2,10 +2,12 @@ package org.circle8.expand;
 
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 import java.util.List;
 
 @AllArgsConstructor
+@Builder
 public class RecorridoExpand {
 	public static final RecorridoExpand EMPTY = new RecorridoExpand(false, false, false);
 

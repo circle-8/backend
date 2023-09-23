@@ -1,7 +1,10 @@
 package org.circle8.controller;
 
-import java.util.List;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import io.javalin.http.Context;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.circle8.controller.request.recorrido.PostRecorridoRequest;
 import org.circle8.controller.request.recorrido.PutRecorridoRequest;
 import org.circle8.controller.response.ApiResponse;
@@ -17,12 +20,7 @@ import org.circle8.filter.RecorridoFilter;
 import org.circle8.service.RecorridoService;
 import org.circle8.service.RecorridoService.UpdateEnum;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-import io.javalin.http.Context;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
 
 
 @Singleton
@@ -183,7 +181,7 @@ public class RecorridoController {
 			dto.id = id;
 			return service.update(dto, UpdateEnum.FIN).toResponse();
 		} catch ( ServiceError e ) {
-			log.error("[id:{}, zonaId:{}] error updating recorrido", id, e);
+			log.error("[id:{}] error finishing recorrido", id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch (ServiceException e) {
 			return new ErrorResponse(e);

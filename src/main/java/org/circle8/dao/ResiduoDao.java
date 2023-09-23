@@ -197,13 +197,17 @@ public class ResiduoDao extends Dao {
 		}
 	}
 
-	public List<Residuo> list(ResiduosFilter f) throws PersistenceException {
-		try ( var t = open(true); var ps = createListSelect(t, f) ) {
-			try ( val rs = ps.executeQuery() ) {
-				return buildList(rs, ResiduoDao::buildResiduo);
-			}
-		} catch ( SQLException e ) {
+	public List<Residuo> list(Transaction t, ResiduosFilter f) throws PersistenceException {
+		try (val ps = createListSelect(t, f); val rs = ps.executeQuery()) {
+			return buildList(rs, ResiduoDao::buildResiduo);
+		} catch (SQLException e) {
 			throw new PersistenceException("error selecting residuos list", e);
+		}
+	}
+
+	public List<Residuo> list(ResiduosFilter f) throws PersistenceException {
+		try ( var t = open(true) ) {
+			return list(t, f);
 		}
 	}
 
