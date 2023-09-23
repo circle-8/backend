@@ -11,5 +11,7 @@ public class SolicitudFilter {
 	public Long solicitanteId;
 	public Long solicitadoId;
 	public Long residuoId;
+	public Long puntoReciclajeId;
 	public List<EstadoSolicitud> notEstados;
+	public List<EstadoSolicitud> estados;
 }

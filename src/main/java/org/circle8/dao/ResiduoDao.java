@@ -41,6 +41,9 @@ public class ResiduoDao extends Dao {
 		  JOIN "TipoResiduo" AS tr ON tr."ID" = r."TipoResiduoId"
 		 WHERE 1=1
 		""";
+	private static final String ORDER_BY = """
+		ORDER BY r."FechaCreacion" DESC
+		""";
 	private static final String WHERE_ID = """
 		AND r."ID" = ?
 		""";
@@ -80,7 +83,7 @@ public class ResiduoDao extends Dao {
 		       "FechaLimiteRetiro" = ?
 		 WHERE "ID" = ?
 		""";
-	
+
 	private static final String DELETE = """
 			DELETE FROM "Residuo"
 			WHERE "ID" = ?
@@ -178,8 +181,8 @@ public class ResiduoDao extends Dao {
 				throw new PersistenceException("error updating residuo", e);
 		}
 	}
-	
-	
+
+
 	public void delete(Transaction t, long id) throws PersistenceException {
 		try ( val delete = t.prepareStatement(DELETE) ) {
 			delete.setLong(1, id);
@@ -194,13 +197,17 @@ public class ResiduoDao extends Dao {
 		}
 	}
 
-	public List<Residuo> list(ResiduosFilter f) throws PersistenceException {
-		try ( var t = open(true); var ps = createListSelect(t, f) ) {
-			try ( val rs = ps.executeQuery() ) {
-				return buildList(rs, ResiduoDao::buildResiduo);
-			}
-		} catch ( SQLException e ) {
+	public List<Residuo> list(Transaction t, ResiduosFilter f) throws PersistenceException {
+		try (val ps = createListSelect(t, f); val rs = ps.executeQuery()) {
+			return buildList(rs, ResiduoDao::buildResiduo);
+		} catch (SQLException e) {
 			throw new PersistenceException("error selecting residuos list", e);
+		}
+	}
+
+	public List<Residuo> list(ResiduosFilter f) throws PersistenceException {
+		try ( var t = open(true) ) {
+			return list(t, f);
 		}
 	}
 
@@ -222,6 +229,7 @@ public class ResiduoDao extends Dao {
 			conditions.append(f.retirado ? WHERE_RETIRADO : WHERE_NOT_RETIRADO);
 		}
 
+		conditions.append(ORDER_BY);
 		val p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i+1, parameters.get(i));

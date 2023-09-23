@@ -21,12 +21,12 @@ public class TransporteDto {
 	public Boolean pagoConfirmado;
 	public Boolean entregaConfirmada;
 	public BigDecimal precioSugerido;
-	
+
 	public static TransporteDto from(TransportePutRequest req) {
 		var t = new TransporteDto();
 		t.fechaAcordada = req.fechaAcordada;
 		t.precioAcordado = req.precioAcordado;
-		t.transaccionId = req.transportistaId;		
+		t.transaccionId = req.transportistaId;
 		return t;
 	}
 
@@ -56,7 +56,7 @@ public class TransporteDto {
 			fechaAcordada,
 			fechaInicio,
 			fechaFin,
-			precioAcordado,
+			precioAcordado != null ? precioAcordado.longValue() : null,
 			transportista != null ? "/user/" + transportista.usuarioId : null,
 			transportistaId,
 			transportista != null ? transportista.toResponse() : null,
@@ -65,7 +65,7 @@ public class TransporteDto {
 			transaccion != null ? transaccion.toResponse() : null,
 			pagoConfirmado,
 			entregaConfirmada,
-			precioSugerido
+			precioSugerido.longValue()
 		);
 	}
 

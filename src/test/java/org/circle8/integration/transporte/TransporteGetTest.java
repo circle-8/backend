@@ -1,17 +1,16 @@
 package org.circle8.integration.transporte;
 
+import io.restassured.RestAssured;
+import org.circle8.ApiTestExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-
-import org.circle8.ApiTestExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
 public class TransporteGetTest {
@@ -23,13 +22,24 @@ public class TransporteGetTest {
 			.then()
 			.statusCode(200)
 			.body("id", equalTo(1))
-			.body("precioAcordado", equalTo(40.0F))
+			.body("precioAcordado", equalTo(40))
 			.body("fechaAcordada", is(nullValue()))
 			.body("fechaInicio", equalTo("2020-01-01T08:00:00Z"))
 			.body("fechaFin", equalTo("2020-01-02T08:00:00Z"))
 			.body("pagoConfirmado", equalTo(false))
 			.body("entregaConfirmada", equalTo(false))
-			.body("precioSugerido", equalTo(2500.0F))			
+			.body("precioSugerido", equalTo(2500))
+		;
+	}
+
+	@Test
+	void testGetPrecioAcordadoNull() {
+		RestAssured.given()
+			.get("/transporte/4")
+			.then()
+			.statusCode(200)
+			.body("id", equalTo(4))
+			.body("precioAcordado", equalTo(null))
 		;
 	}
 
@@ -45,24 +55,24 @@ public class TransporteGetTest {
 			.body("transportista.id", equalTo(1))
 			.body("transportista.polylineAlcance", is(not(hasSize(0))))
 		;
-	}	
-	
+	}
+
 	@Test
 	void testGetOkWithExpandTransaccion() {
 		RestAssured.given()
 			.get("/transporte/1?expand=transaccion")
 			.then()
 			.statusCode(200)
-			.body("transaccionId", equalTo(1))			
+			.body("transaccionId", equalTo(1))
 			.body("transaccionUri", equalTo("/transaccion/1"))
 			.body("transaccion", notNullValue())
 			.body("transaccion.id", equalTo(1))
 			.body("transaccion.puntoReciclaje", notNullValue())
 			.body("transaccion.puntoReciclaje.id", notNullValue())
-			.body("transaccion.puntoReciclaje.latitud", equalTo(-34.65199F))	
-			.body("transaccion.puntoReciclaje.longitud", equalTo(-58.58509F))	
+			.body("transaccion.puntoReciclaje.latitud", equalTo(-34.65199F))
+			.body("transaccion.puntoReciclaje.longitud", equalTo(-58.58509F))
 		;
-	}	
+	}
 
 	@Test
 	void testNotFound() {

@@ -78,7 +78,7 @@ public class TransaccionGetTest {
 					  .body("transporte.id", equalTo(1))
 					  .body("transporte.fechaInicio", equalTo("2020-01-01T08:00:00Z"))
 					  .body("transporte.fechaFin", equalTo("2020-01-02T08:00:00Z"))
-					  .body("transporte.precioAcordado", equalTo(40.0F))
+					  .body("transporte.precioAcordado", equalTo(40))
 					  .body("transporte.transportistaId", equalTo(1))
 					  .body("transporte.transaccionUri", equalTo("/transaccion/1"))
 					  .body("transporte.transaccionId", equalTo(1))

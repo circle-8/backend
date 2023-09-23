@@ -1,12 +1,11 @@
 package org.circle8.integration.transporte;
 
-import static org.hamcrest.Matchers.equalTo;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.equalTo;
 
 @ExtendWith(ApiTestExtension.class)
 public class TransportePutTest {
@@ -26,12 +25,12 @@ public class TransportePutTest {
 			.then()
 			.statusCode(200)
 			.body("id", equalTo(1))
-			.body("precioAcordado", equalTo(500.0F))
+			.body("precioAcordado", equalTo(500))
 			.body("fechaAcordada", equalTo("2023-09-09"))
 			.body("transportistaId", equalTo(1))
 		;
-	}	
-	
+	}
+
 	@Test
 	void testPutPrecioOk() {
 		var request = """
@@ -45,10 +44,10 @@ public class TransportePutTest {
 			.then()
 			.statusCode(200)
 			.body("id", equalTo(1))
-			.body("precioAcordado", equalTo(500.0F))		
+			.body("precioAcordado", equalTo(500))
 		;
-	}	
-	
+	}
+
 	@Test
 	void testPutFechaAcordadaOk() {
 		var request = """
@@ -62,10 +61,10 @@ public class TransportePutTest {
 			.then()
 			.statusCode(200)
 			.body("id", equalTo(1))
-			.body("fechaAcordada", equalTo("2023-09-09"))	
+			.body("fechaAcordada", equalTo("2023-09-09"))
 		;
-	}	
-	
+	}
+
 	@Test
 	void testPutTransportistaOk() {
 		var request = """
@@ -79,9 +78,9 @@ public class TransportePutTest {
 			.then()
 			.statusCode(200)
 			.body("id", equalTo(1))
-			.body("transportistaId", equalTo(1))		
+			.body("transportistaId", equalTo(1))
 		;
-	}	
+	}
 
 	@Test
 	void testNotFound() {
@@ -112,9 +111,9 @@ public class TransportePutTest {
 		.statusCode(404)
 		;
 	}
-	
+
 	@Test
-	void testWithEmptyBody() {		
+	void testWithEmptyBody() {
 		RestAssured.given()
 		.body("{}")
 		.put("/transporte/1")
