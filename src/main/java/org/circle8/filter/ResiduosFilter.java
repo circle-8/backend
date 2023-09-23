@@ -1,5 +1,8 @@
 package org.circle8.filter;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.circle8.utils.Parser;
 
@@ -8,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 @ToString
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResiduosFilter {
 	public List<Long> puntosResiduo;
 	public List<Long> ciudadanos;
