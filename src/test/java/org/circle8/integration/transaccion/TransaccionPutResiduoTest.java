@@ -21,11 +21,11 @@ class TransaccionPutResiduoTest {
 	@Test
 	void testPutOk() {
 		RestAssured.given()
-			.put("/transaccion/2/residuo/12")
+			.put("/transaccion/2/residuo/13")
 			.then()
 			.statusCode(200)
 			.body("id", equalTo(2))
-			.body("residuos[0].id", equalTo(12));
+			.body("residuos[0].id", equalTo(13));
 	}
 
 	@Test
