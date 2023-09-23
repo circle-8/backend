@@ -254,7 +254,7 @@ public class TransaccionDao extends Dao {
 			null,
 			rs.getBoolean("PagoConfirmado"),
 			rs.getBoolean("EntregaConfirmada"),
-			rs.getBigDecimal("Precio"));
+			rs.getBigDecimal("PrecioSugerido"));
 	}
 
 	private Residuo buildResiduo(ResultSet rs) throws SQLException {
