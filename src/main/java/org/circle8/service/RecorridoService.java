@@ -13,6 +13,7 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
+import org.circle8.expand.ResiduoExpand;
 import org.circle8.filter.RecorridoFilter;
 import org.circle8.filter.ResiduosFilter;
 import org.circle8.utils.PuntoUtils;
@@ -91,7 +92,7 @@ public class RecorridoService {
 					.retirado(false)
 					.recorrido(dto.id)
 					.build();
-				val residuosNoRetirados = residuoDao.list(t, f);
+				val residuosNoRetirados = residuoDao.list(t, f, ResiduoExpand.EMPTY);
 				if (!residuosNoRetirados.isEmpty())
 					throw new ServiceException("No puede finalizar el recorrido si no ha retirado todos los residuos");
 			}

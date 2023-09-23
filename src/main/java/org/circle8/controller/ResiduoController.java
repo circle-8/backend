@@ -18,6 +18,7 @@ import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.ResiduoDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.ResiduoExpand;
 import org.circle8.filter.ResiduosFilter;
 import org.circle8.service.ResiduoService;
 import org.circle8.service.SolicitudService;
@@ -59,8 +60,9 @@ public class ResiduoController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, "El id del residuo debe ser numérico", "");
 		}
 
+		val x = new ResiduoExpand(ctx.queryParams("expand"));
 		try {
-			return this.service.get(id).toResponse();
+			return this.service.get(id, x).toResponse();
 		} catch ( ServiceError e ) {
 			log.error("[Request: id={}] error get residuo", id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -151,8 +153,9 @@ public class ResiduoController {
 	 */
 	public ApiResponse list(Context ctx) {
 		val filter = new ResiduosFilter(ctx.queryParamMap());
+		val x = new ResiduoExpand(ctx.queryParams("expand"));
 		try {
-			val residuos = service.list(filter);
+			val residuos = service.list(filter, x);
 			return new ListResponse<>(residuos.stream().map(ResiduoDto::toResponse).toList());
 		} catch (ServiceError e) {
 			log.error("[Request: filter={}] error listing residuos", filter, e);

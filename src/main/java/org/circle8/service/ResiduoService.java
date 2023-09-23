@@ -15,6 +15,7 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.ResiduoExpand;
 import org.circle8.expand.SolicitudExpand;
 import org.circle8.expand.ZonaExpand;
 import org.circle8.filter.ResiduosFilter;
@@ -53,7 +54,7 @@ public class ResiduoService {
 
 	public ResiduoDto fulfill(long residuoId) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			var r = find(t, residuoId);
+			var r = find(t, residuoId, ResiduoExpand.EMPTY);
 
 			if ( r.fechaRetiro != null )
 				throw new ServiceException("El residuo ya ha sido retirado previamente");
@@ -69,9 +70,9 @@ public class ResiduoService {
 		}
 	}
 
-	public ResiduoDto get(long id) throws ServiceException {
+	public ResiduoDto get(long id, ResiduoExpand x) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			return this.get(t, id)
+			return this.get(t, id, x)
 				.map(ResiduoDto::from)
 				.orElseThrow(() -> new NotFoundException("No existe el residuo"));
 		} catch ( PersistenceException e ) {
@@ -79,17 +80,21 @@ public class ResiduoService {
 		}
 	}
 
-	Optional<Residuo> get(Transaction t, long id) throws PersistenceException {
-		return dao.get(t, id);
+	Optional<Residuo> get(Transaction t, long id, ResiduoExpand x) throws PersistenceException {
+		return dao.get(t, id, x);
 	}
 
-	Residuo find(Transaction t, long id) throws PersistenceException, NotFoundException {
-		return get(t, id).orElseThrow(() -> new NotFoundException("El residuo no existe"));
+	Residuo find(Transaction t, long id, ResiduoExpand x) throws PersistenceException, NotFoundException {
+		return get(t, id, x).orElseThrow(() -> new NotFoundException("El residuo no existe"));
 	}
 
-	public List<ResiduoDto> list(ResiduosFilter f) throws ServiceException {
+	public List<ResiduoDto> list(ResiduosFilter f, ResiduoExpand x) throws ServiceException {
 		try {
-			return this.dao.list(f).stream().map(ResiduoDto::from).toList();
+			return this.dao
+				.list(f, x)
+				.stream()
+				.map(ResiduoDto::from)
+				.toList();
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al obtener los residuos", e);
 		}
@@ -97,7 +102,7 @@ public class ResiduoService {
 
 	public ResiduoDto addToRecorrido(long id) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			var r = find(t, id);
+			var r = find(t, id, ResiduoExpand.EMPTY);
 			if ( r.fechaRetiro != null )
 				throw new ServiceException("El residuo ya ha sido retirado previamente");
 			if ( r.transaccion != null && r.transaccion.id != 0 )
@@ -141,7 +146,7 @@ public class ResiduoService {
 
 	public ResiduoDto deleteFromRecorrido(long id) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			var r = find(t, id);
+			var r = find(t, id, ResiduoExpand.EMPTY);
 			if ( r.recorrido == null || r.recorrido.id == 0 )
 				throw new ServiceException("El residuo no es parte de un recorrido");
 			if ( r.fechaRetiro != null )
@@ -169,7 +174,7 @@ public class ResiduoService {
 	// TODO: los updates no deberian hacerse con el DTO. Crearia un ResiduoUpdate
 	public ResiduoDto update(ResiduoDto dto, long id) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			var r = find(t, id);
+			var r = find(t, id, ResiduoExpand.EMPTY);
 
 			if ( r.transaccion != null && r.transaccion.id != 0L )
 				throw new ServiceException("El residuo ya pertenece a una transaccion");
