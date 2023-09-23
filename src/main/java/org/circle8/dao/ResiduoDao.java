@@ -166,7 +166,8 @@ public class ResiduoDao extends Dao {
 			ps.setObject(6, r.recorrido != null && r.recorrido.id != 0 ? r.recorrido.id : null);
 			ps.setString(7, r.descripcion);
 			ps.setTimestamp(8, r.fechaLimiteRetiro != null ? Timestamp.from(r.fechaLimiteRetiro.toInstant()) : null);
-			ps.setLong(9, r.id);
+			ps.setBytes(9, r.base64);
+			ps.setLong(10, r.id);
 
 			int updates = ps.executeUpdate();
 			if ( updates == 0 )

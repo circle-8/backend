@@ -181,6 +181,7 @@ public class ResiduoService {
 			r.tipoResiduo = dto.tipoResiduo.toEntity();
 			r.fechaLimiteRetiro = dto.fechaLimiteRetiro;
 			r.descripcion = dto.descripcion;
+			r.base64 = dto.base64;
 
 			dao.update(t, r);
 
