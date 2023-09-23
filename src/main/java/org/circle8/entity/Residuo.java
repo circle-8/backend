@@ -21,4 +21,5 @@ public class Residuo {
 	public TipoResiduo tipoResiduo;
 	public Transaccion transaccion;
 	public Recorrido recorrido;
+	public byte[] base64;
 }

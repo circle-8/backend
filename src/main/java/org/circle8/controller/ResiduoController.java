@@ -16,7 +16,6 @@ import org.circle8.controller.response.ResiduoResponse;
 import org.circle8.controller.response.SuccessResponse;
 import org.circle8.controller.response.TipoResiduoResponse;
 import org.circle8.dto.ResiduoDto;
-import org.circle8.dto.TipoResiduoDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.filter.ResiduosFilter;
@@ -88,12 +87,8 @@ public class ResiduoController {
 		if ( !valid.valid() )
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
-		var dto = ResiduoDto.builder()
-			.id(id)
-			.tipoResiduo(TipoResiduoDto.builder().id(req.tipoResiduoId).build())
-			.fechaLimiteRetiro(req.fechaLimite)
-			.descripcion(req.descripcion)
-			.build();
+		req.id = id;
+		var dto = ResiduoDto.from(req);
 		try {
 			return service.update(dto, id).toResponse();
 		} catch (ServiceError e) {

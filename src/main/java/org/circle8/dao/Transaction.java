@@ -5,6 +5,7 @@ import org.circle8.exception.PersistenceException;
 import org.intellij.lang.annotations.MagicConstant;
 
 import javax.sql.DataSource;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -94,6 +95,14 @@ public class Transaction implements AutoCloseable {
 			this.conn.close();
 		} catch (SQLException e) {
 			throw new PersistenceException("error closing connection", e);
+		}
+	}
+
+	public Blob createBlob() throws PersistenceException {
+		try {
+			return this.conn.createBlob();
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error creating blob", e);
 		}
 	}
 }

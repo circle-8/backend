@@ -28,8 +28,8 @@ public class ResiduoDao extends Dao {
 
 	private static final String INSERT = """
 			INSERT INTO "Residuo"(
-			"FechaCreacion", "PuntoResiduoId", "TipoResiduoId", "Descripcion", "FechaLimiteRetiro")
-			VALUES (?, ?, ?, ?, ?);
+			"FechaCreacion", "PuntoResiduoId", "TipoResiduoId", "Descripcion", "FechaLimiteRetiro", "Base64")
+			VALUES (?, ?, ?, ?, ?, ?);
 			  """;
 	private static final String SELECT = """
 		SELECT r."ID", "FechaCreacion", "FechaRetiro", "FechaLimiteRetiro", "Descripcion",
@@ -80,7 +80,8 @@ public class ResiduoDao extends Dao {
 		       "TransaccionId" = ?,
 		       "RecorridoId" = ?,
 		       "Descripcion" = ?,
-		       "FechaLimiteRetiro" = ?
+		       "FechaLimiteRetiro" = ?,
+		       "Base64" = ?
 		 WHERE "ID" = ?
 		""";
 
@@ -101,6 +102,7 @@ public class ResiduoDao extends Dao {
 			insert.setLong(3, residuo.tipoResiduo.id);
 			insert.setString(4, residuo.descripcion);
 			insert.setTimestamp(5, residuo.fechaLimiteRetiro != null? Timestamp.from(residuo.fechaLimiteRetiro.toInstant()) : null);
+			insert.setBytes(6, residuo.base64);
 
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
@@ -149,7 +151,8 @@ public class ResiduoDao extends Dao {
 			new PuntoResiduo(rs.getLong("PuntoResiduoId")),
 			new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")),
 			new Transaccion(rs.getLong("TransaccionId")),
-			new Recorrido(rs.getLong("RecorridoId"))
+			new Recorrido(rs.getLong("RecorridoId")),
+			null
 		);
 	}
 
