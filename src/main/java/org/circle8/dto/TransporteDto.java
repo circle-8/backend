@@ -65,7 +65,7 @@ public class TransporteDto {
 			transaccion != null ? transaccion.toResponse() : null,
 			pagoConfirmado,
 			entregaConfirmada,
-			precioSugerido.longValue()
+			precioSugerido != null ? precioSugerido.longValue() : null
 		);
 	}
 
