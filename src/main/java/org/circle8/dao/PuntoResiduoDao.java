@@ -42,7 +42,7 @@ public class PuntoResiduoDao extends Dao {
 			""" ;
 
 	private static final String SELECT_RESIDUOS = """
-		, r."ID" AS ResiduoId, r."FechaCreacion", r."FechaLimiteRetiro", r."Descripcion", tr."ID" AS TipoResiduoId,	tr."Nombre" AS TipoResiduoNombre
+		, r."ID" AS ResiduoId, r."FechaCreacion", r."FechaLimiteRetiro", r."Descripcion", r."Base64", tr."ID" AS TipoResiduoId,	tr."Nombre" AS TipoResiduoNombre
 		""";
 
 	private static final String JOIN_TIPO = """
@@ -199,6 +199,10 @@ public class PuntoResiduoDao extends Dao {
 					val residuoId = rs.getLong("ResiduoId");
 					if ( residuoId == 0 ) break;
 
+					byte[] base64 = null;
+					if ( x.residuosBase64 )
+						base64 = rs.getBytes("Base64");
+
 					val limit = rs.getTimestamp("FechaLimiteRetiro");
 					val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
 					val fechaTimestamp = rs.getTimestamp("FechaCreacion");
@@ -210,6 +214,7 @@ public class PuntoResiduoDao extends Dao {
 						.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
 						.puntoResiduo(new PuntoResiduo(p.id)) // para evitar recursividad dentro de residuo
 						.descripcion(rs.getString("Descripcion"))
+						.base64(base64)
 						.build();
 					residuos.add(r);
 				} while ( rs.next() );

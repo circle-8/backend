@@ -8,12 +8,16 @@ import java.util.List;
 @AllArgsConstructor
 @ToString
 public class PuntoResiduoExpand {
-	public static final PuntoResiduoExpand EMPTY = new PuntoResiduoExpand(false, false);
+	public static final PuntoResiduoExpand EMPTY = new PuntoResiduoExpand(false, false, false);
 	public final boolean ciudadano;
 	public final boolean residuos;
+	public final boolean residuosBase64;
 
 	public PuntoResiduoExpand(List<String> expands) {
 		this.ciudadano = expands.contains("ciudadano");
-		this.residuos = expands.contains("residuos"); // TODO: not implemented for list
+
+		// TODO: not implemented for list
+		this.residuos = expands.contains("residuos");
+		this.residuosBase64 = expands.contains("residuos.base64");
 	}
 }
