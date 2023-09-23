@@ -42,11 +42,15 @@ public class PuntoResiduoDao extends Dao {
 			""" ;
 
 	private static final String SELECT_RESIDUOS = """
-			, r."ID" AS ResiduoId, r."FechaCreacion", r."FechaLimiteRetiro", r."Descripcion", tr."ID" AS TipoResiduoId,	tr."Nombre" AS TipoResiduoNombre
-			""";
+		, r."ID" AS ResiduoId, r."FechaCreacion", r."FechaLimiteRetiro", r."Descripcion", tr."ID" AS TipoResiduoId,	tr."Nombre" AS TipoResiduoNombre
+		""";
 
 	private static final String JOIN_TIPO = """
-		LEFT JOIN "Residuo" AS r ON r."PuntoResiduoId" = pr."ID"
+		LEFT JOIN "Residuo" AS r
+		       ON r."PuntoResiduoId" = pr."ID"
+		      AND r."RecorridoId" IS NULL
+		      AND r."TransaccionId" IS NULL
+		      AND r."FechaRetiro" IS NULL
 		LEFT JOIN "TipoResiduo" AS tr on tr."ID" = r."TipoResiduoId"
 		""";
 
@@ -54,7 +58,7 @@ public class PuntoResiduoDao extends Dao {
 			JOIN "Usuario" AS u ON u."ID" = c."UsuarioId"
 			""";
 
-	private static final String WHERE_ID = """		
+	private static final String WHERE_ID = """
 			AND pr."ID" = ?
 			""";
 
@@ -68,9 +72,6 @@ public class PuntoResiduoDao extends Dao {
 		""";
 
 	private static final String WHERE_RESIDUO = """
-		AND r."RecorridoId" IS NULL
-		AND r."TransaccionId" IS NULL
-		AND r."FechaRetiro" IS NULL
 		AND ( r."FechaLimiteRetiro" IS NULL OR r."FechaLimiteRetiro" > ? )
 		""";
 
@@ -236,15 +237,15 @@ public class PuntoResiduoDao extends Dao {
 		val sql = String.format(SELECT_FMT, select, join);
 		var conditions = new StringBuilder(sql);
 		List<Object> parameters = new ArrayList<>();
-		
+
 		appendCondition(id, WHERE_ID, conditions, parameters);
 		appendCondition(ciudadanoId, WHERE_CIUDADANO, conditions, parameters);
-		
+
 		if ( x.residuos ) {
 			conditions.append(WHERE_RESIDUO);
 			parameters.add(Timestamp.from(ZonedDateTime.now().toInstant()));
-		}	
-		
+		}
+
 		var p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i + 1, parameters.get(i));
