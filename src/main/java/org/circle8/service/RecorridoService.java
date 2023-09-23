@@ -3,6 +3,7 @@ package org.circle8.service;
 import com.google.inject.Inject;
 import lombok.val;
 import org.circle8.dao.RecorridoDao;
+import org.circle8.dao.ResiduoDao;
 import org.circle8.dto.RecorridoDto;
 import org.circle8.entity.Punto;
 import org.circle8.entity.Retiro;
@@ -13,6 +14,7 @@ import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
+import org.circle8.filter.ResiduosFilter;
 import org.circle8.utils.PuntoUtils;
 
 import java.util.List;
@@ -27,9 +29,13 @@ public class RecorridoService {
 
 	}
 	private final RecorridoDao dao;
+	private final ResiduoDao residuoDao;
 
 	@Inject
-	public RecorridoService(RecorridoDao dao) { this.dao = dao; }
+	public RecorridoService(RecorridoDao dao, ResiduoDao residuoDao) {
+		this.dao = dao;
+		this.residuoDao = residuoDao;
+	}
 
 	public RecorridoDto get(long id, RecorridoExpand x) throws ServiceException {
 		try ( val t = dao.open(true) ) {
@@ -79,8 +85,19 @@ public class RecorridoService {
 	public RecorridoDto update(RecorridoDto dto, UpdateEnum o) throws ServiceException {
 		try ( val t = dao.open(true) ) {
 			val recorrido = dto.toEntity();
-			recorrido.id = dto.id;
+
+			if ( UpdateEnum.FIN.equals(o) ) {
+				val f = ResiduosFilter.builder()
+					.retirado(false)
+					.recorrido(dto.id)
+					.build();
+				val residuosNoRetirados = residuoDao.list(t, f);
+				if (!residuosNoRetirados.isEmpty())
+					throw new ServiceException("No puede finalizar el recorrido si no ha retirado todos los residuos");
+			}
+
 			dao.update(t, recorrido, o);
+
 			return dao.get(t, dto.id, RecorridoExpand.EMPTY)
 						 .map(RecorridoDto::from)
 						 .orElseThrow(() -> new NotFoundException("No existe el recorrido"));

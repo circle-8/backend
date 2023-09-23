@@ -1,13 +1,12 @@
 package org.circle8.integration.recorrido;
 
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-
+import io.restassured.RestAssured;
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 @ExtendWith(ApiTestExtension.class)
 public class RecorridoPostFinTest {
@@ -18,6 +17,15 @@ public class RecorridoPostFinTest {
 		  .then()
 		  .statusCode(200)
 		  .body("fechaFin", not(nullValue()));
+	}
+
+	@Test
+	void testFinWithResiduosUnfulfilled() {
+		RestAssured.given()
+			.post("/recorrido/3/fin")
+			.then()
+			.statusCode(400)
+		;
 	}
 
 	@Test
