@@ -58,6 +58,7 @@ public class ResiduoDto {
 		r.puntoResiduo = PuntoResiduoDto.from(entity.puntoResiduo);
 		r.tipoResiduo = TipoResiduoDto.from(entity.tipoResiduo);
 		r.transaccion = TransaccionDto.from(entity.transaccion);
+		r.recorridoId = entity.recorrido != null ? entity.recorrido.id : null;
 		return r;
 	}
 
@@ -72,8 +73,8 @@ public class ResiduoDto {
 				this.puntoResiduo != null ? this.puntoResiduo.id: null,
 				this.puntoResiduo != null ? this.puntoResiduo.toResponse(): null,
 				this.tipoResiduo != null ? this.tipoResiduo.toResponse() : null,
-				this.recorridoId != null ? "/recorrido/"+this.recorridoId : null,
-				this.recorridoId,
+				this.recorridoId != null && !recorridoId.equals(0L) ? "/recorrido/"+this.recorridoId : null,
+				this.recorridoId != null && !recorridoId.equals(0L) ? this.recorridoId : null,
 				this.transaccion != null ? "/transaccion/"+this.transaccion.id : null,
 				this.transaccion != null ? this.transaccion.id : null,
 				this.transaccion != null ? this.transaccion.toResponse() : null);
