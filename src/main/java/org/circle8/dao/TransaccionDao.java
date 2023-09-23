@@ -9,7 +9,6 @@ import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
 import org.circle8.entity.Transporte;
-import org.circle8.exception.BadRequestException;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.TransaccionExpand;
@@ -407,10 +406,7 @@ public class TransaccionDao extends Dao {
 		}
 	}
 
-	public void setTransporte(Transaction t, Long id, Long transporteId) throws PersistenceException, NotFoundException, BadRequestException {
-		if(!transaccionExistWithoutTransporte(t, id)) {
-			throw new BadRequestException("La transaccion ya posee un transporte");
-		}
+	public void setTransporte(Transaction t, Long id, Long transporteId) throws PersistenceException, NotFoundException {
 		try (var setTransporte = t.prepareStatement(UPDATE_TRANSACCION_ADD_TRANSPORTE_ID, Statement.RETURN_GENERATED_KEYS)) {
 			setTransporte.setLong(1, transporteId);
 			setTransporte.setLong(2, id);
@@ -424,7 +420,7 @@ public class TransaccionDao extends Dao {
 		}
 	}
 
-	private boolean transaccionExistWithoutTransporte(Transaction t, Long id) throws PersistenceException, NotFoundException {
+	public boolean hasTransporte(Transaction t, Long id) throws PersistenceException, NotFoundException {
 		try (var select = t.prepareStatement(SELECT_TRANSPORTE_ID, Statement.RETURN_GENERATED_KEYS)) {
 			select.setLong(1, id);
 			var rs = select.executeQuery();
