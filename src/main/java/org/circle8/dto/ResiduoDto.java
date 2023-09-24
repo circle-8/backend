@@ -57,7 +57,7 @@ public class ResiduoDto {
 			.tipoResiduo(TipoResiduoDto.builder().id(req.tipoResiduoId).build())
 			.fechaLimiteRetiro(req.fechaLimite)
 			.descripcion(req.descripcion)
-			.base64(Base64.getDecoder().decode(req.base64))
+			.base64(!Strings.isNullOrEmpty(req.base64) ? Base64.getDecoder().decode(req.base64) : null)
 			.build();
 	}
 
