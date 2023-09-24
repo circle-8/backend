@@ -103,10 +103,7 @@ public class Routes {
 	}
 
 	public Javalin initRoutes() {
-		return Javalin.create(c -> {
-				c.jsonMapper(getJsonMapper());
-				c.http.maxRequestSize = 8192; // 8KiB
-			})
+		return Javalin.create(c -> c.jsonMapper(getJsonMapper()))
 			// RESIDUOS
 			.get("/residuos", result(residuoController::list))
 			.post("/residuo", result(residuoController::post))
