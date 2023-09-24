@@ -27,6 +27,7 @@ import org.circle8.controller.TransaccionController;
 import org.circle8.controller.TransporteController;
 import org.circle8.controller.UserController;
 import org.circle8.controller.ZonaController;
+import org.circle8.controller.chat.ChatController;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
@@ -55,6 +56,7 @@ public class Routes {
 	private final SolicitudController solicitudController;
 	private final OrganizacionController organizacionController;
 	private final ConsejoController consejoController;
+	private final ChatController chatController;
 
 	private final JwtService jwtService;
 
@@ -80,7 +82,8 @@ public class Routes {
 		PuntoVerdeController puntoVerdeController,
 		SolicitudController solicitudController,
 		OrganizacionController organizacionController,
-		ConsejoController consejoController
+		ConsejoController consejoController,
+		ChatController chatController
 	) {
 		this.gson = gson;
 		this.cfg = cfg;
@@ -100,6 +103,7 @@ public class Routes {
 		this.solicitudController = solicitudController;
 		this.organizacionController = organizacionController;
 		this.consejoController = consejoController;
+		this.chatController = chatController;
 	}
 
 	public Javalin initRoutes() {
@@ -210,6 +214,8 @@ public class Routes {
 			.post("/consejo", result(consejoController::post))
 			.put("/consejo/{id}", result(consejoController::put))
 			.delete("/consejo/{id}", result(consejoController::delete))
+			// Chat
+			.ws("/chat", chatController)
 			// Exceptions
 			.error(HttpStatus.NOT_FOUND, ctx -> {
 				if ( Strings.isNullOrEmpty(ctx.result()) || "Not Found".equalsIgnoreCase(ctx.result()) ) {
