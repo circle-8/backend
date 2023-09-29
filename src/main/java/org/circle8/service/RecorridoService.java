@@ -107,9 +107,9 @@ public class RecorridoService {
       }
    }
 
-	public List<RecorridoDto> list(RecorridoFilter f) throws ServiceException {
+	public List<RecorridoDto> list(RecorridoFilter f, RecorridoExpand x) throws ServiceException {
 		try {
-			return this.dao.list(f).stream().map(RecorridoDto::from).toList();
+			return this.dao.list(f, x).stream().map(RecorridoDto::from).toList();
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al obtener los recorridos", e);
 		}

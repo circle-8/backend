@@ -193,8 +193,9 @@ public class RecorridoController {
 	 */
 	public ApiResponse list(Context ctx) {
 		val filter = new RecorridoFilter(ctx.queryParamMap());
+		val expand = new RecorridoExpand(ctx.queryParamMap().getOrDefault("expand", List.of()));
 		try {
-			val recorridos = service.list(filter);
+			val recorridos = service.list(filter, expand);
 			return new ListResponse<>(recorridos.stream().map(RecorridoDto::toResponse).toList());
 		} catch (ServiceError e) {
 			log.error("[Request: filter={}] error listing recorridos", filter, e);
