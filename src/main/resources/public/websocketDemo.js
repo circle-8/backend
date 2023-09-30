@@ -26,10 +26,24 @@ function sendAndClear(message) {
 }
 
 function updateChat(msg) { // Update chat-panel and list of connected users
-    let data = JSON.parse(msg.data);
+    let data = JSON.parse(msg.data)
+
+    let fromUserText
+    let fromClass
+    if ( !data.from || data.from == -1 ) {
+        fromUserText = "Server"
+        fromClass = "server-message"
+    } else if ( data.from == fromUser ) {
+        fromUserText = "Yo"
+        fromClass = "my-message"
+    } else {
+        fromUserText = "Otr@"
+        fromClass = "them-message"
+    }
+
     id("chat").insertAdjacentHTML("afterbegin", `
-    <article class="${data.from == fromUser ? 'my-message': 'them-message'}">
-        <b>${data.from == fromUser ? "Yo" : "Otr@"}</b>
+    <article class="${fromClass}">
+        <b>${fromUserText}</b>
         <span class="timestamp">${data.timestamp}</span>
         <p>${JSON.stringify(data.message)}</p>
     </article>
