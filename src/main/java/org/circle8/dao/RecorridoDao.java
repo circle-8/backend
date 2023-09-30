@@ -143,8 +143,7 @@ public class RecorridoDao extends Dao {
 		}
 	}
 
-	public List<Recorrido> list(Transaction t, RecorridoFilter f) throws PersistenceException {
-		val x = new RecorridoExpand(false, false, true);
+	public List<Recorrido> list(Transaction t, RecorridoFilter f, RecorridoExpand x) throws PersistenceException {
 		try (
 			val select = createSelect(t, f, x);
 			val rs = select.executeQuery()
@@ -155,9 +154,9 @@ public class RecorridoDao extends Dao {
 		}
 	}
 
-	public List<Recorrido> list(RecorridoFilter f) throws PersistenceException {
+	public List<Recorrido> list(RecorridoFilter f, RecorridoExpand x) throws PersistenceException {
 		try ( val t = open(true) ) {
-			return list(t, f);
+			return list(t, f, x);
 		}
 	}
 
