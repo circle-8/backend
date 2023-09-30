@@ -60,6 +60,8 @@ public class RecorridoDto {
 		r.recicladorId = req.recicladorId;
 		r.zonaId = zonaId;
 		r.organizacionId = organizacionId;
+		r.puntoInicio = PuntoDto.from(req.puntoInicio);
+		r.puntoFin = PuntoDto.from(req.puntoFin);
 		return r;
 	}
 

@@ -91,29 +91,16 @@ public class RecorridoDao extends Dao {
 		%s
 		""";
 
-	private static final String WHERE_ID = """
-		AND r."ID" = ?
-		""";
-
-	private static final String WHERE_ZONA_ID = """
-		AND r."ZonaId" = ?;
-		""";
-
-	private static final String SET_FECHA_FIN = """
-		"FechaFin" = ?
-		""";
-
-	private static final String SET_FECHA_INICIO = """
-		"FechaInicio" = ?
-		""";
-
-	private static final String SET_FECHA_RETIRO = """
-		"FechaRetiro"= ?
-		""";
-
-	private static final String SET_RECICLADOR = """
-		"RecicladorId"= ?
-		""";
+	private static final String WHERE_ID = "AND r.\"ID\" = ?\n";
+	private static final String WHERE_ZONA_ID = "AND r.\"ZonaId\" = ?;\n";
+	private static final String SET_FECHA_FIN = "\"FechaFin\" = ?\n";
+	private static final String SET_FECHA_INICIO = "\"FechaInicio\" = ?\n";
+	private static final String SET_FECHA_RETIRO = "\"FechaRetiro\"= ?\n";
+	private static final String SET_RECICLADOR = "\"RecicladorId\"= ?\n";
+	private static final String SET_LATITUD_INICIO = "\"LatitudInicio\"= ?\n";
+	private static final String SET_LATITUD_FIN = "\"LatitudFin\"= ?\n";
+	private static final String SET_LONGITUD_INICIO = "\"LongitudInicio\"= ?\n";
+	private static final String SET_LONGITUD_FIN = "\"LongitudFin\"= ?\n";
 
 
 	private static final String UPDATE_ZONA_NULL = """
@@ -143,8 +130,7 @@ public class RecorridoDao extends Dao {
 		}
 	}
 
-	public List<Recorrido> list(Transaction t, RecorridoFilter f) throws PersistenceException {
-		val x = new RecorridoExpand(false, false, true);
+	public List<Recorrido> list(Transaction t, RecorridoFilter f, RecorridoExpand x) throws PersistenceException {
 		try (
 			val select = createSelect(t, f, x);
 			val rs = select.executeQuery()
@@ -155,9 +141,9 @@ public class RecorridoDao extends Dao {
 		}
 	}
 
-	public List<Recorrido> list(RecorridoFilter f) throws PersistenceException {
+	public List<Recorrido> list(RecorridoFilter f, RecorridoExpand x) throws PersistenceException {
 		try ( val t = open(true) ) {
-			return list(t, f);
+			return list(t, f, x);
 		}
 	}
 
@@ -303,32 +289,33 @@ public class RecorridoDao extends Dao {
 
 	private PreparedStatement createUpdate(Transaction t, Recorrido r, UpdateEnum o) throws PersistenceException, SQLException {
 		val set = new ArrayList<String>();
-		List<Object> parameters = new ArrayList<>();
-		String where;
+		val parameters = new ArrayList<>();
+
+		final String where;
 		if(o == UpdateEnum.RETIRO) {
-			if(r.recicladorId != null){
-				set.add(SET_RECICLADOR);
-				parameters.add(r.recicladorId);
+			appendUpdate(r.recicladorId, SET_RECICLADOR, set, parameters);
+			appendUpdate(r.fechaRetiro, SET_FECHA_RETIRO, set, parameters);
+			if ( r.puntoInicio != null ) {
+				appendUpdate(r.puntoInicio.latitud, SET_LATITUD_INICIO, set, parameters);
+				appendUpdate(r.puntoInicio.longitud, SET_LONGITUD_INICIO, set, parameters);
 			}
-			if(r.fechaRetiro != null){
-				set.add(SET_FECHA_RETIRO);
-				parameters.add(r.fechaRetiro);
+			if ( r.puntoFin != null ) {
+				appendUpdate(r.puntoFin.latitud, SET_LATITUD_FIN, set, parameters);
+				appendUpdate(r.puntoFin.longitud, SET_LONGITUD_FIN, set, parameters);
 			}
+
 			where = WHERE_ID + WHERE_ZONA_ID;
 			parameters.add(r.id);
 			parameters.add(r.zonaId);
-		}
-		else {
-			if(o == UpdateEnum.FIN)
-				set.add(SET_FECHA_FIN);
-			else
-				set.add(SET_FECHA_INICIO);
-			where = WHERE_ID;
+		} else {
+			set.add(o == UpdateEnum.FIN ? SET_FECHA_FIN : SET_FECHA_INICIO);
 			parameters.add(Timestamp.from(ZonedDateTime.now(Dates.UTC).toInstant()));
+
+			where = WHERE_ID;
 			parameters.add(r.id);
 		}
-		val sets = String.join(", ", set);
-		val sql = String.format(UPDATE, sets, where);
+
+		val sql = String.format(UPDATE, String.join(", ", set), where);
 		var p = t.prepareStatement(sql);
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i + 1, parameters.get(i));

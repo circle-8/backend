@@ -9,6 +9,7 @@ import org.circle8.entity.User;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.InequalityFilter;
 import org.circle8.filter.RecorridoFilter;
 
@@ -50,7 +51,7 @@ public class RecicladorUrbanoService {
 				.recicladorId(recicladorId)
 				.fechaRetiro(InequalityFilter.<LocalDate>builder().gt(LocalDate.now()).build())
 				.build();
-			var nextRecorridos = recorridoDao.list(t, nextFilter);
+			var nextRecorridos = recorridoDao.list(t, nextFilter, RecorridoExpand.EMPTY);
 			if ( !nextRecorridos.isEmpty() ) {
 				throw new ServiceException("El reciclador tiene recorridos pendientes");
 			}
@@ -62,7 +63,7 @@ public class RecicladorUrbanoService {
 				.fechaInicio(InequalityFilter.<ZonedDateTime>builder().isNull(false).build())
 				.fechaFin(InequalityFilter.<ZonedDateTime>builder().isNull(true).build())
 				.build();
-			var activeRecorridos = recorridoDao.list(t, activeFilter);
+			var activeRecorridos = recorridoDao.list(t, activeFilter, RecorridoExpand.EMPTY);
 			if ( !activeRecorridos.isEmpty() ) {
 				throw new ServiceException("El reciclador tiene recorridos activos para hoy");
 			}
