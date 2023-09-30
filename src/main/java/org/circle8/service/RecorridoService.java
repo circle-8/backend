@@ -21,13 +21,8 @@ import org.circle8.utils.PuntoUtils;
 import java.util.List;
 
 public class RecorridoService {
-
 	public enum UpdateEnum {
-
-		INICIO,
-		FIN,
-		RETIRO;
-
+		INICIO, FIN, RETIRO
 	}
 	private final RecorridoDao dao;
 	private final ResiduoDao residuoDao;
