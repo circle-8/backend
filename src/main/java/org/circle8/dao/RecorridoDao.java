@@ -17,7 +17,7 @@ import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
 import org.circle8.service.RecorridoService.UpdateEnum;
 import org.circle8.utils.Dates;
-import org.circle8.utils.PuntoUtils;
+import org.circle8.utils.Puntos;
 
 import javax.sql.DataSource;
 import java.sql.Date;
@@ -204,7 +204,7 @@ public class RecorridoDao extends Dao {
 		val z = new Zona(rs.getLong("ZonaId"));
 		z.organizacionId = rs.getLong("OrganizacionId");
 		if ( x.zona ) {
-			z.polyline = PuntoUtils.getPolyline(rs.getString("Polyline"));
+			z.polyline = Puntos.getPolyline(rs.getString("Polyline"));
 			z.nombre = rs.getString("ZonaNombre");
 		}
 

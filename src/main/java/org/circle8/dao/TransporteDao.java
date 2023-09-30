@@ -12,7 +12,7 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.expand.TransporteExpand;
 import org.circle8.filter.TransporteFilter;
 import org.circle8.utils.Dates;
-import org.circle8.utils.PuntoUtils;
+import org.circle8.utils.Puntos;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
@@ -348,7 +348,7 @@ public class TransporteDao extends Dao {
 		return Transportista.builder()
 				.id(rs.getLong("TransportistaId"))
 				.usuarioId(rs.getLong("UsuarioId"))
-				.polyline(PuntoUtils.getPolyline(rs.getString("Polyline")))
+				.polyline(Puntos.getPolyline(rs.getString("Polyline")))
 				.build();
 	}
 }

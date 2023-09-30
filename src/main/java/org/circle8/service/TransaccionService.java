@@ -23,7 +23,7 @@ import org.circle8.expand.SolicitudExpand;
 import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.SolicitudFilter;
 import org.circle8.filter.TransaccionFilter;
-import org.circle8.utils.PuntoUtils;
+import org.circle8.utils.Puntos;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -234,7 +234,7 @@ public class TransaccionService {
 				puntos.add(new Punto((float) transaccion.puntoReciclaje.latitud, (float) transaccion.puntoReciclaje.longitud));
 
 			for (int i = 0; i < (puntos.size()-1); i++) {
-				var dist = PuntoUtils.calculateDistance(puntos.get(i), puntos.get(i+1));
+				var dist = Puntos.calculateDistance(puntos.get(i), puntos.get(i+1));
 				distancia = distancia.add(new BigDecimal(dist));
 			}
 		}
@@ -243,8 +243,8 @@ public class TransaccionService {
 
 	private void sortPuntos(Punto puntoInicial, List<Punto> points) {
 		points.sort((a, b) -> {
-			val d1 = PuntoUtils.calculateDistance(puntoInicial, a);
-			val d2 = PuntoUtils.calculateDistance(puntoInicial, b);
+			val d1 = Puntos.calculateDistance(puntoInicial, a);
+			val d2 = Puntos.calculateDistance(puntoInicial, b);
 			return Double.compare(d1, d2);
 		});
 	}

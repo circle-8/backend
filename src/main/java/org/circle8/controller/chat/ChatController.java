@@ -1,21 +1,40 @@
 package org.circle8.controller.chat;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import io.javalin.http.Context;
+import io.javalin.websocket.WsConfig;
+import io.javalin.websocket.WsContext;
 import lombok.extern.slf4j.Slf4j;
+import org.circle8.controller.chat.request.MessageRequest;
 import org.circle8.controller.chat.response.ChatMessageResponse;
 import org.circle8.controller.chat.response.ChatResponse;
 import org.circle8.controller.chat.response.ConversacionResponse;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ListResponse;
+import org.circle8.service.ActionService;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 @Singleton
 @Slf4j
-public class ChatController {
+public class ChatController implements Consumer<WsConfig> {
+	record SavedSession(Long fromUser, Long toUser) {}
+	private static final Map<WsContext, SavedSession> connUsers = new ConcurrentHashMap<>();
+
+	private final ActionService actions;
+
+	@Inject
+	public ChatController(ActionService actions) {
+		this.actions = actions;
+	}
+
 	/**
 	 * GET /user/{user_id}/conversaciones
 	 */
@@ -56,43 +75,43 @@ public class ChatController {
 					"Residuo XYZ",
 					ChatResponse.Type.CIUDADANO,
 					1L,
-					String.format("/chat/%s-%s-1/history", id, user),
-					String.format("/chat/%s-%s-1/actions?user_id=%s", id, user, user),
-					"ws://not-implemented"
+					String.format("/chat/%s+%s+1/history", id, user),
+					String.format("/chat/%s+%s+1/actions?user_id=%s", id, user, user),
+					String.format("/chat/%s+%s+1?user_id=%s", id, user, user)
 				),
 				new ChatResponse(
-					String.format("%s-%s-2", id, user),
+					String.format("%s+%s+2", id, user),
 					"Recibe mgiordano",
 					"",
 					ChatResponse.Type.RECICLADOR,
 					2L,
-					String.format("/chat/%s-2-%s/history", id, user),
-					String.format("/chat/%s-2-%s/actions?user_id=%s", id, user, user),
-					"ws://not-implemented"
+					String.format("/chat/%s+2+%s/history", id, user),
+					String.format("/chat/%s+2+%s/actions?user_id=%s", id, user, user),
+					String.format("/chat/%s+2+%s?user_id=%s", id, user, user)
 				)
 			));
 		} else {
 			// Punto de vista del reciclador urbano
 			return new ListResponse<>(List.of(
 				new ChatResponse(
-					String.format("%s-%s-1", id, user),
+					String.format("%s+%s+1", id, user),
 					"Entrega hkozak",
 					"Residuo XYZ",
 					ChatResponse.Type.CIUDADANO,
 					1L,
-					String.format("/chat/%s-%s-1/history", id, user),
-					String.format("/chat/%s-%s-1/actions?user_id=%s", id, user, user),
-					"ws://not-implemented"
+					String.format("/chat/%s+%s+1/history", id, user),
+					String.format("/chat/%s+%s+1/actions?user_id=%s", id, user, user),
+					String.format("/chat/%s+%s+1?user_id=%s", id, user, user)
 				),
 				new ChatResponse(
-					String.format("%s-%s-2", id, user),
+					String.format("%s+%s+2", id, user),
 					"Entrega hvaldez",
 					"",
 					ChatResponse.Type.CIUDADANO,
 					2L,
-					String.format("/chat/%s-%s-2/history", id, user),
-					String.format("/chat/%s-%s-2/actions?user_id=%s", id, user, user),
-					"ws://not-implemented"
+					String.format("/chat/%s+%s+2/history", id, user),
+					String.format("/chat/%s+%s+2/actions?user_id=%s", id, user, user),
+					String.format("/chat/%s+%s+2?user_id=%s", id, user, user)
 				)
 			));
 		}
@@ -157,7 +176,7 @@ public class ChatController {
 								new ChatMessageResponse.Action(
 									ChatMessageResponse.ActionType.ACTION,
 									"",
-									"{\"type\": \"CANCELAR_ACORDAR\"}"
+									MessageRequest.builder().type("CANCELAR ACORDAR").build()
 								)
 							),
 							new ChatMessageResponse.Component(
@@ -168,7 +187,7 @@ public class ChatController {
 								new ChatMessageResponse.Action(
 									ChatMessageResponse.ActionType.ACTION,
 									"",
-									"{\"type\": \"ACORDAR\"}"
+									MessageRequest.builder().type("ACORDAR").build()
 								)
 							)
 						)
@@ -192,10 +211,52 @@ public class ChatController {
 	 */
 	public ApiResponse actions(Context ctx) {
 		return new ListResponse<>(List.of(
-			new ChatMessageResponse.Action(ChatMessageResponse.ActionType.MESSAGE, "", ""),
-			new ChatMessageResponse.Action(ChatMessageResponse.ActionType.ACTION, "Acordar precio", "{}")
+			new ChatMessageResponse.Action(ChatMessageResponse.ActionType.MESSAGE, "", null),
+			new ChatMessageResponse.Action(ChatMessageResponse.ActionType.ACTION, "Acordar precio", new MessageRequest())
 		));
 	}
 
-	// TODO: WebSocket
+	/**
+	 * WebSocket para el chat de usuarios.
+	 * /chat/{chat_id}?user_id=
+	 *  chat_id = conversacion_id+user_id+user_id2
+	 */
+	@Override
+	public void accept(WsConfig ws) {
+		ws.onConnect(ctx -> {
+			var chatId = ctx.pathParam("chat_id");
+
+			// TODO: validaciones
+			var chatSplit = chatId.split("\\+");
+			var conversacionId = chatSplit[0];
+			var user1 = chatSplit[1];
+			var user2 = chatSplit[2];
+
+			// TODO: validaciones
+			var fromUser = ctx.queryParam("user_id");
+			assert fromUser != null;
+			var toUser = fromUser.equals(user1) ? user2 : user1;
+
+			ctx.enableAutomaticPings(15, TimeUnit.SECONDS);
+
+			connUsers.put(ctx, new SavedSession(Long.parseLong(fromUser), Long.parseLong(toUser)));
+		});
+		ws.onClose(ctx -> {
+			ctx.disableAutomaticPings();
+			connUsers.remove(ctx);
+		});
+		ws.onMessage(ctx -> {
+			var mess = ctx.messageAsClass(MessageRequest.class);
+			var sessions = connUsers.get(ctx);
+
+			var responses = actions.execute(mess, sessions.fromUser, sessions.toUser);
+
+			responses.forEach((to, res) -> connUsers.entrySet()
+				.stream()
+				.filter(e -> e.getValue().fromUser.equals(to))
+				.findFirst()
+				.map(Map.Entry::getKey)
+				.ifPresent(c -> c.sendAsClass(res, ChatMessageResponse.class)));
+		});
+	}
 }
