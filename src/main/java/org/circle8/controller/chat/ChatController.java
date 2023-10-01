@@ -122,7 +122,7 @@ public class ChatController implements Consumer<WsConfig> {
 	 */
 	public ApiResponse history(Context ctx) {
 		var id = ctx.pathParam("chat_id");
-		if ( Pattern.matches("(TRA|REC)-1-\\d+-1", id) ) {
+		if ( Pattern.matches("(TRA|REC)-1\\+\\d+\\+1", id) ) {
 			return new ListResponse<>(List.of(
 				new ChatMessageResponse(
 					ChatMessageResponse.Type.MESSAGE,
