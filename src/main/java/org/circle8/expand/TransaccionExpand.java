@@ -1,11 +1,13 @@
 package org.circle8.expand;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.ToString;
 
 import java.util.List;
 
 @AllArgsConstructor
+@Builder
 @ToString
 public class TransaccionExpand {
 	public static final TransaccionExpand EMPTY = new TransaccionExpand(false, false, false, false);

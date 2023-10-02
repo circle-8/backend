@@ -108,7 +108,7 @@ public class TransaccionDao extends Dao {
 		""";
 
 	private static final String SELECT_PUNTO_RECICLAJE = """
-		, pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto", pr."CiudadanoId"
+		, pr."Titulo", pr."Latitud", pr."Longitud", pr."DiasAbierto"
 		""";
 
 	private static final String JOIN_RESIDUOS = """
@@ -143,7 +143,13 @@ public class TransaccionDao extends Dao {
 	}
 
 	public List<Transaccion> list(TransaccionFilter filter, TransaccionExpand exp) throws PersistenceException {
-		try (val t = open(true); val select = createSelect(t, filter, exp); val rs = select.executeQuery()) {
+		try ( val t = open() ) {
+			return list(t, filter, exp);
+		}
+	}
+
+	public List<Transaccion> list(Transaction t, TransaccionFilter filter, TransaccionExpand exp) throws PersistenceException {
+		try ( val select = createSelect(t, filter, exp); val rs = select.executeQuery() ) {
 			val mapTransacciones = new HashMap<Long, Transaccion>();
 			while (rs.next()) {
 				val id = rs.getLong("ID");
@@ -215,8 +221,12 @@ public class TransaccionDao extends Dao {
 	}
 
 	private PuntoReciclaje buildPuntoReciclaje(ResultSet rs, boolean expand) throws SQLException {
-		if (!expand)
-			return null;
+		if ( !expand ) {
+			return PuntoReciclaje.builder()
+				.id(rs.getLong("PuntoReciclajeId"))
+				.recicladorId(rs.getLong("CiudadanoId"))
+				.build();
+		}
 
 		return new PuntoReciclaje(rs.getLong("PuntoReciclajeId"),
 				rs.getString("Titulo"), rs.getDouble("Latitud"), rs.getDouble("Longitud"),
@@ -270,7 +280,7 @@ public class TransaccionDao extends Dao {
 		return Residuo
 			.builder()
 			.id(rs.getLong("ResiduoId"))
-			.ciudadanoId(rs.getLong("CiudadanoId"))
+			.ciudadanoId(rs.getLong("ciudadanoPuntoResiduo"))
 			.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
 			.fechaRetiro(retiroDate)
 			.fechaLimiteRetiro(limitDate)
