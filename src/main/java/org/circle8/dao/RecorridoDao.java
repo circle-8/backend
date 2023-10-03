@@ -49,7 +49,8 @@ public class RecorridoDao extends Dao {
 		""";
 	private static final String SELECT_RESIDUOS = """
 		, res."ID" AS ResiduoId, res."FechaCreacion", res."Descripcion",
-		res."TipoResiduoId", tr."Nombre" AS TipoResiduoNombre, pr."Latitud", pr."Longitud"
+		res."TipoResiduoId", tr."Nombre" AS TipoResiduoNombre, pr."Latitud", pr."Longitud",
+		pr."CiudadanoId"
 		""";
 	private static final String JOIN_SIMPLE = """
 		JOIN "Zona" AS z ON z."ID" = r."ZonaId"
@@ -192,6 +193,7 @@ public class RecorridoDao extends Dao {
 					.fechaCreacion(Dates.atUTC(rs.getTimestamp("FechaCreacion")))
 					.descripcion(rs.getString("Descripcion"))
 					.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
+					.ciudadanoId(rs.getLong("CiudadanoId"))
 					.build();
 				r.puntos.add(new Retiro(rs.getFloat("Latitud"), rs.getFloat("Longitud"), residuo));
 			}
