@@ -3,6 +3,7 @@ package org.circle8.service;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.val;
+import org.circle8.controller.chat.response.ChatMessageResponse;
 import org.circle8.controller.chat.response.ChatResponse;
 import org.circle8.controller.chat.response.ConversacionResponse;
 import org.circle8.dao.MensajeDao;
@@ -25,6 +26,7 @@ import org.circle8.exception.ServiceException;
 import org.circle8.expand.RecorridoExpand;
 import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.InequalityFilter;
+import org.circle8.filter.MensajeFilter;
 import org.circle8.filter.RecorridoFilter;
 import org.circle8.filter.TransaccionFilter;
 import org.circle8.service.dto.IConversacion;
@@ -262,7 +264,22 @@ public class ChatService {
 		long u1,
 		long u2
 	) throws ServiceException {
-		return List.of();
+		var filterBuilder = MensajeFilter.builder()
+			.usuarios(List.of(u1, u2))
+			.type(ChatMessageResponse.Type.MESSAGE);
+		filterBuilder = switch ( type ) {
+			case TRANSACCION -> filterBuilder.transaccionId(idConv);
+			case RECORRIDO -> filterBuilder.recorridoId(idConv);
+		};
+
+		try ( val t = mensajes.open() ){
+			return mensajes.list(t, filterBuilder.build()).stream()
+				.map(MensajeDto::from)
+				.sorted(Comparator.comparing(MensajeDto::getTimestamp))
+				.toList();
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al listar los mensajes", e);
+		}
 	}
 
 }

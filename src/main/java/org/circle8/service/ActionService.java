@@ -1,13 +1,28 @@
 package org.circle8.service;
 
+import com.google.gson.Gson;
+import com.google.inject.Inject;
+import org.circle8.controller.chat.ChatController;
 import org.circle8.controller.chat.request.MessageRequest;
 import org.circle8.controller.chat.response.ChatMessageResponse;
+import org.circle8.dao.MensajeDao;
+import org.circle8.dto.MensajeDto;
+import org.circle8.entity.Mensaje;
+import org.circle8.exception.PersistenceException;
 import org.circle8.utils.Dates;
 
 import java.util.List;
 import java.util.Map;
 
 public class ActionService {
+	private static final Gson GSON = new Gson();
+	private final MensajeDao mensajes;
+
+	@Inject
+	public ActionService(MensajeDao mensajes) {
+		this.mensajes = mensajes;
+	}
+
 	enum ActionType {
 		MESSAGE,
 		COMIENZO_PROPONER_PRECIO,
@@ -17,11 +32,11 @@ public class ActionService {
 		ACEPTAR_PROPONER_PRECIO,
 	}
 
-	public List<ChatMessageResponse.Action> availableActions(Long fromUser, Long toUser) {
+	public List<ChatMessageResponse.Action> availableActions(ChatController.SavedSession session) {
 		return List.of();
 	}
 
-	public Map<Long, ChatMessageResponse> execute(MessageRequest req, Long fromUser, Long toUser) {
+	public Map<Long, ChatMessageResponse> execute(MessageRequest req, ChatController.SavedSession session) {
 		// TODO validaciones
 		var type = ActionType.valueOf(req.type);
 
@@ -30,30 +45,40 @@ public class ActionService {
 
 		return switch ( type ) {
 			case MESSAGE -> {
-				var message = new ChatMessageResponse(
+				var component = new ChatMessageResponse.MessageResponse(req.message, "primary");
+				var msg = new Mensaje(
+					null,
 					ChatMessageResponse.Type.MESSAGE,
 					Dates.now(),
-					fromUser,
-					toUser,
-					new ChatMessageResponse.MessageResponse(
-						req.message,
-						"primary"
-					),
-					availableActions(fromUser, toUser)
+					session.fromUser(),
+					session.toUser(),
+					GSON.toJson(component),
+					false,
+					session.type() == ChatService.ConversacionType.RECORRIDO ? session.idConv() : null,
+					session.type() == ChatService.ConversacionType.TRANSACCION ? session.idConv() : null
 				);
+				try {
+					mensajes.save(msg);
+				} catch ( PersistenceException e ) {
+					// TODO error handling
+				}
+
+				var res = MensajeDto.from(msg).toResponse();
+				res.availableActions = availableActions(session);
+
 				yield Map.of(
-					fromUser, message,
-					toUser, message
+					session.fromUser(), res,
+					session.toUser(), res
 				);
 			}
 			case COMIENZO_PROPONER_PRECIO -> {
 				// TODO: esto es un mock
 				yield Map.of(
-					fromUser, new ChatMessageResponse(
+					session.fromUser(), new ChatMessageResponse(
 						ChatMessageResponse.Type.COMPONENT,
 						Dates.now(),
 						null,
-						fromUser,
+						session.fromUser(),
 						new ChatMessageResponse.ComponentResponse(
 							ChatMessageResponse.ComponentMessageType.MODAL,
 							List.of(
@@ -98,7 +123,7 @@ public class ActionService {
 								)
 							)
 						),
-						availableActions(fromUser, toUser)
+						availableActions(session)
 					)
 				);
 			}

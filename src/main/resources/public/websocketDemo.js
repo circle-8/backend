@@ -2,11 +2,12 @@
 let id = id => document.getElementById(id);
 
 const urlParams = new URLSearchParams(window.location.search);
+const chatId = urlParams.get("chat_id")
 const fromUser = urlParams.get("from_user")
 const toUser = urlParams.get("to_user")
 
 //Establish the WebSocket connection and set up event handlers
-let ws = new WebSocket("ws://" + location.hostname + ":" + location.port + "/chat/TRA-1+" + fromUser + "+" + toUser + "?user_id=" + fromUser);
+let ws = new WebSocket("ws://" + location.hostname + ":" + location.port + "/chat/" + chatId + "+" + fromUser + "+" + toUser + "?user_id=" + fromUser);
 ws.onmessage = msg => updateChat(msg);
 ws.onclose = () => alert("WebSocket connection closed");
 

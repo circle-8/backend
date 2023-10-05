@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 @Singleton
 @Slf4j
 public class ChatController implements Consumer<WsConfig> {
-	record SavedSession(Long fromUser, Long toUser) {}
+	public record SavedSession(ChatService.ConversacionType type, Long idConv, Long fromUser, Long toUser) {}
 	private static final Map<WsContext, SavedSession> connUsers = new ConcurrentHashMap<>();
 
 	private final ActionService actions;
@@ -203,10 +203,17 @@ public class ChatController implements Consumer<WsConfig> {
 			var chatId = ctx.pathParam("chat_id");
 
 			// TODO: validaciones
-			var chatSplit = chatId.split("\\+");
-			var conversacionId = chatSplit[0];
-			var user1 = chatSplit[1];
-			var user2 = chatSplit[2];
+			var split = chatId.split("\\+");
+
+			val conv = split[0];
+			val convSplit = conv.split("-");
+			val type = convSplit[0].equals("TRA")
+				? ChatService.ConversacionType.TRANSACCION
+				: ChatService.ConversacionType.RECORRIDO;
+			val idConv = Long.parseLong(convSplit[1]);
+
+			var user1 = split[1];
+			var user2 = split[2];
 
 			// TODO: validaciones
 			var fromUser = ctx.queryParam("user_id");
@@ -215,7 +222,7 @@ public class ChatController implements Consumer<WsConfig> {
 
 			ctx.enableAutomaticPings(15, TimeUnit.SECONDS);
 
-			connUsers.put(ctx, new SavedSession(Long.parseLong(fromUser), Long.parseLong(toUser)));
+			connUsers.put(ctx, new SavedSession(type, idConv, Long.parseLong(fromUser), Long.parseLong(toUser)));
 		});
 		ws.onClose(ctx -> {
 			ctx.disableAutomaticPings();
@@ -225,7 +232,7 @@ public class ChatController implements Consumer<WsConfig> {
 			var mess = ctx.messageAsClass(MessageRequest.class);
 			var sessions = connUsers.get(ctx);
 
-			var responses = actions.execute(mess, sessions.fromUser, sessions.toUser);
+			var responses = actions.execute(mess, sessions);
 
 			responses.forEach((to, res) -> connUsers.entrySet()
 				.stream()
