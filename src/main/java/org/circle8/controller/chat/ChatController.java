@@ -15,18 +15,17 @@ import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.dto.ChatDto;
 import org.circle8.dto.ConversacionDto;
+import org.circle8.dto.MensajeDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.service.ActionService;
 import org.circle8.service.ChatService;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 @Singleton
 @Slf4j
@@ -81,7 +80,7 @@ public class ChatController implements Consumer<WsConfig> {
 				.toList();
 			return new ListResponse<>(chats);
 		} catch ( ServiceError e ) {
-			log.error("[Request: id={}] error list chats", user, e);
+			log.error("[Request: id={}] error list chats", id, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(e);
@@ -92,89 +91,95 @@ public class ChatController implements Consumer<WsConfig> {
 	 * GET /chat/{chat_id}/history
 	 */
 	public ApiResponse history(Context ctx) {
+		// TODO: validaciones
 		var id = ctx.pathParam("chat_id");
-		if ( Pattern.matches("(TRA|REC)-1\\+\\d+\\+1", id) ) {
-			return new ListResponse<>(List.of(
-				new ChatMessageResponse(
-					ChatMessageResponse.Type.MESSAGE,
-					ZonedDateTime.now().minusMinutes(15),
-					2L,
-					1L,
-					new ChatMessageResponse.MessageResponse("Hola que tal", "primary"),
-					null
-				),
-				new ChatMessageResponse(
-					ChatMessageResponse.Type.MESSAGE,
-					ZonedDateTime.now().minusMinutes(5),
-					1L,
-					2L,
-					new ChatMessageResponse.MessageResponse("Como te va\nTodo bien????", "primary"),
-					null
-				)
-			));
-		} else {
-			return new ListResponse<>(List.of(
-				new ChatMessageResponse(
-					ChatMessageResponse.Type.COMPONENT,
-					ZonedDateTime.now().minusMinutes(15),
-					2L,
-					1L,
-					new ChatMessageResponse.ComponentResponse(
-						ChatMessageResponse.ComponentMessageType.MODAL,
-						List.of(
-							new ChatMessageResponse.Component(
-								ChatMessageResponse.ComponentType.TITLE,
-								"Acordar tarifa",
-								null, null, null
-							),
-							new ChatMessageResponse.Component(
-								ChatMessageResponse.ComponentType.TEXT,
-								"Por favor seleccione un importe:",
-								null, null, null
-							),
-							new ChatMessageResponse.Component(
-								ChatMessageResponse.ComponentType.INPUT,
-								null,
-								"importe",
-								ChatMessageResponse.InputType.NUMBER,
-								null
-							),
-							new ChatMessageResponse.Component(
-								ChatMessageResponse.ComponentType.BUTTON,
-								"Cancelar",
-								null,
-								null,
-								new ChatMessageResponse.Action(
-									ChatMessageResponse.ActionType.ACTION,
-									"",
-									MessageRequest.builder().type("CANCELAR ACORDAR").build()
-								)
-							),
-							new ChatMessageResponse.Component(
-								ChatMessageResponse.ComponentType.BUTTON,
-								"Proponer",
-								null,
-								null,
-								new ChatMessageResponse.Action(
-									ChatMessageResponse.ActionType.ACTION,
-									"",
-									MessageRequest.builder().type("ACORDAR").build()
-								)
+		var split = id.split("\\+");
+
+		val conv = split[0];
+		val convSplit = conv.split("-");
+		val type = convSplit[0].equals("TRA")
+			? ChatService.ConversacionType.TRANSACCION
+			: ChatService.ConversacionType.RECORRIDO;
+		val idConv = Long.parseLong(convSplit[1]);
+
+		val u1 = Long.parseLong(split[1]);
+		val u2 = Long.parseLong(split[2]);
+
+		try {
+			val mensajes = service.mensajes(type, idConv, u1, u2).stream()
+				.map(MensajeDto::toResponse)
+				.toList();
+			return new ListResponse<>(mensajes);
+		} catch ( ServiceError e ) {
+			log.error("[Request: id={}] error list mensajes", id, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
+
+		/* LO DEJO COMO EJEMPLO PARA ACCIONES
+		return new ListResponse<>(List.of(
+			new ChatMessageResponse(
+				ChatMessageResponse.Type.COMPONENT,
+				ZonedDateTime.now().minusMinutes(15),
+				2L,
+				1L,
+				new ChatMessageResponse.ComponentResponse(
+					ChatMessageResponse.ComponentMessageType.MODAL,
+					List.of(
+						new ChatMessageResponse.Component(
+							ChatMessageResponse.ComponentType.TITLE,
+							"Acordar tarifa",
+							null, null, null
+						),
+						new ChatMessageResponse.Component(
+							ChatMessageResponse.ComponentType.TEXT,
+							"Por favor seleccione un importe:",
+							null, null, null
+						),
+						new ChatMessageResponse.Component(
+							ChatMessageResponse.ComponentType.INPUT,
+							null,
+							"importe",
+							ChatMessageResponse.InputType.NUMBER,
+							null
+						),
+						new ChatMessageResponse.Component(
+							ChatMessageResponse.ComponentType.BUTTON,
+							"Cancelar",
+							null,
+							null,
+							new ChatMessageResponse.Action(
+								ChatMessageResponse.ActionType.ACTION,
+								"",
+								MessageRequest.builder().type("CANCELAR ACORDAR").build()
+							)
+						),
+						new ChatMessageResponse.Component(
+							ChatMessageResponse.ComponentType.BUTTON,
+							"Proponer",
+							null,
+							null,
+							new ChatMessageResponse.Action(
+								ChatMessageResponse.ActionType.ACTION,
+								"",
+								MessageRequest.builder().type("ACORDAR").build()
 							)
 						)
-					),
-					null
+					)
 				),
-				new ChatMessageResponse(
-					ChatMessageResponse.Type.MESSAGE,
-					ZonedDateTime.now().minusMinutes(15),
-					2L,
-					1L,
-					new ChatMessageResponse.MessageResponse("Hola que tal", "primary"),
-					null
-				)
-			));
-		}
+				null
+			),
+			new ChatMessageResponse(
+				ChatMessageResponse.Type.MESSAGE,
+				ZonedDateTime.now().minusMinutes(15),
+				2L,
+				1L,
+				new ChatMessageResponse.MessageResponse("Hola que tal", "primary"),
+				null
+			)
+		));
+		*/
 	}
 
 	/**

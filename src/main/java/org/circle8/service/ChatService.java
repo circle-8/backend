@@ -5,12 +5,14 @@ import com.google.inject.Singleton;
 import lombok.val;
 import org.circle8.controller.chat.response.ChatResponse;
 import org.circle8.controller.chat.response.ConversacionResponse;
+import org.circle8.dao.MensajeDao;
 import org.circle8.dao.RecorridoDao;
 import org.circle8.dao.TransaccionDao;
 import org.circle8.dao.Transaction;
 import org.circle8.dao.UserDao;
 import org.circle8.dto.ChatDto;
 import org.circle8.dto.ConversacionDto;
+import org.circle8.dto.MensajeDto;
 import org.circle8.dto.UserDto;
 import org.circle8.entity.Recorrido;
 import org.circle8.entity.Residuo;
@@ -44,6 +46,7 @@ public class ChatService {
 	private final UserDao users;
 	private final TransaccionDao transacciones;
 	private final RecorridoDao recorridos;
+	private final MensajeDao mensajes;
 
 	public enum ConversacionType {
 		TRANSACCION, RECORRIDO
@@ -60,10 +63,16 @@ public class ChatService {
 
 
 	@Inject
-	public ChatService(UserDao users, TransaccionDao transacciones, RecorridoDao recorridos) {
+	public ChatService(
+		UserDao users,
+		TransaccionDao transacciones,
+		RecorridoDao recorridos,
+		MensajeDao mensajes
+	) {
 		this.users = users;
 		this.transacciones = transacciones;
 		this.recorridos = recorridos;
+		this.mensajes = mensajes;
 	}
 
 	public List<ConversacionDto> list(Long userId) throws ServiceException {
@@ -246,4 +255,14 @@ public class ChatService {
 
 		return l;
 	}
+
+	public List<MensajeDto> mensajes(
+		ConversacionType type,
+		long idConv,
+		long u1,
+		long u2
+	) throws ServiceException {
+		return List.of();
+	}
+
 }
