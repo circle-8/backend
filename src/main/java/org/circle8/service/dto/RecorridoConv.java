@@ -2,6 +2,7 @@ package org.circle8.service.dto;
 
 import org.circle8.controller.chat.response.ConversacionResponse;
 import org.circle8.dto.ConversacionDto;
+import org.circle8.dto.UserDto;
 import org.circle8.entity.Recorrido;
 import org.circle8.entity.User;
 import org.circle8.utils.Dates;
@@ -21,10 +22,10 @@ public record RecorridoConv(
 			this.type,
 			this.r.id,
 			makeResiduoId(user),
-			String.format("/user/%s/conversacion/%s/chats", user.id, "REC-" + this.r.id),
 			false, // TODO
 			null, // TODO
-			this.r.fechaRetiro.atStartOfDay(Dates.UTC)
+			this.r.fechaRetiro.atStartOfDay(Dates.UTC),
+			UserDto.from(user)
 		);
 	}
 

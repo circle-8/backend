@@ -3,12 +3,15 @@ package org.circle8.dao;
 import com.google.inject.Inject;
 import lombok.val;
 import org.circle8.dto.Dia;
+import org.circle8.entity.Ciudadano;
 import org.circle8.entity.PuntoReciclaje;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Transaccion;
 import org.circle8.entity.Transporte;
+import org.circle8.entity.Transportista;
+import org.circle8.entity.User;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.TransaccionExpand;
@@ -88,23 +91,26 @@ public class TransaccionDao extends Dao {
 		%s
 		FROM "TransaccionResiduo" AS tr
 		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"= pr."ID"
+		JOIN "Ciudadano" AS c1 on c1."ID" = pr."CiudadanoId"
 		%s
 		WHERE 1 = 1
 		""";
 
 	private static final String SELECT_SIMPLE = """
-		tr."ID", tr."FechaPrimerContacto", tr."FechaEfectiva", tr."PuntoReciclajeId", pr."CiudadanoId", tr."TransporteId"
+		tr."ID", tr."FechaPrimerContacto", tr."FechaEfectiva", tr."PuntoReciclajeId", pr."CiudadanoId", c1."UsuarioId", tr."TransporteId"
 		""";
 
 	private static final String SELECT_RESIDUOS = """
 		, re."ID" AS residuoId, re."FechaCreacion", re."FechaRetiro", re."PuntoResiduoId", re."Descripcion", re."FechaLimiteRetiro", re."Base64",
 		re."TipoResiduoId", re."RecorridoId", tre."Nombre" AS TipoResiduoNombre,
-		puntre."CiudadanoId" AS ciudadanoPuntoResiduo,
+		puntre."CiudadanoId" AS ciudadanoPuntoResiduo, c."UsuarioId" AS UsuarioPuntoResiduo,
 		puntre."Latitud" as latitudPuntoResiduo, puntre."Longitud" as longitudPuntoResiduo
 		""";
 
 	private static final String SELECT_TRANSPORTE = """
-		, tra."FechaAcordada", tra."FechaInicio", tra."FechaFin", tra."Precio", tra."TransportistaId", tra."PagoConfirmado", tra."EntregaConfirmada", tra."PrecioSugerido"
+		, tra."FechaAcordada", tra."FechaInicio", tra."FechaFin", tra."Precio", tra."TransportistaId",
+		tra."PagoConfirmado", tra."EntregaConfirmada", tra."PrecioSugerido",
+		transportista."UsuarioId" AS UsuarioTransportista
 		""";
 
 	private static final String SELECT_PUNTO_RECICLAJE = """
@@ -115,10 +121,12 @@ public class TransaccionDao extends Dao {
 		LEFT JOIN "Residuo" AS re on tr."ID" = re."TransaccionId"
 		LEFT JOIN "TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
 		LEFT JOIN "PuntoResiduo" AS puntre on puntre."ID" = re."PuntoResiduoId"
+		LEFT JOIN "Ciudadano" AS c on c."ID" = puntre."CiudadanoId"
 		""";
 
 	private static final String JOIN_TRANSPORTE = """
-		LEFT JOIN "Transporte" AS tra on tr."TransporteId"=tra."ID"
+		LEFT JOIN "Transporte" AS tra on tr."TransporteId" = tra."ID"
+		LEFT JOIN "Transportista" AS transportista ON transportista."ID" = tra."TransportistaId"
 		""";
 
 	private static final String WHERE_ID = """
@@ -225,6 +233,10 @@ public class TransaccionDao extends Dao {
 			return PuntoReciclaje.builder()
 				.id(rs.getLong("PuntoReciclajeId"))
 				.recicladorId(rs.getLong("CiudadanoId"))
+				.reciclador(User.builder()
+					.id(rs.getLong("UsuarioId"))
+					.ciudadanoId(rs.getLong("CiudadanoId"))
+					.build())
 				.build();
 		}
 
@@ -259,7 +271,10 @@ public class TransaccionDao extends Dao {
 			fechaFinTimestamp != null ? fechaFinTimestamp.toInstant().atZone(Dates.UTC) : null,
 			rs.getBigDecimal("Precio"),
 			rs.getLong("TransportistaId"),
-			null,
+			Transportista.builder()
+				.id(rs.getLong("TransportistaId"))
+				.usuarioId(rs.getLong("UsuarioTransportista"))
+				.build(),
 			rs.getLong("ID"),
 			null,
 			rs.getBoolean("PagoConfirmado"),
@@ -277,10 +292,15 @@ public class TransaccionDao extends Dao {
 		if ( expandBase64 )
 			base64 = rs.getBytes("Base64");
 
+		var c = Ciudadano.builder()
+			.id(rs.getLong("ciudadanoPuntoResiduo"))
+			.usuarioId(rs.getLong("UsuarioPuntoResiduo"))
+			.build();
+
 		return Residuo
 			.builder()
 			.id(rs.getLong("ResiduoId"))
-			.ciudadanoId(rs.getLong("ciudadanoPuntoResiduo"))
+			.ciudadano(c)
 			.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
 			.fechaRetiro(retiroDate)
 			.fechaLimiteRetiro(limitDate)

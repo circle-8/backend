@@ -9,17 +9,16 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.circle8.controller.chat.request.MessageRequest;
 import org.circle8.controller.chat.response.ChatMessageResponse;
-import org.circle8.controller.chat.response.ChatResponse;
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
+import org.circle8.dto.ChatDto;
 import org.circle8.dto.ConversacionDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.service.ActionService;
 import org.circle8.service.ChatService;
-import org.circle8.utils.Dates;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -61,91 +60,31 @@ public class ChatController implements Consumer<WsConfig> {
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(e);
 		}
-
-		// var mock = new ConversacionResponse(
-		// 	"TRA-1",
-		// 	"Titulo 1 de prueba",
-		// 	"Descripcion de prueba\ncon salto de linea",
-		// 	ConversacionResponse.Type.TRANSACCION,
-		// 	1L,
-		// 	String.format("/user/%s/conversacion/TRA-1/chats", user),
-		// 	true,
-		// 	Dates.now().minusMinutes(10)
-		// );
-		// var mock2 = mock.toBuilder()
-		// 	.id("REC-1")
-		// 	.type(ConversacionResponse.Type.RECORRIDO)
-		// 	.chatsUri(String.format("/user/%s/conversacion/REC-1/chats", user))
-		// 	.build();
-
-		// return new ListResponse<>(List.of(
-		// 	mock,
-		// 	mock2
-		// ));
 	}
 
 	/**
 	 * GET /user/{user_id}/conversacion/{conversacion_id}/chats
 	 */
 	public ApiResponse chats(Context ctx) {
-		var id = ctx.pathParam("conversacion_id");
-		var user = ctx.pathParam("user_id");
-		if ( "TRA-1".equals(id) ) {
-			// Punto de vista del transportador
-			return new ListResponse<>(List.of(
-				new ChatResponse(
-					String.format("%s-%s-1", id, user),
-					"Entrega glopez",
-					"Residuo XYZ",
-					ChatResponse.Type.CIUDADANO,
-					1L,
-					String.format("/chat/%s+%s+1/history", id, user),
-					String.format("/chat/%s+%s+1/actions?user_id=%s", id, user, user),
-					String.format("/chat/%s+%s+1?user_id=%s", id, user, user),
-					true,
-					Dates.now().minusMinutes(10)
-				),
-				new ChatResponse(
-					String.format("%s+%s+2", id, user),
-					"Recibe mgiordano",
-					"",
-					ChatResponse.Type.RECICLADOR,
-					2L,
-					String.format("/chat/%s+2+%s/history", id, user),
-					String.format("/chat/%s+2+%s/actions?user_id=%s", id, user, user),
-					String.format("/chat/%s+2+%s?user_id=%s", id, user, user),
-					false,
-					Dates.now().minusMinutes(15)
-				)
-			));
-		} else {
-			// Punto de vista del reciclador urbano
-			return new ListResponse<>(List.of(
-				new ChatResponse(
-					String.format("%s+%s+1", id, user),
-					"Entrega hkozak",
-					"Residuo XYZ",
-					ChatResponse.Type.CIUDADANO,
-					1L,
-					String.format("/chat/%s+%s+1/history", id, user),
-					String.format("/chat/%s+%s+1/actions?user_id=%s", id, user, user),
-					String.format("/chat/%s+%s+1?user_id=%s", id, user, user),
-					true,
-					Dates.now().minusMinutes(1)
-				),
-				new ChatResponse(
-					String.format("%s+%s+2", id, user),
-					"Entrega hvaldez",
-					"",
-					ChatResponse.Type.CIUDADANO,
-					2L,
-					String.format("/chat/%s+%s+2/history", id, user),
-					String.format("/chat/%s+%s+2/actions?user_id=%s", id, user, user),
-					String.format("/chat/%s+%s+2?user_id=%s", id, user, user),
-					false,
-					Dates.now().minusMinutes(60)
-				)
-			));
+		// TODO validaciones
+		val id = ctx.pathParam("conversacion_id");
+		val user = ctx.pathParamAsClass("user_id", Long.class).get();
+		try {
+			val split = id.split("-");
+			val type = split[0].equals("TRA")
+				? ChatService.ConversacionType.TRANSACCION
+				: ChatService.ConversacionType.RECORRIDO;
+			val idConv = Long.parseLong(split[1]);
+
+			val chats = service.chats(type, idConv, user).stream()
+				.map(ChatDto::toResponse)
+				.toList();
+			return new ListResponse<>(chats);
+		} catch ( ServiceError e ) {
+			log.error("[Request: id={}] error list chats", user, e);
+			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
 		}
 	}
 

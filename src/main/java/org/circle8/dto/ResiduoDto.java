@@ -65,7 +65,7 @@ public class ResiduoDto {
 		if ( entity == null ) return null;
 		var r = new ResiduoDto();
 		r.id = entity.id;
-		r.ciudadanoId = entity.ciudadanoId;
+		r.ciudadanoId = entity.ciudadano != null ? entity.ciudadano.id : null;
 		r.fechaCreacion = entity.fechaCreacion;
 		r.fechaRetiro = entity.fechaRetiro;
 		r.fechaLimiteRetiro = entity.fechaLimiteRetiro;

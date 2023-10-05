@@ -17,11 +17,9 @@ public interface IConversacion {
 		return String.format(
 			"Entregás %s...",
 			rs.stream()
-				.filter(r -> r.ciudadanoId == u.ciudadanoId)
+				.filter(r -> r.ciudadano.id == u.ciudadanoId)
 				.findFirst()
-				.map(r -> r.descripcion)
-				.map(r -> r.replace("\n", " "))
-				.map(r -> r.replace("\u200B", " "))
+				.map(Residuo::formatted)
 				.map(r -> r.substring(0, Math.min(10, r.length())))
 				.orElse("")
 		);
@@ -29,7 +27,7 @@ public interface IConversacion {
 
 	default Long makeResiduoId(User u, List<Residuo> rs) {
 		return rs.stream()
-			.filter(r -> r.ciudadanoId == u.ciudadanoId)
+			.filter(r -> r.ciudadano.id == u.ciudadanoId)
 			.findFirst()
 			.map(r -> r.id)
 			.orElse(null);

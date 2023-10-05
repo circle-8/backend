@@ -61,7 +61,7 @@ public class SolicitudService {
 			if ( !acceptsTipo )
 				throw new ServiceException("El Punto de Reciclaje no admite este tipo de residuo");
 
-			if ( punto.reciclador.ciudadanoId.equals(residuo.ciudadanoId) )
+			if ( punto.reciclador.ciudadanoId.equals(residuo.ciudadano.id) )
 				throw new ServiceException("El residuo no puede pertenecer al dueño del punto");
 
 			val id = dao.save(t, residuoId, puntoReciclajeId, tipo);

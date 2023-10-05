@@ -17,10 +17,10 @@ public class ConversacionDto {
 	public ConversacionResponse.Type type;
 	public Long externalId;
 	public Long residuoId;
-	public String chatsUri;
 	public boolean newMessages;
 	public ZonedDateTime timestamp;
 	public ZonedDateTime fechaConversacion; // Fecha en la que se efectua o se creó
+	public UserDto user;
 
 	public ConversacionResponse toResponse() {
 		return new ConversacionResponse(
@@ -30,7 +30,7 @@ public class ConversacionDto {
 			this.type,
 			this.externalId,
 			this.residuoId,
-			this.chatsUri,
+			String.format("/user/%s/conversacion/%s/chats", this.user.id, this.id),
 			this.newMessages,
 			this.timestamp
 		);

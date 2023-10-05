@@ -193,7 +193,7 @@ public class RecorridoDao extends Dao {
 					.fechaCreacion(Dates.atUTC(rs.getTimestamp("FechaCreacion")))
 					.descripcion(rs.getString("Descripcion"))
 					.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
-					.ciudadanoId(rs.getLong("CiudadanoId"))
+					.ciudadano(Ciudadano.builder().id(rs.getLong("CiudadanoId")).build())
 					.build();
 				r.puntos.add(new Retiro(rs.getFloat("Latitud"), rs.getFloat("Longitud"), residuo));
 			}

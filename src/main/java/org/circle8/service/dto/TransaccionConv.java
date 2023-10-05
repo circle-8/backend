@@ -2,6 +2,7 @@ package org.circle8.service.dto;
 
 import org.circle8.controller.chat.response.ConversacionResponse;
 import org.circle8.dto.ConversacionDto;
+import org.circle8.dto.UserDto;
 import org.circle8.entity.Transaccion;
 import org.circle8.entity.User;
 
@@ -19,10 +20,10 @@ public record TransaccionConv(
 			this.type,
 			this.t.id,
 			makeResiduoId(user),
-			String.format("/user/%s/conversacion/%s/chats", user.id, "TRA-" + this.t.id),
 			false, // TODO
 			null, // TODO
-			this.t.fechaCreacion
+			this.t.fechaCreacion,
+			UserDto.from(user)
 		);
 	}
 

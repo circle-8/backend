@@ -262,7 +262,7 @@ public class SolicitudDao extends Dao {
 		val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
 		return Residuo.builder()
 			.id(rs.getLong("ResiduoId"))
-			.ciudadanoId(rs.getLong("ResiduoCiudadanoId"))
+			.ciudadano(Ciudadano.builder().id(rs.getLong("ResiduoCiudadanoId")).build())
 			.fechaCreacion(rs.getTimestamp("ResiduoFechaCreacion").toInstant().atZone(Dates.UTC))
 			.fechaLimiteRetiro(limitDate)
 			.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))

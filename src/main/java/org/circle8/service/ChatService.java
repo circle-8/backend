@@ -3,14 +3,19 @@ package org.circle8.service;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.val;
+import org.circle8.controller.chat.response.ChatResponse;
 import org.circle8.controller.chat.response.ConversacionResponse;
 import org.circle8.dao.RecorridoDao;
 import org.circle8.dao.TransaccionDao;
 import org.circle8.dao.Transaction;
 import org.circle8.dao.UserDao;
+import org.circle8.dto.ChatDto;
 import org.circle8.dto.ConversacionDto;
+import org.circle8.dto.UserDto;
 import org.circle8.entity.Recorrido;
+import org.circle8.entity.Residuo;
 import org.circle8.entity.Transaccion;
+import org.circle8.entity.User;
 import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
@@ -23,10 +28,14 @@ import org.circle8.filter.TransaccionFilter;
 import org.circle8.service.dto.IConversacion;
 import org.circle8.service.dto.RecorridoConv;
 import org.circle8.service.dto.TransaccionConv;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -35,6 +44,20 @@ public class ChatService {
 	private final UserDao users;
 	private final TransaccionDao transacciones;
 	private final RecorridoDao recorridos;
+
+	public enum ConversacionType {
+		TRANSACCION, RECORRIDO
+	}
+
+	record ResiduoEntry(Long usuarioId, List<Residuo> residuos) {
+		String buildDescripcion() {
+			var descripcion = residuos.get(0).formatted();
+			return residuos.size() == 1
+				? String.format("%s...", descripcion.substring(0, Math.min(15, descripcion.length())))
+				: String.format("Entrega %d residuos", residuos.size());
+		}
+	}
+
 
 	@Inject
 	public ChatService(UserDao users, TransaccionDao transacciones, RecorridoDao recorridos) {
@@ -59,7 +82,7 @@ public class ChatService {
 				.map(tr -> (IConversacion) new TransaccionConv(tr, ConversacionResponse.Type.TRANSACCION_RECIBOS))
 				.toList();
 			val entregas = ts.stream()
-				.filter(tr -> tr.residuos.stream().anyMatch(r -> Objects.equals(user.ciudadanoId, r.ciudadanoId)))
+				.filter(tr -> tr.residuos.stream().anyMatch(r -> Objects.equals(user.ciudadanoId, r.ciudadano.id)))
 				.map(tr -> (IConversacion) new TransaccionConv(tr, ConversacionResponse.Type.TRANSACCION_ENTREGAS))
 				.toList();
 
@@ -69,7 +92,7 @@ public class ChatService {
 				.map(r -> (IConversacion) new RecorridoConv(r, ConversacionResponse.Type.RECORRIDO_TRANSPORTES))
 				.toList();
 			val asEntregas = rs.stream()
-				.filter(rec -> user.ciudadanoId != null && rec.getResiduos().stream().anyMatch(r -> r.ciudadanoId == user.ciudadanoId))
+				.filter(rec -> user.ciudadanoId != null && rec.getResiduos().stream().anyMatch(r -> r.ciudadano.id == user.ciudadanoId))
 				.map(r -> (IConversacion) new RecorridoConv(r, ConversacionResponse.Type.RECORRIDO_ENTREGAS))
 				.toList();
 
@@ -101,5 +124,126 @@ public class ChatService {
 			.build();
 		val x = RecorridoExpand.ALL;
 		return recorridos.list(t, f, x);
+	}
+
+
+	public List<ChatDto> chats(ConversacionType type, Long id, Long userId) throws ServiceException {
+		try ( val t = users.open() ) {
+			val user = users.get(null, userId).orElseThrow(() -> new NotFoundException("usuario inexistente"));
+			return switch ( type ) {
+				case TRANSACCION -> getTransaccionChats(t, id, user);
+				case RECORRIDO -> getRecorridoChats(t, id, user);
+			};
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("error al listar chats", e);
+		}
+	}
+
+	private List<ChatDto> getTransaccionChats(Transaction t, Long id, User user) throws NotFoundException, PersistenceException {
+		val x = TransaccionExpand.builder().transporte(true).residuos(true).build();
+		val tr = transacciones.get(t, id, x).orElseThrow(() -> new NotFoundException("transaccion inexistente"));
+
+		val isReciclador = user.ciudadanoId.equals(tr.puntoReciclaje.recicladorId);
+		val isTransportista = tr.transporte != null && tr.transporte.transportistaId.equals(user.transportistaId);
+		val isCiudadano = tr.residuos.stream().map(r -> r.ciudadano.id).anyMatch(c -> c.equals(user.ciudadanoId));
+
+		val l = new ArrayList<ChatDto>();
+
+		if ( isReciclador || isTransportista ) {
+			// Soy reciclador o transportista, tengo que ver todos los que entregan
+			val resMap = getGroupedResiduos(tr.residuos);
+			resMap.entrySet().stream()
+				.map(e -> new ResiduoEntry(e.getKey(), e.getValue()))
+				.map(e -> new ChatDto(
+					String.format("TRA-%d+%d+%d", id, user.id, e.usuarioId),
+					String.format("Entrega #%d", e.usuarioId), // TODO nombre
+					e.buildDescripcion(),
+					ChatResponse.Type.CIUDADANO,
+					e.usuarioId,
+					false, // TODO
+					null, // TODO
+					UserDto.from(user)
+				))
+				.forEach(l::add);
+		}
+
+		if ( isTransportista || isCiudadano ) {
+			// Soy transportista o ciudadano, puedo ver al reciclador
+			l.add(new ChatDto(
+				String.format("TRA-%d+%d+%d", id, tr.puntoReciclaje.reciclador.id, user.id),
+				String.format("Recibe #%d", tr.puntoReciclaje.reciclador.id), // TODO nombre
+				"",
+				ChatResponse.Type.RECICLADOR,
+				tr.puntoReciclaje.reciclador.id,
+				false, // TODO
+				null, // TODO
+				UserDto.from(user)
+			));
+		}
+
+		if ( ( isReciclador || isCiudadano ) && tr.transporte != null && tr.transporte.transportistaId != null ) {
+			// Soy reciclador o ciudadano, puedo ver al transportista
+			var idForCiudadano = String.format("TRA-%d+%d+%d", id, tr.transporte.transportista.usuarioId, user.id);
+			var idForReciclador = String.format("TRA-%d+%d+%d", id, user.id, tr.transporte.transportista.usuarioId);
+			l.add(new ChatDto(
+				isReciclador ? idForReciclador : idForCiudadano,
+				String.format("Transporta #%d", tr.transporte.transportista.usuarioId), // TODO nombre
+				"",
+				ChatResponse.Type.TRANSPORTISTA,
+				tr.transporte.transportista.usuarioId,
+				false, // TODO
+				null, // TODO
+				UserDto.from(user)
+			));
+		}
+
+		return l;
+	}
+
+	@NotNull
+	private Map<Long, List<Residuo>> getGroupedResiduos(List<Residuo> rs) {
+		val resMap = new HashMap<Long, List<Residuo>>();
+		for ( Residuo r : rs )
+			resMap.computeIfAbsent(r.ciudadano.usuarioId, v -> new ArrayList<>()).add(r);
+		return resMap;
+	}
+
+	private List<ChatDto> getRecorridoChats(Transaction t, Long id, User user) throws NotFoundException, PersistenceException {
+		val x = RecorridoExpand.ALL;
+		val rec = recorridos.get(t, id, x).orElseThrow(() -> new NotFoundException("recorrido inexistente"));
+
+		val l = new ArrayList<ChatDto>();
+		val isReciclador = user.recicladorUrbanoId != null;
+		if ( isReciclador ) {
+			// Soy reciclador, puedo ver a todos los residuos
+			val resMap = getGroupedResiduos(rec.puntos.stream().map(p -> p.residuo).toList());
+			resMap.entrySet().stream()
+				.map(e -> new ResiduoEntry(e.getKey(), e.getValue()))
+				.map(e -> new ChatDto(
+					String.format("REC-%d+%d+%d", id, user.id, e.usuarioId),
+					String.format("Entrega #%d", e.usuarioId), // TODO nombre
+					e.buildDescripcion(),
+					ChatResponse.Type.CIUDADANO,
+					e.usuarioId,
+					false, // TODO
+					null, // TODO
+					UserDto.from(user)
+				))
+				.forEach(l::add);
+		} else {
+			// Soy ciudadano, solo puedo ver al reciclador
+			l.add(new ChatDto(
+				String.format("REC-%d+%d+%d", id, rec.reciclador.usuarioId, user.id),
+				String.format("Transporta #%d", rec.reciclador.usuarioId), // TODO nombre
+				"",
+				ChatResponse.Type.RECICLADOR_URBANO,
+				rec.reciclador.usuarioId,
+				false, // TODO
+				null, // TODO
+				UserDto.from(user)
+			));
+		}
+
+		return l;
 	}
 }
