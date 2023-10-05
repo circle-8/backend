@@ -1,5 +1,7 @@
 package org.circle8.service;
 
+import static java.math.BigDecimal.ONE;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import lombok.val;
@@ -12,6 +14,7 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Singleton
@@ -27,7 +30,7 @@ public class SuscripcionService {
 			val s = Suscripcion.builder()
 				.ultimaRenovacion(LocalDate.now())
 				.proximaRenovacion(LocalDate.now()) // dado que es FREE, da igual
-				.plan(new Plan(FREE_TRIAL_ID))
+				.plan(new Plan(FREE_TRIAL_ID, "", ONE, 1, 1))
 				.build();
 			return switch ( u.tipo ) {
 				case ORGANIZACION -> dao.save(t, s);
