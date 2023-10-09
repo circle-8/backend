@@ -223,8 +223,10 @@ public class TransaccionDao extends Dao {
 			puntoReciclaje,
 			residuos);
 
-		if (expand.residuos)
-			residuos.add(buildResiduo(rs, expand.residuosBase64));
+		Residuo r;
+		if ( expand.residuos && (r = buildResiduo(rs, expand.residuosBase64)) != null )
+			residuos.add(r);
+
 		return tr;
 	}
 
@@ -283,6 +285,10 @@ public class TransaccionDao extends Dao {
 	}
 
 	private Residuo buildResiduo(ResultSet rs, boolean expandBase64) throws SQLException {
+		var id = rs.getLong("ResiduoId");
+		if ( id == 0 )
+			return null;
+
 		val limit = rs.getTimestamp("FechaLimiteRetiro");
 		val retiro = rs.getTimestamp("FechaRetiro");
 		val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
@@ -299,7 +305,7 @@ public class TransaccionDao extends Dao {
 
 		return Residuo
 			.builder()
-			.id(rs.getLong("ResiduoId"))
+			.id(id)
 			.ciudadano(c)
 			.fechaCreacion(rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC))
 			.fechaRetiro(retiroDate)
