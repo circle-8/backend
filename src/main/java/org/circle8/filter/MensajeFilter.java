@@ -14,4 +14,5 @@ public class MensajeFilter {
 	public ChatMessageResponse.Type type;
 	public Boolean ack;
 	public InequalityFilter<ZonedDateTime> timestamp;
+	public Long limit;
 }

@@ -18,8 +18,8 @@ import org.circle8.dto.ConversacionDto;
 import org.circle8.dto.MensajeDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
-import org.circle8.service.ActionService;
-import org.circle8.service.ChatService;
+import org.circle8.service.chat.ActionService;
+import org.circle8.service.chat.ChatService;
 
 import java.util.List;
 import java.util.Map;
@@ -188,7 +188,7 @@ public class ChatController implements Consumer<WsConfig> {
 	public ApiResponse actions(Context ctx) {
 		return new ListResponse<>(List.of(
 			new ChatMessageResponse.Action(ChatMessageResponse.ActionType.MESSAGE, "", null),
-			new ChatMessageResponse.Action(ChatMessageResponse.ActionType.ACTION, "Acordar precio", new MessageRequest())
+			new ChatMessageResponse.Action(ChatMessageResponse.ActionType.ACTION, "Acordar precio", new MessageRequest("COMIENZO_PROPONER_PRECIO", "", null, null))
 		));
 	}
 
@@ -220,26 +220,31 @@ public class ChatController implements Consumer<WsConfig> {
 			assert fromUser != null;
 			var toUser = fromUser.equals(user1) ? user2 : user1;
 
+			log.info("login in chat {} from {}", chatId, fromUser);
+
 			ctx.enableAutomaticPings(15, TimeUnit.SECONDS);
 
 			connUsers.put(ctx, new SavedSession(type, idConv, Long.parseLong(fromUser), Long.parseLong(toUser)));
 		});
 		ws.onClose(ctx -> {
 			ctx.disableAutomaticPings();
-			connUsers.remove(ctx);
+			var session = connUsers.remove(ctx);
+
+			log.info("logout user {}", session.fromUser);
 		});
 		ws.onMessage(ctx -> {
 			var mess = ctx.messageAsClass(MessageRequest.class);
-			var sessions = connUsers.get(ctx);
+			var session = connUsers.get(ctx);
 
-			var responses = actions.execute(mess, sessions);
+			log.info("message from {}", session.fromUser);
+
+
+			var responses = actions.execute(mess, session);
 
 			responses.forEach((to, res) -> connUsers.entrySet()
 				.stream()
 				.filter(e -> e.getValue().fromUser.equals(to))
-				.findFirst()
-				.map(Map.Entry::getKey)
-				.ifPresent(c -> c.sendAsClass(res, ChatMessageResponse.class)));
+				.forEach(c -> c.getKey().sendAsClass(res, ChatMessageResponse.class)));
 		});
 	}
 }

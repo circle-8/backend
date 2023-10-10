@@ -4,8 +4,10 @@ import com.google.inject.Inject;
 import lombok.val;
 import org.circle8.controller.chat.response.ChatMessageResponse;
 import org.circle8.entity.Mensaje;
+import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.filter.MensajeFilter;
+import org.circle8.update.UpdateMensaje;
 import org.circle8.utils.Dates;
 
 import javax.sql.DataSource;
@@ -31,12 +33,26 @@ public class MensajeDao extends Dao {
 	private static final String WHERE_TRANSACCION_ID = "AND \"TransaccionId\" = ?\n";
 	private static final String WHERE_TYPE = "AND \"Type\" = ?\n";
 	private static final String WHERE_TIMESTAMP = "AND \"Timestamp\" %s\n";
-	private static final String WHERE_ACK = "AND \"ACK\" = ?\n";
+	private static final String WHERE_ACK = "AND \"Ack\" = ?\n";
 
 	private static final String INSERT = """
 	INSERT INTO public."Mensaje"("Type", "Timestamp", "From", "To", "Message", "Ack", "RecorridoId", "TransaccionId")
 	VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 	""";
+
+	private static final String UPDATE = """
+		UPDATE public."Mensaje"
+		SET %s
+		WHERE "ID" = ?;
+		""";
+	private static final String SET_TYPE = "\"Type\" = ?";
+	private static final String SET_TIMESTAMP = "\"Timestamp\" = ?";
+	private static final String SET_FROM = "\"From\" = ?";
+	private static final String SET_TO = "\"To\" = ?";
+	private static final String SET_MESSAGE = "\"Message\" = ?";
+	private static final String SET_ACK = "\"Ack\" = ?";
+	private static final String SET_RECORRIDO = "\"RecorridoId\" = ?";
+	private static final String SET_TRANSACCION = "\"TransaccionId\" = ?";
 
 	@Inject
 	public MensajeDao(DataSource ds) { super(ds); }
@@ -75,6 +91,7 @@ public class MensajeDao extends Dao {
 			f.usuarios.forEach(u -> addObject(u, parameters));
 			f.usuarios.forEach(u -> addObject(u, parameters));
 		}
+		appendCondition(f.limit, "LIMIT ?", conditions, parameters);
 
 		val p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)
@@ -83,8 +100,8 @@ public class MensajeDao extends Dao {
 		return p;
 	}
 
-	public Mensaje save(Mensaje m) throws PersistenceException {
-		try ( var t = open(true) ; var insert = createInsert(t, m) ) {
+	public Mensaje save(Transaction t, Mensaje m) throws PersistenceException {
+		try ( var insert = createInsert(t, m) ) {
 			int insertions = insert.executeUpdate();
 			if ( insertions == 0 )
 				throw new SQLException("Creating the mensaje failed, no affected rows");
@@ -101,6 +118,12 @@ public class MensajeDao extends Dao {
 		}
 	}
 
+	public Mensaje save(Mensaje m) throws PersistenceException {
+		try ( var t = open() ) {
+			return save(t, m);
+		}
+	}
+
 	private PreparedStatement createInsert(Transaction t, Mensaje m) throws PersistenceException, SQLException {
 		val ps = t.prepareStatement(INSERT, Statement.RETURN_GENERATED_KEYS);
 		ps.setString(1, m.type.toString());
@@ -112,5 +135,34 @@ public class MensajeDao extends Dao {
 		ps.setObject(7, m.recorridoId);
 		ps.setObject(8, m.transaccionId);
 		return ps;
+	}
+
+	public void update(UpdateMensaje m) throws PersistenceException, NotFoundException {
+		try ( var t = open(true) ; var put = createUpdate(t, m) ) {
+			int puts = put.executeUpdate();
+			if ( puts == 0 )
+				throw new NotFoundException("No existe el mensaje");
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error updating mensaje", e);
+		}
+	}
+
+	private PreparedStatement createUpdate(Transaction t, UpdateMensaje m) throws PersistenceException, SQLException {
+		val set = new ArrayList<String>();
+		List<Object> parameters = new ArrayList<>();
+
+		appendUpdate(m.type, SET_TYPE, set, parameters);
+		appendUpdate(m.timestamp, SET_TIMESTAMP, set, parameters);
+		appendUpdate(m.from, SET_FROM, set, parameters);
+		appendUpdate(m.to, SET_TO, set, parameters);
+		appendUpdate(m.message, SET_MESSAGE, set, parameters);
+		appendUpdate(m.ack, SET_ACK, set, parameters);
+		appendUpdate(m.recorridoId, SET_RECORRIDO, set, parameters);
+		appendUpdate(m.transaccionId, SET_TRANSACCION, set, parameters);
+
+		parameters.add(m.id);
+
+		val sql = String.format(UPDATE, String.join(", ", set));
+		return prepareStatement(t, sql, parameters);
 	}
 }

@@ -34,8 +34,11 @@ public class MensajeDto {
 			entity.timestamp,
 			entity.from,
 			entity.to,
-			GSON.fromJson(entity.message, ChatMessageResponse.MessageResponse.class), // TODO components
-			null
+			GSON.fromJson(entity.message.replace("{id}", ""+entity.id), entity.type == ChatMessageResponse.Type.MESSAGE
+				? ChatMessageResponse.MessageResponse.class
+				: ChatMessageResponse.ComponentResponse.class
+			),
+			List.of()
 		);
 	}
 

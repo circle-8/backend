@@ -1,4 +1,4 @@
-package org.circle8.service.dto;
+package org.circle8.service.chat.dto;
 
 import org.circle8.dto.ConversacionDto;
 import org.circle8.entity.Residuo;

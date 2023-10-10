@@ -1,4 +1,4 @@
-package org.circle8.service;
+package org.circle8.service.chat;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -29,9 +29,9 @@ import org.circle8.filter.InequalityFilter;
 import org.circle8.filter.MensajeFilter;
 import org.circle8.filter.RecorridoFilter;
 import org.circle8.filter.TransaccionFilter;
-import org.circle8.service.dto.IConversacion;
-import org.circle8.service.dto.RecorridoConv;
-import org.circle8.service.dto.TransaccionConv;
+import org.circle8.service.chat.dto.IConversacion;
+import org.circle8.service.chat.dto.RecorridoConv;
+import org.circle8.service.chat.dto.TransaccionConv;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.ZonedDateTime;
@@ -264,16 +264,25 @@ public class ChatService {
 		long u1,
 		long u2
 	) throws ServiceException {
-		var filterBuilder = MensajeFilter.builder()
-			.usuarios(List.of(u1, u2))
-			.type(ChatMessageResponse.Type.MESSAGE);
+		var filterBuilder = MensajeFilter.builder().usuarios(List.of(u1, u2));
 		filterBuilder = switch ( type ) {
 			case TRANSACCION -> filterBuilder.transaccionId(idConv);
 			case RECORRIDO -> filterBuilder.recorridoId(idConv);
 		};
+		var messagesFilter = filterBuilder
+			.type(ChatMessageResponse.Type.MESSAGE)
+			.build();
+		var componentFilter = filterBuilder
+			.type(ChatMessageResponse.Type.COMPONENT)
+			.ack(false)
+			.limit(1L)
+			.build();
 
-		try ( val t = mensajes.open() ){
-			return mensajes.list(t, filterBuilder.build()).stream()
+		try ( val t = mensajes.open() ) {
+			var messages = mensajes.list(t, messagesFilter);
+			var components = mensajes.list(t, componentFilter);
+			return Stream.of(messages, components)
+				.flatMap(List::stream)
 				.map(MensajeDto::from)
 				.sorted(Comparator.comparing(MensajeDto::getTimestamp))
 				.toList();

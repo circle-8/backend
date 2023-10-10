@@ -1,4 +1,4 @@
-package org.circle8.service.dto;
+package org.circle8.service.chat.dto;
 
 import org.circle8.controller.chat.response.ConversacionResponse;
 import org.circle8.dto.ConversacionDto;
