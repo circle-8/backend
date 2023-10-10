@@ -152,8 +152,10 @@ public class TransaccionService {
    }
 
 	public void removeResiduo(Long transaccionId, Long residuoId) throws ServiceError, NotFoundException {
-		try (var t = dao.open(true)) {
+		try (var t = dao.open()) {
 			dao.removeResiduo(t, transaccionId, residuoId);
+			solicitudDao.deleteByResiduo(t, transaccionId, residuoId);
+			t.commit();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al intentar remover el residuo de la transaccion", e);
 		}
