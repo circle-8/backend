@@ -11,6 +11,6 @@ public class Plan {
 	public long id;
 	public String nombre;
 	public BigDecimal precio;
-	public int mesesRenovacion;
-	public int cantUsuarios;
+	public Integer mesesRenovacion;
+	public Integer cantUsuarios;
 }
