@@ -69,6 +69,24 @@ class NotificacionSolicitudResiduoTest {
 			.body("cancelador", is(nullValue()))
 		;
 	}
+	
+	@Test void testNotificacionRetiroResiduoInTransaccion() {
+		RestAssured.given()
+			.post("/residuo/14/notificacion/1")
+			.then()
+			.statusCode(400)
+			.body("message", stringContainsInOrder("residuo ya es", "transacción"));
+		;
+	}
+	
+	@Test void testNotificacionRetiroResiduoInRecorrido() {
+		RestAssured.given()
+			.post("/residuo/5/notificacion/1")
+			.then()
+			.statusCode(400)
+			.body("message", stringContainsInOrder("residuo ya es", "circuito de reciclaje"));
+		;
+	}
 
 	@Test void testNotificacionDepositoOK() {
 		RestAssured.given()
@@ -80,6 +98,24 @@ class NotificacionSolicitudResiduoTest {
 			.body("solicitadoId", equalTo(2))
 			.body("estado", equalTo("PENDIENTE"))
 			.body("cancelador", is(nullValue()))
+		;
+	}
+	
+	@Test void testNotificacionDepositoResiduoInTransaccion() {
+		RestAssured.given()
+			.post("/residuo/14/notificacion/deposito/1")
+			.then()
+			.statusCode(400)
+			.body("message", stringContainsInOrder("residuo ya es", "transacción"));
+		;
+	}
+	
+	@Test void testNotificacionDepositoResiduoInRecorrido() {
+		RestAssured.given()
+			.post("/residuo/5/notificacion/deposito/1")
+			.then()
+			.statusCode(400)
+			.body("message", stringContainsInOrder("residuo ya es", "circuito de reciclaje"));
 		;
 	}
 
