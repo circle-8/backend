@@ -5,12 +5,14 @@ import lombok.val;
 import org.circle8.dao.PuntoResiduoDao;
 import org.circle8.dao.RecicladorUrbanoDao;
 import org.circle8.dao.RecorridoDao;
+import org.circle8.dao.ResiduoDao;
 import org.circle8.dao.Transaction;
 import org.circle8.dao.ZonaDao;
 import org.circle8.dto.TipoResiduoDto;
 import org.circle8.dto.ZonaDto;
 import org.circle8.entity.Punto;
 import org.circle8.entity.PuntoResiduo;
+import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
 import org.circle8.entity.Zona;
 import org.circle8.exception.NotFoundException;
@@ -18,7 +20,10 @@ import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
 import org.circle8.expand.PuntoResiduoExpand;
+import org.circle8.expand.RecorridoExpand;
+import org.circle8.expand.ResiduoExpand;
 import org.circle8.expand.ZonaExpand;
+import org.circle8.filter.ResiduosFilter;
 import org.circle8.filter.ZonaFilter;
 
 import java.util.ArrayList;
@@ -31,14 +36,17 @@ public class ZonaService {
 	private final PuntoResiduoDao puntoResiduoDao;
 	private final RecicladorUrbanoDao recicladorUrbanoDao;
 	private final RecorridoDao recorridoDao;
+	private final ResiduoDao residuoDao;
 
 	@Inject
 	public ZonaService(ZonaDao dao, PuntoResiduoDao puntoResiduoDao,
-			RecicladorUrbanoDao recicladorUrbanoDao, RecorridoDao recorridoDao) {
+			RecicladorUrbanoDao recicladorUrbanoDao,
+			RecorridoDao recorridoDao, ResiduoDao residuoDao) {
 		this.dao = dao;
 		this.puntoResiduoDao = puntoResiduoDao;
 		this.recicladorUrbanoDao = recicladorUrbanoDao;
 		this.recorridoDao = recorridoDao;
+		this.residuoDao = residuoDao;
 	}
 
 	public ZonaDto save(Long organizacionId, ZonaDto dto) throws ServiceException {
@@ -132,11 +140,24 @@ public class ZonaService {
 
 	public ZonaDto excludePuntoResiduo(Long puntoResiduoId, Long zonaId) throws ServiceException {
 		try (val t = dao.open()) {
+			var rf = ResiduosFilter.builder()
+					.retirado(false)
+					.puntosResiduo(List.of(puntoResiduoId))
+					.build();
+			var residuos = residuoDao.list(rf, ResiduoExpand.EMPTY);
+			for(Residuo r : residuos) {
+				if(r.recorrido != null && r.recorrido.id != 0) {
+					var rec = recorridoDao.get(t, r.recorrido.id, RecorridoExpand.EMPTY);
+					if(rec.isPresent() && zonaId.equals(rec.get().zonaId))
+						throw new ServiceException("Hay residuos asociados al circuito de reciclaje");
+				}
+			}			
+			
 			this.dao.excludePuntoResiduo(t, puntoResiduoId, zonaId);
 
-			val f = new ZonaFilter(zonaId);
-			val x = new ZonaExpand(false, false, true);
-			val zona = get(t, f, x).orElseThrow(() -> new NotFoundException("No existe la zona"));
+			val zf = new ZonaFilter(zonaId);
+			val zx = new ZonaExpand(false, false, true);
+			val zona = get(t, zf, zx).orElseThrow(() -> new NotFoundException("No existe la zona"));
 
 			t.commit();
 
