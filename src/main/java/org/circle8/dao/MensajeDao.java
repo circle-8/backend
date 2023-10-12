@@ -19,16 +19,11 @@ import java.util.List;
 
 public class MensajeDao extends Dao {
 	private static final String SELECT = """
-	SELECT "ID", "Type", "Timestamp", "From", "To", "Message", "Ack", "RecorridoId", "TransaccionId"
+	SELECT "ID", "Type", "Timestamp", "From", "To", "Message", "Ack", "RecorridoId", "TransaccionId", "ChatId"
 	  FROM "Mensaje"
 	 WHERE 1=1
 	""";
-	private static final String WHERE_USUARIOS = """
-	AND (
-	       "From" IN ( %s )
-	    OR "To" IN ( %s )
-	)
-	""";
+	private static final String WHERE_CHAT_ID = "AND \"ChatId\" = ?\n";
 	private static final String WHERE_RECORRIDO_ID = "AND \"RecorridoId\" = ?\n";
 	private static final String WHERE_TRANSACCION_ID = "AND \"TransaccionId\" = ?\n";
 	private static final String WHERE_TYPE = "AND \"Type\" = ?\n";
@@ -36,8 +31,8 @@ public class MensajeDao extends Dao {
 	private static final String WHERE_ACK = "AND \"Ack\" = ?\n";
 
 	private static final String INSERT = """
-	INSERT INTO public."Mensaje"("Type", "Timestamp", "From", "To", "Message", "Ack", "RecorridoId", "TransaccionId")
-	VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+	INSERT INTO public."Mensaje"("Type", "Timestamp", "From", "To", "Message", "Ack", "RecorridoId", "TransaccionId", "ChatId")
+	VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 	""";
 
 	private static final String UPDATE = """
@@ -69,7 +64,8 @@ public class MensajeDao extends Dao {
 					rs.getString("Message"),
 					rs.getBoolean("Ack"),
 					rs.getLong("RecorridoId") != 0 ? rs.getLong("RecorridoId") : null,
-					rs.getLong("TransaccionId") != 0 ? rs.getLong("TransaccionId") : null
+					rs.getLong("TransaccionId") != 0 ? rs.getLong("TransaccionId") : null,
+					rs.getString("ChatId")
 				));
 			}
 		} catch ( SQLException e ) {
@@ -81,16 +77,12 @@ public class MensajeDao extends Dao {
 		val conditions = new StringBuilder(SELECT);
 		List<Object> parameters = new ArrayList<>();
 
+		appendCondition(f.chatId, WHERE_CHAT_ID, conditions, parameters);
 		appendCondition(f.recorridoId, WHERE_RECORRIDO_ID, conditions, parameters);
 		appendCondition(f.transaccionId, WHERE_TRANSACCION_ID, conditions, parameters);
 		appendCondition(f.type, WHERE_TYPE, conditions, parameters);
 		appendCondition(f.ack, WHERE_ACK, conditions, parameters);
 		appendInequality(f.timestamp, WHERE_TIMESTAMP, conditions, parameters);
-		if ( f.usuarios != null && !f.usuarios.isEmpty() ) {
-			conditions.append(String.format(WHERE_USUARIOS, listParam(f.usuarios), listParam(f.usuarios)));
-			f.usuarios.forEach(u -> addObject(u, parameters));
-			f.usuarios.forEach(u -> addObject(u, parameters));
-		}
 		appendCondition(f.limit, "LIMIT ?", conditions, parameters);
 
 		val p = t.prepareStatement(conditions.toString());
@@ -134,6 +126,7 @@ public class MensajeDao extends Dao {
 		ps.setBoolean(6, m.ack);
 		ps.setObject(7, m.recorridoId);
 		ps.setObject(8, m.transaccionId);
+		ps.setString(9, m.chatId);
 		return ps;
 	}
 

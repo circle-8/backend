@@ -258,17 +258,8 @@ public class ChatService {
 		return l;
 	}
 
-	public List<MensajeDto> mensajes(
-		ConversacionType type,
-		long idConv,
-		long u1,
-		long u2
-	) throws ServiceException {
-		var filterBuilder = MensajeFilter.builder().usuarios(List.of(u1, u2));
-		filterBuilder = switch ( type ) {
-			case TRANSACCION -> filterBuilder.transaccionId(idConv);
-			case RECORRIDO -> filterBuilder.recorridoId(idConv);
-		};
+	public List<MensajeDto> mensajes(String chatId) throws ServiceException {
+		var filterBuilder = MensajeFilter.builder().chatId(chatId);
 		var messagesFilter = filterBuilder
 			.type(ChatMessageResponse.Type.MESSAGE)
 			.build();

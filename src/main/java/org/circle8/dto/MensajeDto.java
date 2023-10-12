@@ -26,7 +26,7 @@ public class MensajeDto {
 	public ChatMessageResponse.Message message;
 	public List<ChatMessageResponse.Action> availableActions;
 
-	public static MensajeDto from(Mensaje entity) {
+	public static MensajeDto from(Mensaje entity, List<ChatMessageResponse.Action> actions) {
 		if (entity == null) return null;
 		return new MensajeDto(
 			entity.id,
@@ -38,9 +38,11 @@ public class MensajeDto {
 				? ChatMessageResponse.MessageResponse.class
 				: ChatMessageResponse.ComponentResponse.class
 			),
-			List.of()
+			actions
 		);
 	}
+
+	public static MensajeDto from(Mensaje entity) { return from(entity, List.of()); }
 
 	public ChatMessageResponse toResponse() {
 		return new ChatMessageResponse(

@@ -20,4 +20,5 @@ public class Mensaje {
 	public boolean ack;
 	public Long recorridoId;
 	public Long transaccionId;
+	public String chatId;
 }

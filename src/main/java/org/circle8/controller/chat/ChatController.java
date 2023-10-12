@@ -21,7 +21,6 @@ import org.circle8.exception.ServiceException;
 import org.circle8.service.chat.ActionService;
 import org.circle8.service.chat.ChatService;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +29,7 @@ import java.util.function.Consumer;
 @Singleton
 @Slf4j
 public class ChatController implements Consumer<WsConfig> {
-	public record SavedSession(ChatService.ConversacionType type, Long idConv, Long fromUser, Long toUser) {}
+	public record SavedSession(String chatId, ChatService.ConversacionType type, Long idConv, Long fromUser, Long toUser) {}
 	private static final Map<WsContext, SavedSession> connUsers = new ConcurrentHashMap<>();
 
 	private final ActionService actions;
@@ -92,8 +91,8 @@ public class ChatController implements Consumer<WsConfig> {
 	 */
 	public ApiResponse history(Context ctx) {
 		// TODO: validaciones
-		var id = ctx.pathParam("chat_id");
-		var split = id.split("\\+");
+		var chatId = ctx.pathParam("chat_id");
+		var split = chatId.split("\\+");
 
 		val conv = split[0];
 		val convSplit = conv.split("-");
@@ -105,91 +104,43 @@ public class ChatController implements Consumer<WsConfig> {
 		val u1 = Long.parseLong(split[1]);
 		val u2 = Long.parseLong(split[2]);
 
+		// TODO: validaciones
+		var fromUser = Long.parseLong(ctx.queryParam("user_id"));
+		var toUser = fromUser == u1 ? u2 : u1;
+
 		try {
-			val mensajes = service.mensajes(type, idConv, u1, u2).stream()
+			val mensajes = service.mensajes(chatId).stream()
 				.map(MensajeDto::toResponse)
 				.toList();
 			return new ListResponse<>(mensajes);
 		} catch ( ServiceError e ) {
-			log.error("[Request: id={}] error list mensajes", id, e);
+			log.error("[Request: id={}] error list mensajes", chatId, e);
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
 			return new ErrorResponse(e);
 		}
-
-		/* LO DEJO COMO EJEMPLO PARA ACCIONES
-		return new ListResponse<>(List.of(
-			new ChatMessageResponse(
-				ChatMessageResponse.Type.COMPONENT,
-				ZonedDateTime.now().minusMinutes(15),
-				2L,
-				1L,
-				new ChatMessageResponse.ComponentResponse(
-					ChatMessageResponse.ComponentMessageType.MODAL,
-					List.of(
-						new ChatMessageResponse.Component(
-							ChatMessageResponse.ComponentType.TITLE,
-							"Acordar tarifa",
-							null, null, null
-						),
-						new ChatMessageResponse.Component(
-							ChatMessageResponse.ComponentType.TEXT,
-							"Por favor seleccione un importe:",
-							null, null, null
-						),
-						new ChatMessageResponse.Component(
-							ChatMessageResponse.ComponentType.INPUT,
-							null,
-							"importe",
-							ChatMessageResponse.InputType.NUMBER,
-							null
-						),
-						new ChatMessageResponse.Component(
-							ChatMessageResponse.ComponentType.BUTTON,
-							"Cancelar",
-							null,
-							null,
-							new ChatMessageResponse.Action(
-								ChatMessageResponse.ActionType.ACTION,
-								"",
-								MessageRequest.builder().type("CANCELAR ACORDAR").build()
-							)
-						),
-						new ChatMessageResponse.Component(
-							ChatMessageResponse.ComponentType.BUTTON,
-							"Proponer",
-							null,
-							null,
-							new ChatMessageResponse.Action(
-								ChatMessageResponse.ActionType.ACTION,
-								"",
-								MessageRequest.builder().type("ACORDAR").build()
-							)
-						)
-					)
-				),
-				null
-			),
-			new ChatMessageResponse(
-				ChatMessageResponse.Type.MESSAGE,
-				ZonedDateTime.now().minusMinutes(15),
-				2L,
-				1L,
-				new ChatMessageResponse.MessageResponse("Hola que tal", "primary"),
-				null
-			)
-		));
-		*/
 	}
 
 	/**
 	 * GET /chat/{chat_id}/actions
 	 */
 	public ApiResponse actions(Context ctx) {
-		return new ListResponse<>(List.of(
-			new ChatMessageResponse.Action(ChatMessageResponse.ActionType.MESSAGE, "", null),
-			new ChatMessageResponse.Action(ChatMessageResponse.ActionType.ACTION, "Acordar precio", new MessageRequest("COMIENZO_PROPONER_PRECIO", "", null, null))
-		));
+		val id = ctx.pathParam("chat_id");
+		val split = id.split("\\+");
+		val u1 = Long.parseLong(split[1]);
+		val u2 = Long.parseLong(split[2]);
+
+		val conv = split[0];
+		val convSplit = conv.split("-");
+		val type = convSplit[0].equals("TRA")
+			? ChatService.ConversacionType.TRANSACCION
+			: ChatService.ConversacionType.RECORRIDO;
+		val idConv = Long.parseLong(convSplit[1]);
+
+		val userId = Long.parseLong(ctx.queryParam("user_id"));
+
+		val availableActions = this.actions.availableActions(ActionService.ActionType.MESSAGE, type, idConv, u1, u2, userId);
+		return new ListResponse<>(availableActions);
 	}
 
 	/**
@@ -224,7 +175,7 @@ public class ChatController implements Consumer<WsConfig> {
 
 			ctx.enableAutomaticPings(15, TimeUnit.SECONDS);
 
-			connUsers.put(ctx, new SavedSession(type, idConv, Long.parseLong(fromUser), Long.parseLong(toUser)));
+			connUsers.put(ctx, new SavedSession(chatId, type, idConv, Long.parseLong(fromUser), Long.parseLong(toUser)));
 		});
 		ws.onClose(ctx -> {
 			ctx.disableAutomaticPings();

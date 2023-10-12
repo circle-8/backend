@@ -27,8 +27,8 @@ public class ComponentUtils {
 		return new ChatMessageResponse.Component(ChatMessageResponse.ComponentType.TEXT, text, null, null, null);
 	}
 
-	public ChatMessageResponse.Component input(String nombre, ChatMessageResponse.InputType type) {
-		return new ChatMessageResponse.Component(ChatMessageResponse.ComponentType.INPUT, null, nombre, type, null);
+	public ChatMessageResponse.Component input(Inputs nombre, ChatMessageResponse.InputType type) {
+		return new ChatMessageResponse.Component(ChatMessageResponse.ComponentType.INPUT, null, nombre.name(), type, null);
 	}
 
 	public ChatMessageResponse.Component button(String nombre, ChatMessageResponse.Action action) {
@@ -39,10 +39,16 @@ public class ComponentUtils {
 		return new ChatMessageResponse.Action(ChatMessageResponse.ActionType.ACTION, "", req);
 	}
 
+	public MessageRequest request(ActionService.ActionType action) {
+		return MessageRequest.builder()
+			.type(action.name())
+			.build();
+	}
+
 	public MessageRequest ackRequest(ActionService.ActionType action) {
 		return MessageRequest.builder()
 				.type(action.name())
-				.extraData(Map.of("ack", "{id}"))
+				.extraData(Map.of(ExtraData.ACK, "{id}"))
 				.build();
 	}
 
@@ -56,7 +62,8 @@ public class ComponentUtils {
 			GSON.toJson(msg),
 			false,
 			session.type() == ChatService.ConversacionType.RECORRIDO ? session.idConv() : null,
-			session.type() == ChatService.ConversacionType.TRANSACCION ? session.idConv() : null
+			session.type() == ChatService.ConversacionType.TRANSACCION ? session.idConv() : null,
+			session.chatId()
 		);
 	}
 
@@ -66,7 +73,7 @@ public class ComponentUtils {
 			List.of(
 				title("Acordar precio"),
 				text("Por favor seleccione un importe:"),
-				input("importe", ChatMessageResponse.InputType.NUMBER),
+				input(Inputs.IMPORTE, ChatMessageResponse.InputType.NUMBER),
 				button(
 					"Cancelar",
 					action(ackRequest(ActionService.ActionType.ATRAS_MODAL_PROPONER_PRECIO))
@@ -74,6 +81,28 @@ public class ComponentUtils {
 				button(
 					"Proponer",
 					action(ackRequest(ActionService.ActionType.OK_MODAL_PROPONER_PRECIO))
+				)
+			)
+		);
+	}
+
+	public ChatMessageResponse.ComponentResponse modalPrecioPropuesto(Number importe) {
+		return new ChatMessageResponse.ComponentResponse(
+			ChatMessageResponse.ComponentMessageType.MODAL,
+			List.of(
+				title("Nuevo precio propuesto"),
+				text("El nuevo precio propuesto para el transporte es de $ " + importe),
+				text("Podés elegir otro o aceptarlo"),
+				button(
+					"Otro",
+					action(ackRequest(ActionService.ActionType.OTRO_PROPONER_PRECIO))
+				),
+				button(
+					"Aceptar",
+					action(MessageRequest.builder()
+						.type(ActionService.ActionType.ACEPTAR_PROPONER_PRECIO.name())
+						.extraData(Map.of(ExtraData.ACK, "{id}", ExtraData.IMPORTE, importe))
+						.build())
 				)
 			)
 		);

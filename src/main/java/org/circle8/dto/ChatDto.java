@@ -36,7 +36,7 @@ public class ChatDto {
 			this.descripcion,
 			this.type,
 			this.externalId,
-			String.format("/chat/%s/history", this.id),
+			String.format("/chat/%s/history?user_id=%s", this.id, this.user.id),
 			String.format("/chat/%s/actions?user_id=%s", this.id, this.user.id),
 			String.format("/chat/%s?user_id=%s", this.id, this.user.id),
 			this.newMessages,
