@@ -139,6 +139,11 @@ public class TransporteDao extends Dao {
 	private static final String SET_TRANSPORTISTA = """
 			"TransportistaId"=?
 			""";
+	
+	private static final String DELETE = """
+			DELETE FROM "Transporte"
+			WHERE "ID"=?;
+			""";
 
 	@Inject
 	TransporteDao(DataSource ds) {
@@ -209,6 +214,18 @@ public class TransporteDao extends Dao {
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException("error updating transporte", e);
+		}
+	}
+	
+	public void delete(Transaction t, Long id) throws NotFoundException, PersistenceException {
+		try (var delete = t.prepareStatement(DELETE) ) {
+			delete.setLong(1, id);
+			int deleted = delete.executeUpdate();
+			if (deleted == 0) {
+				throw new NotFoundException("No existe el transporte a borrar.");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error deleting transporte", e);
 		}
 	}
 
