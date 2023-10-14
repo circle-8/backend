@@ -132,11 +132,19 @@ public class TransaccionDao extends Dao {
 	private static final String WHERE_TRANSPORTISTA = """
 		AND tra."TransportistaId" = ?
 		""";
+	
+	private static final String WHERE_TRANSPORTISTA_NULL = """
+		AND tr."TransporteId" is NULL
+		""";
+	
+	private static final String WHERE_TRANSPORTISTA_NOT_NULL = """
+		AND tr."TransporteId" is not NULL
+		""";
 
 	private static final String WHERE_CIUDADANO = """
 		AND pr."CiudadanoId" = ?
 		""";
-
+	
 	@Inject
 	TransaccionDao(DataSource ds) {
 		super(ds);
@@ -306,6 +314,12 @@ public class TransaccionDao extends Dao {
 		appendCondition(f.transportistaId, WHERE_TRANSPORTISTA, conditions, parameters);
 		appendCondition(f.ciudadanoId, WHERE_CIUDADANO, conditions, parameters);
 		appendInequality(f.fechaRetiro, "AND tr.\"FechaEfectiva\" %s\n", conditions, parameters);
+		
+		if(f.conTransporte != null) {
+			conditions.append(f.conTransporte ? 
+					WHERE_TRANSPORTISTA_NOT_NULL : 
+						WHERE_TRANSPORTISTA_NULL);
+		}
 
 		var p = t.prepareStatement(conditions.toString());
 		for (int i = 0; i < parameters.size(); i++)

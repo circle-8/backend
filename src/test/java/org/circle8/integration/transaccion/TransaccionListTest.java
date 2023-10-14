@@ -57,7 +57,26 @@ class TransaccionListTest {
 					  .body("data.puntoReciclajeId", everyItem(anyOf(equalTo(1), equalTo(2))))
 		;
 	}
+	
+	@Test
+	void testListConTransporteFilterTrue() {
+		RestAssured.given()
+					  .get("/transacciones?con_transporte=true")
+					  .then()
+					  .statusCode(200)
+					  .body("data", hasSize(greaterThan(1)))
+		;
+	}
 
+	@Test
+	void testListConTransporteFilterFalse() {
+		RestAssured.given()
+					  .get("/transacciones?con_transporte=false")
+					  .then()
+					  .statusCode(200)
+					  .body("data", hasSize(1))
+		;
+	}
 
 
 	@Test

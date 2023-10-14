@@ -12,12 +12,14 @@ public class TransaccionesRequest {
 
 	public Long transportistaId;
 	public Long ciudadanoId;
+	public Boolean conTransporte;
 	public List<Long> puntosReciclaje;
 	public List<String> expands;
 
 	public TransaccionesRequest(Map<String, List<String>> queryParams) {
 		this.transportistaId = Parser.parseLong(validation, queryParams, "transportista_id");
 		this.ciudadanoId = Parser.parseLong(validation, queryParams, "ciudadano_id");
+		this.conTransporte = Parser.parseBoolean(validation, queryParams, "con_transporte");
 		this.puntosReciclaje = queryParams.getOrDefault("punto_reciclaje", List.of()).stream().map(Long::parseLong).toList();
 		this.expands = queryParams.getOrDefault("expand", List.of());
 	}
