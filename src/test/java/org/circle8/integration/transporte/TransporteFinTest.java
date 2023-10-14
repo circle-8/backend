@@ -1,6 +1,7 @@
 package org.circle8.integration.transporte;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
@@ -14,10 +15,20 @@ public class TransporteFinTest {
 	@Test
 	void testPagoOk() {
 		RestAssured.given()
-			.post("/transporte/1/fin")
+			.post("/transporte/5/fin")
 			.then()
 			.statusCode(200)
 			.body("fechaFin", notNullValue())		
+		;
+	}
+	
+	@Test
+	void testPagoWithResiduosPendientes() {
+		RestAssured.given()
+			.post("/transporte/1/fin")
+			.then()
+			.statusCode(400)	
+			.body("message", stringContainsInOrder("finalizar el transporte", "retirado todos los residuos"))
 		;
 	}
 	

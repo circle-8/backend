@@ -172,7 +172,7 @@ public class TransporteController {
 			val tr = new TransporteDto();
 			tr.fechaFin = ZonedDateTime.now(Dates.UTC);
 			tr.id = id;
-			return this.service.update(tr).toResponse();
+			return this.service.fin(tr).toResponse();
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {

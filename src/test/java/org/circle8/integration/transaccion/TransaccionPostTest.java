@@ -25,7 +25,7 @@ class TransaccionPostTest {
 			.post("/transaccion")
 			.then()
 			.statusCode(200)
-			.body("id", equalTo(6))
+			.body("id", equalTo(7))
 			.body("puntoReciclajeId", equalTo(5))
 			.body("residuos[0].id", equalTo(1));
 	}
