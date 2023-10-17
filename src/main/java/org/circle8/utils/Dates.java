@@ -14,4 +14,8 @@ public class Dates {
 		if ( timestamp == null ) return null;
 		return timestamp.toInstant().atZone(UTC);
 	}
+
+	public static ZonedDateTime now() {
+		return ZonedDateTime.now(UTC);
+	}
 }

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.circle8.controller.response.ApiResponse;
 
+import java.time.ZonedDateTime;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
@@ -20,4 +22,6 @@ public class ChatResponse implements ApiResponse {
 	public String chatHistoryUri;
 	public String actionsUri;
 	public String chatWs;
+	public boolean newMessages;
+	public ZonedDateTime timestamp;
 }

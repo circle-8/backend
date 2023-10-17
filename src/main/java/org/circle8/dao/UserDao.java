@@ -130,8 +130,14 @@ public class UserDao extends Dao {
 	}
 
 	public Optional<User> get(String username, Long id) throws PersistenceException {
+		try ( val t = open() ) {
+			return get(t, username, id);
+		}
+	}
+
+	public Optional<User> get(Transaction t, String username, Long id) throws PersistenceException {
 		val f = UserFilter.builder().id(id).username(username).build();
-		try (val t = open(true); val select = createSelect(t, f) ) {
+		try (val select = createSelect(t, f) ) {
 			try ( val rs = select.executeQuery() ) {
 				if ( !rs.next() )
 					return Optional.empty();

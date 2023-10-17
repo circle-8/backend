@@ -9,6 +9,7 @@ import io.javalin.http.ContentType;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
 import io.javalin.http.HttpStatus;
+import io.javalin.http.staticfiles.Location;
 import io.javalin.json.JsonMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.configuration2.Configuration;
@@ -107,7 +108,10 @@ public class Routes {
 	}
 
 	public Javalin initRoutes() {
-		return Javalin.create(c -> c.jsonMapper(getJsonMapper()))
+		return Javalin.create(c -> {
+				c.jsonMapper(getJsonMapper());
+				c.staticFiles.add("/public", Location.CLASSPATH);
+			})
 			// RESIDUOS
 			.get("/residuos", result(residuoController::list))
 			.post("/residuo", result(residuoController::post))
@@ -219,6 +223,7 @@ public class Routes {
 			.get("/user/{user_id}/conversacion/{conversacion_id}/chats", result(chatController::chats))
 			.get("/chat/{chat_id}/history", result(chatController::history))
 			.get("/chat/{chat_id}/actions", result(chatController::actions))
+			.ws("/chat/{chat_id}", chatController)
 			// Exceptions
 			.error(HttpStatus.NOT_FOUND, ctx -> {
 				if ( Strings.isNullOrEmpty(ctx.result()) || "Not Found".equalsIgnoreCase(ctx.result()) ) {
