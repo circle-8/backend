@@ -3,6 +3,7 @@ package org.circle8.controller.chat.response;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import org.circle8.controller.chat.request.MessageRequest;
 import org.circle8.controller.response.ApiResponse;
 
 import java.time.ZonedDateTime;
@@ -74,7 +75,7 @@ public class ChatMessageResponse implements ApiResponse {
 		public String color;
 	}
 
-	public record Action(ActionType type, String titulo, String send) {}
+	public record Action(ActionType type, String titulo, MessageRequest send) {}
 	public record Component(ComponentType type, String text, String name, InputType inputType, Action action){}
 
 	@AllArgsConstructor

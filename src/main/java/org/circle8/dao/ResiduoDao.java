@@ -2,6 +2,7 @@ package org.circle8.dao;
 
 import com.google.inject.Inject;
 import lombok.val;
+import org.circle8.entity.Ciudadano;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Recorrido;
 import org.circle8.entity.Residuo;
@@ -148,7 +149,7 @@ public class ResiduoDao extends Dao {
 
 		return new Residuo(
 			rs.getLong("ID"),
-			rs.getLong("CiudadanoId"),
+			Ciudadano.builder().id(rs.getLong("CiudadanoId")).build(),
 			rs.getTimestamp("FechaCreacion").toInstant().atZone(Dates.UTC),
 			Dates.atUTC(rs.getTimestamp("FechaRetiro")),
 			Dates.atUTC(rs.getTimestamp("FechaLimiteRetiro")),

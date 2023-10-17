@@ -1,24 +1,44 @@
 package org.circle8.integration.transaccion;
 
-import io.restassured.RestAssured;
-
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import java.sql.SQLException;
+
+import javax.sql.DataSource;
 
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import io.restassured.RestAssured;
+
 @ExtendWith(ApiTestExtension.class)
 public class TransaccionRemoveTransporteTest {
-
+	private final DataSource ds = ApiTestExtension.Dep.getDatasource();
+	
 	@Test
-	void testDeleteOk() {
+	void testDeleteOk() throws SQLException {
 		RestAssured.given()
 					  .delete("/transaccion/5/transporte/")
 					  .then()
 					  .statusCode(200)
 		;
+		
+		
+		var checkDelete = """
+					SELECT
+					t."ID"
+				  FROM "Transporte" AS t
+				 WHERE t."ID" = ?
+				""";
+		try (var conn = ds.getConnection(); 
+				var ps = conn.prepareStatement(checkDelete)) {
+			ps.setLong(1, 3);
+			var rs = ps.executeQuery();
+			assertFalse(rs.next());
+		}
 	}
 	
 	@Test

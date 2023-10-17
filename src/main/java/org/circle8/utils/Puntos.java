@@ -10,7 +10,7 @@ import com.google.gson.Gson;
 
 import lombok.val;
 
-public class PuntoUtils {	
+public class Puntos {
 	private static final Gson GSON = new Gson();
 
 	public static double calculateDistance(Punto pointA, Punto pointB) {
@@ -31,7 +31,7 @@ public class PuntoUtils {
 
 		return earthRadiusKm * c;
 	}
-	
+
 	public static List<Punto> getPolyline(String poly) {
 		val l = new ArrayList<Punto>();
 		if(!Strings.isNullOrEmpty(poly)) {
@@ -39,7 +39,7 @@ public class PuntoUtils {
 			for (float[] element : list) {
 				l.add(new Punto(element[0], element[1]));
 			}
-		}		
+		}
 		return l;
 	}
 }

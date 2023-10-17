@@ -119,7 +119,7 @@ abstract class Dao {
 		}
 	}
 
-	private static void addObject(Object o, List<Object> params) {
+	protected static void addObject(Object o, List<Object> params) {
 		if ( o instanceof LocalDate ld ) params.add(Date.valueOf(ld));
 		else if ( o instanceof ZonedDateTime zd ) params.add(Timestamp.from(zd.toInstant()));
 		else if ( o instanceof Enum<?> e ) params.add(e.toString());
@@ -134,5 +134,9 @@ abstract class Dao {
 
 	protected Date date(LocalDate date) {
 		return date != null ? Date.valueOf(date) : null;
+	}
+
+	protected Timestamp timestamp(ZonedDateTime timestamp) {
+		return timestamp != null ? Timestamp.from(timestamp.toInstant()) : null;
 	}
 }

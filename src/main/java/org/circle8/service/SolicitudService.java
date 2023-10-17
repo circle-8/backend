@@ -53,16 +53,23 @@ public class SolicitudService {
 
 			if ( residuo.fechaRetiro != null )
 				throw new ServiceException("El residuo ya se ha retirado");
+			
+			if( residuo.transaccion != null 
+					&& residuo.transaccion.id != 0)
+				throw new ServiceException("El residuo ya es parte de una transacción");
+			
+			if( residuo.recorrido != null 
+					&& residuo.recorrido.id != 0)
+				throw new ServiceException("El residuo ya es parte de un circuito de reciclaje");
 
 			val punto = puntoDao.get(t, puntoReciclajeId)
 				.orElseThrow(() -> new NotFoundException("No existe el punto de reciclaje"));
 
-			/* Validar que el punto de reciclaje acepte el tipo de residuo */
 			val acceptsTipo = punto.tipoResiduo.stream().anyMatch(tr -> tr.id == residuo.tipoResiduo.id);
 			if ( !acceptsTipo )
 				throw new ServiceException("El Punto de Reciclaje no admite este tipo de residuo");
 
-			if ( punto.reciclador.ciudadanoId.equals(residuo.ciudadanoId) )
+			if ( punto.reciclador.ciudadanoId.equals(residuo.ciudadano.id) )
 				throw new ServiceException("El residuo no puede pertenecer al dueño del punto");
 
 			val id = dao.save(t, residuoId, puntoReciclajeId, tipo);

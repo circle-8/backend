@@ -11,15 +11,15 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.expand.TransporteExpand;
 import org.circle8.filter.TransporteFilter;
+import org.circle8.update.UpdateTransporte;
 import org.circle8.utils.Dates;
-import org.circle8.utils.PuntoUtils;
+import org.circle8.utils.Puntos;
 
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -139,6 +139,11 @@ public class TransporteDao extends Dao {
 	private static final String SET_TRANSPORTISTA = """
 			"TransportistaId"=?
 			""";
+	
+	private static final String DELETE = """
+			DELETE FROM "Transporte"
+			WHERE "ID"=?;
+			""";
 
 	@Inject
 	TransporteDao(DataSource ds) {
@@ -201,7 +206,7 @@ public class TransporteDao extends Dao {
 		}
 	}
 
-	public void update(Transaction t, Transporte tr) throws NotFoundException, PersistenceException {
+	public void update(Transaction t, UpdateTransporte tr) throws NotFoundException, PersistenceException {
 		try (var update = createUpdate(t, tr)) {
 			int insertions = update.executeUpdate();
 			if (insertions == 0) {
@@ -209,6 +214,18 @@ public class TransporteDao extends Dao {
 			}
 		} catch (SQLException e) {
 			throw new PersistenceException("error updating transporte", e);
+		}
+	}
+	
+	public void delete(Transaction t, Long id) throws NotFoundException, PersistenceException {
+		try (var delete = t.prepareStatement(DELETE) ) {
+			delete.setLong(1, id);
+			int deleted = delete.executeUpdate();
+			if (deleted == 0) {
+				throw new NotFoundException("No existe el transporte a borrar.");
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException("error deleting transporte", e);
 		}
 	}
 
@@ -255,50 +272,21 @@ public class TransporteDao extends Dao {
 		return p;
 	}
 
-	private PreparedStatement createUpdate(Transaction t, Transporte tr) throws PersistenceException, SQLException {
+	private PreparedStatement createUpdate(Transaction t, UpdateTransporte tr) throws PersistenceException, SQLException {
 		val set = new ArrayList<String>();
 		List<Object> parameters = new ArrayList<>();
 
-		if(tr.pagoConfirmado != null) {
-			set.add(SET_PAGO);
-			parameters.add(tr.pagoConfirmado);
-		}
-
-		if(tr.entregaConfirmada != null) {
-			set.add(SET_ENTREGA);
-			parameters.add(tr.entregaConfirmada);
-		}
-
-		if(tr.fechaInicio != null) {
-			set.add(SET_INICIO);
-			parameters.add(Timestamp.from(tr.fechaInicio.toInstant()));
-		}
-
-		if(tr.fechaFin != null) {
-			set.add(SET_FIN);
-			parameters.add(Timestamp.from(tr.fechaFin.toInstant()));
-		}
-
-		if(tr.precioAcordado != null) {
-			set.add(SET_PRECIO);
-			parameters.add(tr.precioAcordado);
-		}
-
-		if(tr.fechaAcordada != null) {
-			set.add(SET_FECHA_ACORDADA);
-			parameters.add(tr.fechaAcordada);
-		}
-
-		if(tr.transaccionId != null) {
-			set.add(SET_TRANSPORTISTA);
-			parameters.add(tr.transaccionId);
-		}
+		appendUpdate(tr.pagoConfirmado, SET_PAGO, set, parameters);
+		appendUpdate(tr.entregaConfirmada, SET_ENTREGA, set, parameters);
+		appendUpdate(tr.fechaInicio, SET_INICIO, set, parameters);
+		appendUpdate(tr.fechaFin, SET_FIN, set, parameters);
+		appendUpdate(tr.fechaAcordada, SET_FECHA_ACORDADA, set, parameters);
+		appendUpdate(tr.precioAcordado, SET_PRECIO, set, parameters);
+		appendUpdate(tr.transportistaId, SET_TRANSPORTISTA, set, parameters);
 
 		parameters.add(tr.id);
 
-		val sets = String.join(", ", set);
-		val sql = String.format(UPDATE, sets);
-		var p = t.prepareStatement(sql);
+		var p = t.prepareStatement(String.format(UPDATE, String.join(", ", set)));
 		for (int i = 0; i < parameters.size(); i++)
 			p.setObject(i + 1, parameters.get(i));
 		return p;
@@ -348,7 +336,7 @@ public class TransporteDao extends Dao {
 		return Transportista.builder()
 				.id(rs.getLong("TransportistaId"))
 				.usuarioId(rs.getLong("UsuarioId"))
-				.polyline(PuntoUtils.getPolyline(rs.getString("Polyline")))
+				.polyline(Puntos.getPolyline(rs.getString("Polyline")))
 				.build();
 	}
 }

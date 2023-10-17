@@ -10,6 +10,7 @@ import java.util.List;
 @Builder
 public class RecorridoExpand {
 	public static final RecorridoExpand EMPTY = new RecorridoExpand(false, false, false);
+	public static final RecorridoExpand ALL = new RecorridoExpand(true, true, true);
 
 	public final boolean zona;
 	public final boolean reciclador;

@@ -276,6 +276,7 @@ public class TransaccionController {
 			.ciudadanoId(req.ciudadanoId)
 			.puntosReciclaje(req.puntosReciclaje)
 			.transportistaId(req.transportistaId)
+			.conTransporte(req.conTransporte)
 			.fechaRetiro(InequalityFilter.<ZonedDateTime>builder().isNull(true).build()) // TODO: esto deberia cambiarse en la APP
 			.build();
 
