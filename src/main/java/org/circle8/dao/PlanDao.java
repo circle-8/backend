@@ -186,12 +186,12 @@ public class PlanDao extends Dao{
 		return ps;
 	}
 
-	public void delete(Transaction t, Long id) throws PersistenceException {
+	public void delete(Transaction t, Long id) throws PersistenceException, NotFoundException {
 		try ( val delete = t.prepareStatement(DELETE) ) {
 			delete.setLong(1, id);
 
 			if (delete.executeUpdate() <= 0 )
-				throw new SQLException("deleting the plan failed, no affected rows");
+				throw new NotFoundException("deleting the plan failed, no affected rows");
 
 		} catch (SQLException e) {
 			throw new PersistenceException("error deleting plan", e);
