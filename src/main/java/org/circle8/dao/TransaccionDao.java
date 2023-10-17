@@ -92,25 +92,30 @@ public class TransaccionDao extends Dao {
 		FROM "TransaccionResiduo" AS tr
 		JOIN "PuntoReciclaje" AS pr on tr."PuntoReciclajeId"= pr."ID"
 		JOIN "Ciudadano" AS c1 on c1."ID" = pr."CiudadanoId"
+		JOIN "Usuario" AS u1 on u1."ID" = c1."UsuarioId"
 		%s
 		WHERE 1 = 1
 		""";
 
 	private static final String SELECT_SIMPLE = """
-		tr."ID", tr."FechaPrimerContacto", tr."FechaEfectiva", tr."PuntoReciclajeId", pr."CiudadanoId", c1."UsuarioId", tr."TransporteId"
+		tr."ID", tr."FechaPrimerContacto", tr."FechaEfectiva", tr."PuntoReciclajeId",
+		pr."CiudadanoId", c1."UsuarioId", u1."NombreApellido", u1."Username",
+		tr."TransporteId"
 		""";
 
 	private static final String SELECT_RESIDUOS = """
 		, re."ID" AS residuoId, re."FechaCreacion", re."FechaRetiro", re."PuntoResiduoId", re."Descripcion", re."FechaLimiteRetiro", re."Base64",
 		re."TipoResiduoId", re."RecorridoId", tre."Nombre" AS TipoResiduoNombre,
 		puntre."CiudadanoId" AS ciudadanoPuntoResiduo, c."UsuarioId" AS UsuarioPuntoResiduo,
+		ures."NombreApellido" AS NombreApellidoPuntoResiduo, ures."Username" AS UsernamePuntoResiduo,
 		puntre."Latitud" as latitudPuntoResiduo, puntre."Longitud" as longitudPuntoResiduo
 		""";
 
 	private static final String SELECT_TRANSPORTE = """
 		, tra."FechaAcordada", tra."FechaInicio", tra."FechaFin", tra."Precio", tra."TransportistaId",
 		tra."PagoConfirmado", tra."EntregaConfirmada", tra."PrecioSugerido",
-		transportista."UsuarioId" AS UsuarioTransportista
+		transportista."UsuarioId" AS UsuarioTransportista, utrans."NombreApellido" AS NombreTransportista,
+		utrans."Username" AS UsernameTransportista
 		""";
 
 	private static final String SELECT_PUNTO_RECICLAJE = """
@@ -122,11 +127,13 @@ public class TransaccionDao extends Dao {
 		LEFT JOIN "TipoResiduo" AS tre on re."TipoResiduoId" = tre."ID"
 		LEFT JOIN "PuntoResiduo" AS puntre on puntre."ID" = re."PuntoResiduoId"
 		LEFT JOIN "Ciudadano" AS c on c."ID" = puntre."CiudadanoId"
+		LEFT JOIN "Usuario" AS ures on ures."ID" = c."UsuarioId"
 		""";
 
 	private static final String JOIN_TRANSPORTE = """
 		LEFT JOIN "Transporte" AS tra on tr."TransporteId" = tra."ID"
 		LEFT JOIN "Transportista" AS transportista ON transportista."ID" = tra."TransportistaId"
+		LEFT JOIN "Usuario" AS utrans ON utrans."ID" = transportista."UsuarioId"
 		""";
 
 	private static final String WHERE_ID = """
@@ -237,6 +244,8 @@ public class TransaccionDao extends Dao {
 				.recicladorId(rs.getLong("CiudadanoId"))
 				.reciclador(User.builder()
 					.id(rs.getLong("UsuarioId"))
+					.nombre(rs.getString("NombreApellido"))
+					.username(rs.getString("Username"))
 					.ciudadanoId(rs.getLong("CiudadanoId"))
 					.build())
 				.build();
@@ -276,6 +285,11 @@ public class TransaccionDao extends Dao {
 			Transportista.builder()
 				.id(rs.getLong("TransportistaId"))
 				.usuarioId(rs.getLong("UsuarioTransportista"))
+				.user(User.builder()
+					.id(rs.getLong("UsuarioTransportista"))
+					.nombre(rs.getString("NombreTransportista"))
+					.username(rs.getString("UsernameTransportista"))
+					.build())
 				.build(),
 			rs.getLong("ID"),
 			null,
@@ -301,6 +315,8 @@ public class TransaccionDao extends Dao {
 		var c = Ciudadano.builder()
 			.id(rs.getLong("ciudadanoPuntoResiduo"))
 			.usuarioId(rs.getLong("UsuarioPuntoResiduo"))
+			.nombre(rs.getString("NombreApellidoPuntoResiduo"))
+			.username(rs.getString("UsernamePuntoResiduo"))
 			.build();
 
 		return Residuo

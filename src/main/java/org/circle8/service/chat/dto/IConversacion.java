@@ -20,7 +20,7 @@ public interface IConversacion {
 				.filter(r -> r.ciudadano.id == u.ciudadanoId)
 				.findFirst()
 				.map(Residuo::formatted)
-				.map(r -> r.substring(0, Math.min(15, r.length())))
+				.map(r -> r.substring(0, Math.min(25, r.length())))
 				.orElse("")
 		);
 	}

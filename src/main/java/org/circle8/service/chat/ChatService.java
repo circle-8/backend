@@ -58,7 +58,7 @@ public class ChatService {
 		String buildDescripcion() {
 			var descripcion = residuos.get(0).formatted();
 			return residuos.size() == 1
-				? String.format("%s...", descripcion.substring(0, Math.min(15, descripcion.length())))
+				? String.format("%s...", descripcion.substring(0, Math.min(25, descripcion.length())))
 				: String.format("Entrega %d residuos", residuos.size());
 		}
 	}
@@ -126,7 +126,9 @@ public class ChatService {
 			.residuos(true)
 			.build();
 
-		return transacciones.list(t, f, x);
+		return transacciones.list(t, f, x).stream()
+			.filter(tr -> !tr.residuos.isEmpty())
+			.toList();
 	}
 
 	private List<Recorrido> getRecorridos(Transaction t) throws PersistenceException {
@@ -134,7 +136,9 @@ public class ChatService {
 			.fechaFin(InequalityFilter.<ZonedDateTime>builder().isNull(true).build())
 			.build();
 		val x = RecorridoExpand.ALL;
-		return recorridos.list(t, f, x);
+		return recorridos.list(t, f, x).stream()
+			.filter(r -> !r.puntos.isEmpty())
+			.toList();
 	}
 
 
@@ -167,7 +171,7 @@ public class ChatService {
 				.map(e -> new ResiduoEntry(e.getKey(), e.getValue()))
 				.map(e -> new ChatDto(
 					String.format("TRA-%d+%d+%d", id, user.id, e.usuarioId),
-					String.format("Entrega #%d", e.usuarioId), // TODO nombre
+					String.format("Entrega %s", e.residuos.get(0).ciudadano.username),
 					e.buildDescripcion(),
 					ChatResponse.Type.CIUDADANO,
 					e.usuarioId,
@@ -182,7 +186,7 @@ public class ChatService {
 			// Soy transportista o ciudadano, puedo ver al reciclador
 			l.add(new ChatDto(
 				String.format("TRA-%d+%d+%d", id, tr.puntoReciclaje.reciclador.id, user.id),
-				String.format("Recibe #%d", tr.puntoReciclaje.reciclador.id), // TODO nombre
+				String.format("Recibe %s", tr.puntoReciclaje.reciclador.username),
 				"",
 				ChatResponse.Type.RECICLADOR,
 				tr.puntoReciclaje.reciclador.id,
@@ -198,7 +202,7 @@ public class ChatService {
 			var idForReciclador = String.format("TRA-%d+%d+%d", id, user.id, tr.transporte.transportista.usuarioId);
 			l.add(new ChatDto(
 				isReciclador ? idForReciclador : idForCiudadano,
-				String.format("Transporta #%d", tr.transporte.transportista.usuarioId), // TODO nombre
+				String.format("Transporta %s", tr.transporte.transportista.user.username),
 				"",
 				ChatResponse.Type.TRANSPORTISTA,
 				tr.transporte.transportista.usuarioId,
@@ -225,14 +229,14 @@ public class ChatService {
 
 		val l = new ArrayList<ChatDto>();
 		val isReciclador = user.recicladorUrbanoId != null;
-		if ( isReciclador ) {
+		if ( isReciclador && !rec.puntos.isEmpty() ) {
 			// Soy reciclador, puedo ver a todos los residuos
 			val resMap = getGroupedResiduos(rec.puntos.stream().map(p -> p.residuo).toList());
 			resMap.entrySet().stream()
 				.map(e -> new ResiduoEntry(e.getKey(), e.getValue()))
 				.map(e -> new ChatDto(
 					String.format("REC-%d+%d+%d", id, user.id, e.usuarioId),
-					String.format("Entrega #%d", e.usuarioId), // TODO nombre
+					String.format("Entrega %s", e.residuos.get(0).ciudadano.username),
 					e.buildDescripcion(),
 					ChatResponse.Type.CIUDADANO,
 					e.usuarioId,
@@ -245,7 +249,7 @@ public class ChatService {
 			// Soy ciudadano, solo puedo ver al reciclador
 			l.add(new ChatDto(
 				String.format("REC-%d+%d+%d", id, rec.reciclador.usuarioId, user.id),
-				String.format("Transporta #%d", rec.reciclador.usuarioId), // TODO nombre
+				String.format("Transporta %s", rec.reciclador.username),
 				"",
 				ChatResponse.Type.RECICLADOR_URBANO,
 				rec.reciclador.usuarioId,
