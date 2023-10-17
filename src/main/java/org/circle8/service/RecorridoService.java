@@ -16,7 +16,7 @@ import org.circle8.expand.RecorridoExpand;
 import org.circle8.expand.ResiduoExpand;
 import org.circle8.filter.RecorridoFilter;
 import org.circle8.filter.ResiduosFilter;
-import org.circle8.utils.PuntoUtils;
+import org.circle8.utils.Puntos;
 
 import java.util.List;
 
@@ -46,8 +46,8 @@ public class RecorridoService {
 
 	private void sortRetiro(Punto initialPoint, List<Retiro> points) {
 		points.sort((a, b) -> {
-			val d1 = PuntoUtils.calculateDistance(initialPoint, new Punto(a.latitud, a.longitud));
-			val d2 = PuntoUtils.calculateDistance(initialPoint, new Punto(b.latitud, b.longitud));
+			val d1 = Puntos.calculateDistance(initialPoint, new Punto(a.latitud, a.longitud));
+			val d2 = Puntos.calculateDistance(initialPoint, new Punto(b.latitud, b.longitud));
 			return Double.compare(d1, d2);
 		});
 	}

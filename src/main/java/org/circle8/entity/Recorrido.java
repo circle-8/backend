@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -39,5 +40,11 @@ public class Recorrido {
 		if (getClass() != obj.getClass()) return false;
 		Recorrido other = (Recorrido) obj;
 		return id == other.id;
+	}
+
+	@NotNull
+	public List<Residuo> getResiduos() {
+		if ( puntos == null ) return List.of();
+		return puntos.stream().map(p -> p.residuo).toList();
 	}
 }

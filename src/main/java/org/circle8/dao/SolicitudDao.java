@@ -136,6 +136,11 @@ public class SolicitudDao extends Dao {
 		SET "TransaccionId" = ?
 		WHERE "ID" = ?
 		""";
+	
+	private static final String DELETE = """
+			DELETE FROM "Solicitud" 
+			WHERE "TransaccionId"=? AND "ResiduoId"=?;
+			""";
 
 	@Inject
 	public SolicitudDao(DataSource ds) { super(ds); }
@@ -262,7 +267,7 @@ public class SolicitudDao extends Dao {
 		val limitDate = limit != null ? limit.toInstant().atZone(Dates.UTC) : null;
 		return Residuo.builder()
 			.id(rs.getLong("ResiduoId"))
-			.ciudadanoId(rs.getLong("ResiduoCiudadanoId"))
+			.ciudadano(Ciudadano.builder().id(rs.getLong("ResiduoCiudadanoId")).build())
 			.fechaCreacion(rs.getTimestamp("ResiduoFechaCreacion").toInstant().atZone(Dates.UTC))
 			.fechaLimiteRetiro(limitDate)
 			.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
@@ -342,6 +347,18 @@ public class SolicitudDao extends Dao {
 				throw new NotFoundException("No existe la solicitud con id "+id);
 		} catch (SQLException e) {
 			throw new PersistenceException("error updating solicitud", e);
+		}
+	}
+	
+	public void deleteByResiduo(Transaction t, Long transaccionId, Long residuoId) throws PersistenceException, NotFoundException {
+		try ( var delete = t.prepareStatement(DELETE) ) {
+			delete.setLong(1, transaccionId);
+			delete.setLong(2, residuoId);
+			int deleted = delete.executeUpdate();
+			if ( deleted == 0 )
+				throw new NotFoundException("No existe la solicitud con transaccionId "+transaccionId+" y residuoId"+residuoId);
+		} catch (SQLException e) {
+			throw new PersistenceException("error deleting solicitud", e);
 		}
 	}
 

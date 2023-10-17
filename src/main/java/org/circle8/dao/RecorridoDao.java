@@ -17,7 +17,7 @@ import org.circle8.expand.RecorridoExpand;
 import org.circle8.filter.RecorridoFilter;
 import org.circle8.service.RecorridoService.UpdateEnum;
 import org.circle8.utils.Dates;
-import org.circle8.utils.PuntoUtils;
+import org.circle8.utils.Puntos;
 
 import javax.sql.DataSource;
 import java.sql.Date;
@@ -49,7 +49,9 @@ public class RecorridoDao extends Dao {
 		""";
 	private static final String SELECT_RESIDUOS = """
 		, res."ID" AS ResiduoId, res."FechaCreacion", res."Descripcion",
-		res."TipoResiduoId", tr."Nombre" AS TipoResiduoNombre, pr."Latitud", pr."Longitud"
+		res."TipoResiduoId", tr."Nombre" AS TipoResiduoNombre, pr."Latitud", pr."Longitud",
+		pr."CiudadanoId", c1."UsuarioId" AS UsuarioResiduo,
+		ures."NombreApellido" AS NombreApellidoResiduo, ures."Username" AS UsernameResiduo
 		""";
 	private static final String JOIN_SIMPLE = """
 		JOIN "Zona" AS z ON z."ID" = r."ZonaId"
@@ -59,6 +61,8 @@ public class RecorridoDao extends Dao {
 		LEFT JOIN "Residuo" AS res on res."RecorridoId" = r."ID"
 		LEFT JOIN "PuntoResiduo" AS pr ON pr."ID" = res."PuntoResiduoId"
 		LEFT JOIN "TipoResiduo" AS tr ON tr."ID" = res."TipoResiduoId"
+		LEFT JOIN "Ciudadano" AS c1 ON c1."ID" = pr."CiudadanoId"
+		LEFT JOIN "Usuario" AS ures on ures."ID" = c1."UsuarioId"
 		""";
 	private static final String SELECT_ZONA = """
 		, z."Polyline", z."Nombre" AS ZonaNombre
@@ -192,6 +196,12 @@ public class RecorridoDao extends Dao {
 					.fechaCreacion(Dates.atUTC(rs.getTimestamp("FechaCreacion")))
 					.descripcion(rs.getString("Descripcion"))
 					.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
+					.ciudadano(Ciudadano.builder()
+						.id(rs.getLong("CiudadanoId"))
+						.usuarioId(rs.getLong("UsuarioResiduo"))
+						.username(rs.getString("UsernameResiduo"))
+						.nombre(rs.getString("NombreApellidoResiduo"))
+						.build())
 					.build();
 				r.puntos.add(new Retiro(rs.getFloat("Latitud"), rs.getFloat("Longitud"), residuo));
 			}
@@ -204,7 +214,7 @@ public class RecorridoDao extends Dao {
 		val z = new Zona(rs.getLong("ZonaId"));
 		z.organizacionId = rs.getLong("OrganizacionId");
 		if ( x.zona ) {
-			z.polyline = PuntoUtils.getPolyline(rs.getString("Polyline"));
+			z.polyline = Puntos.getPolyline(rs.getString("Polyline"));
 			z.nombre = rs.getString("ZonaNombre");
 		}
 

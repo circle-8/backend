@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 public class Residuo {
 	public long id;
-	public long ciudadanoId;
+	public Ciudadano ciudadano;
 	public ZonedDateTime fechaCreacion;
 	public ZonedDateTime fechaRetiro;
 	public ZonedDateTime fechaLimiteRetiro;
@@ -22,4 +22,9 @@ public class Residuo {
 	public Transaccion transaccion;
 	public Recorrido recorrido;
 	public byte[] base64;
+
+	public String formatted() {
+		if ( this.descripcion == null ) return "";
+		return this.descripcion.split("(\n)|(\\u200B)")[0];
+	}
 }

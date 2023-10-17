@@ -23,7 +23,7 @@ import org.circle8.expand.SolicitudExpand;
 import org.circle8.expand.TransaccionExpand;
 import org.circle8.filter.SolicitudFilter;
 import org.circle8.filter.TransaccionFilter;
-import org.circle8.utils.PuntoUtils;
+import org.circle8.utils.Puntos;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -152,34 +152,39 @@ public class TransaccionService {
    }
 
 	public void removeResiduo(Long transaccionId, Long residuoId) throws ServiceError, NotFoundException {
-		try (var t = dao.open(true)) {
+		try (var t = dao.open()) {
 			dao.removeResiduo(t, transaccionId, residuoId);
+			solicitudDao.deleteByResiduo(t, transaccionId, residuoId);
+			t.commit();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al intentar remover el residuo de la transaccion", e);
 		}
 	}
 
 	public void removeTransporte(Long id, Long transporteId) throws NotFoundException, ServiceError {
-		try (var t = dao.open(true)) {
+		try (var t = dao.open()) {
 			dao.removeTransporte(t, id, transporteId);
+			transporteDao.delete(t, transporteId);
+			t.commit();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al intentar remover el transporte de la transaccion", e);
 		}
 	}
 
 	public void deleteTransporte(Long id) throws ServiceException {
-		try (var t = dao.open(true)) {
+		try (var t = dao.open()) {
 			var transaccion = dao.get(id, new TransaccionExpand(false, true, false, false))
 				.map(TransaccionDto::from)
 				.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 			if(transaccion.transporte == null)
 				throw new ServiceException("La transacción no posee un transporte asignado");
 
-			if(transaccion.transporte.transportistaId != null
-					&& transaccion.transporte.transportistaId != 0)
-				throw new ServiceException("El transporte ya fue aceptado por un transportista");
+			if(transaccion.transporte.fechaInicio != null)
+				throw new ServiceException("El transporte ya fue inciado por el transportista");
 
 			dao.removeTransporte(t, id, transaccion.transporte.id);
+			transporteDao.delete(t, transaccion.transporte.id);
+			t.commit();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al intentar remover el transporte de la transaccion", e);
 		}
@@ -234,7 +239,7 @@ public class TransaccionService {
 				puntos.add(new Punto((float) transaccion.puntoReciclaje.latitud, (float) transaccion.puntoReciclaje.longitud));
 
 			for (int i = 0; i < (puntos.size()-1); i++) {
-				var dist = PuntoUtils.calculateDistance(puntos.get(i), puntos.get(i+1));
+				var dist = Puntos.calculateDistance(puntos.get(i), puntos.get(i+1));
 				distancia = distancia.add(new BigDecimal(dist));
 			}
 		}
@@ -243,8 +248,8 @@ public class TransaccionService {
 
 	private void sortPuntos(Punto puntoInicial, List<Punto> points) {
 		points.sort((a, b) -> {
-			val d1 = PuntoUtils.calculateDistance(puntoInicial, a);
-			val d2 = PuntoUtils.calculateDistance(puntoInicial, b);
+			val d1 = Puntos.calculateDistance(puntoInicial, a);
+			val d2 = Puntos.calculateDistance(puntoInicial, b);
 			return Double.compare(d1, d2);
 		});
 	}

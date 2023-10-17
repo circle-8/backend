@@ -125,12 +125,15 @@ INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "Fecha
 INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (50, NULL, '2020-02-01 08:00:00+00', '2020-02-02 08:00:00+00', true, true, 2, 0);
 INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (60, '2020-03-02', NULL, NULL, true, false, NULL, 1500);
 INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (NULL, '2020-03-02', NULL, NULL, true, false, NULL, 1500);
+INSERT INTO public."Transporte"("Precio", "FechaAcordada", "FechaInicio", "FechaFin", "PagoConfirmado", "EntregaConfirmada", "TransportistaId", "PrecioSugerido") VALUES (40, NULL, '2020-01-01 08:00:00+00', '2020-01-02 08:00:00+00', false, false, 1, 2500);
 
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-01-01 08:00:00+00', '2023-01-02 08:00:00+00', 1, 1);
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-02-01 08:00:00+00', NULL, 2, 2);
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-02-01 08:00:00+00', NULL, 1, 2);
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-03-01 08:00:00+00', NULL, 1, null);
 INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-03-01 08:00:00+00', NULL, 1, 3);
+INSERT INTO public."TransaccionResiduo"("FechaPrimerContacto", "FechaEfectiva", "PuntoReciclajeId", "TransporteId") VALUES ('2023-03-01 08:00:00+00', NULL, 2, 5);
+
 
 INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, NULL, NULL, 'Prueba 1', NULL);
 INSERT INTO public."Residuo" ("FechaCreacion", "FechaRetiro", "PuntoResiduoId", "TipoResiduoId", "TransaccionId", "RecorridoId", "Descripcion", "FechaLimiteRetiro") VALUES ('2023-07-02 19:41:00-00', NULL, 1, 1, NULL, NULL, 'Residuo con limite', '2023-07-10 19:41:00-00');
@@ -151,3 +154,4 @@ INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "
 INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId", "PuntoReciclajeId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'PENDIENTE', 1, 2, 2, 5);
 INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId", "PuntoReciclajeId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'CANCELADA', 1, 2, 12, 5);
 INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId", "PuntoReciclajeId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'APROBADA', 1, 2, 13, 2);
+INSERT INTO public."Solicitud"("FechaCreacion", "FechaModificacion", "Estado", "CiudadanoSolicitanteId", "CiudadanoSolicitadoId", "ResiduoId", "TransaccionId", "PuntoReciclajeId")	VALUES ('2023-07-02 19:41:00-00', '2023-07-02 19:41:00-00', 'APROBADA', 1, 2, 7, 1, 2);
