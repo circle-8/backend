@@ -166,8 +166,9 @@ public class TransporteController {
 		}
 
 		try {
-			val tr = UpdateTransporte.builder().id(id).fechaFin(Dates.now()).build();
-			return this.service.update(tr).toResponse();
+			val tr = new TransporteDto();
+			tr.id = id;
+			return this.service.fin(tr).toResponse();
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
 		} catch ( ServiceException e ) {
