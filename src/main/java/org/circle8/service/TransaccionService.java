@@ -162,26 +162,29 @@ public class TransaccionService {
 	}
 
 	public void removeTransporte(Long id, Long transporteId) throws NotFoundException, ServiceError {
-		try (var t = dao.open(true)) {
+		try (var t = dao.open()) {
 			dao.removeTransporte(t, id, transporteId);
+			transporteDao.delete(t, transporteId);
+			t.commit();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al intentar remover el transporte de la transaccion", e);
 		}
 	}
 
 	public void deleteTransporte(Long id) throws ServiceException {
-		try (var t = dao.open(true)) {
+		try (var t = dao.open()) {
 			var transaccion = dao.get(id, new TransaccionExpand(false, true, false, false))
 				.map(TransaccionDto::from)
 				.orElseThrow(() -> new NotFoundException("No existe la transaccion"));
 			if(transaccion.transporte == null)
 				throw new ServiceException("La transacción no posee un transporte asignado");
 
-			if(transaccion.transporte.transportistaId != null
-					&& transaccion.transporte.transportistaId != 0)
-				throw new ServiceException("El transporte ya fue aceptado por un transportista");
+			if(transaccion.transporte.fechaInicio != null)
+				throw new ServiceException("El transporte ya fue inciado por el transportista");
 
 			dao.removeTransporte(t, id, transaccion.transporte.id);
+			transporteDao.delete(t, transaccion.transporte.id);
+			t.commit();
 		} catch (PersistenceException e) {
 			throw new ServiceError("Ha ocurrido un error al intentar remover el transporte de la transaccion", e);
 		}
