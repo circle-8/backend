@@ -18,10 +18,10 @@ import org.circle8.exception.ServiceException;
 import org.circle8.expand.TransporteExpand;
 import org.circle8.filter.TransporteFilter;
 import org.circle8.service.TransporteService;
+import org.circle8.update.UpdateTransporte;
 import org.circle8.utils.Dates;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Singleton
@@ -124,8 +124,7 @@ public class TransporteController {
 			return new ErrorResponse(ErrorCode.BAD_REQUEST, valid.message(), "");
 
 		try {
-			val tr = TransporteDto.from(req);
-			tr.id = id;
+			val tr = UpdateTransporte.from(id, req);
 			return this.service.update(tr).toResponse();
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -146,9 +145,7 @@ public class TransporteController {
 		}
 
 		try {
-			val tr = new TransporteDto();
-			tr.id = id;
-			tr.fechaInicio = ZonedDateTime.now(Dates.UTC);
+			val tr = UpdateTransporte.builder().id(id).fechaInicio(Dates.now()).build();
 			return this.service.update(tr).toResponse();
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -170,7 +167,6 @@ public class TransporteController {
 
 		try {
 			val tr = new TransporteDto();
-			tr.fechaFin = ZonedDateTime.now(Dates.UTC);
 			tr.id = id;
 			return this.service.fin(tr).toResponse();
 		} catch ( ServiceError e ) {
@@ -192,9 +188,7 @@ public class TransporteController {
 		}
 
 		try {
-			val tr = new TransporteDto();
-			tr.id = id;
-			tr.pagoConfirmado = true;
+			val tr = UpdateTransporte.builder().id(id).pagoConfirmado(true).build();
 			return this.service.update(tr).toResponse();
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());
@@ -215,9 +209,7 @@ public class TransporteController {
 		}
 
 		try {
-			val tr = new TransporteDto();
-			tr.id = id;
-			tr.entregaConfirmada = true;
+			val tr = UpdateTransporte.builder().id(id).entregaConfirmada(true).build();
 			return this.service.update(tr).toResponse();
 		} catch ( ServiceError e ) {
 			return new ErrorResponse(ErrorCode.INTERNAL_ERROR, e.getMessage(), e.getDevMessage());

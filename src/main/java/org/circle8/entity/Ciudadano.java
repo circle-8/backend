@@ -1,10 +1,12 @@
 package org.circle8.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Ciudadano {
 	public long id;
 	public String username;

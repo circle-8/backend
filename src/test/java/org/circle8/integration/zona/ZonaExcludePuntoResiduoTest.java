@@ -1,26 +1,21 @@
 package org.circle8.integration.zona;
 
-import io.restassured.RestAssured;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.stringContainsInOrder;
+
 import org.circle8.ApiTestExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
+import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
 public class ZonaExcludePuntoResiduoTest {
 
 	@Test
 	void testExcludeOk() {
-		RestAssured.given()
-			.delete("/punto_residuo/1/zona/1")
-			.then()
-			.statusCode(200)
-			.body("puntosResiduos", hasSize(1))
-		;
 
 		RestAssured.given()
 		.delete("/punto_residuo/1/zona/2")
@@ -28,6 +23,16 @@ public class ZonaExcludePuntoResiduoTest {
 		.statusCode(200)
 		.body("puntosResiduos.id", not(hasItem(equalTo(1))))
 	;
+	}
+	
+	@Test
+	void testExcludeResiduoInRecorrido() {
+		RestAssured.given()
+			.delete("/punto_residuo/1/zona/1")
+			.then()
+			.statusCode(400)
+			.body("message", stringContainsInOrder("residuos asociados", "circuito de reciclaje"));
+		;
 	}
 
 	@Test

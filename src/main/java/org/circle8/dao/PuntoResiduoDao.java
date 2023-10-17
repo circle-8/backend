@@ -3,6 +3,7 @@ package org.circle8.dao;
 import com.google.inject.Inject;
 import lombok.val;
 import org.circle8.dto.TipoUsuario;
+import org.circle8.entity.Ciudadano;
 import org.circle8.entity.PuntoResiduo;
 import org.circle8.entity.Residuo;
 import org.circle8.entity.TipoResiduo;
@@ -208,7 +209,7 @@ public class PuntoResiduoDao extends Dao {
 					val fechaTimestamp = rs.getTimestamp("FechaCreacion");
 					val r = Residuo.builder()
 						.id(rs.getLong("ResiduoId"))
-						.ciudadanoId(ciudadanoId)
+						.ciudadano(Ciudadano.builder().id(rs.getLong("CiudadanoId")).build())
 						.fechaCreacion(fechaTimestamp != null ? fechaTimestamp.toInstant().atZone(Dates.UTC) : null)
 						.fechaLimiteRetiro(limitDate)
 						.tipoResiduo(new TipoResiduo(rs.getLong("TipoResiduoId"), rs.getString("TipoResiduoNombre")))
