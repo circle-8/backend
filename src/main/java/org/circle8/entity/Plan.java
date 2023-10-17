@@ -1,5 +1,7 @@
 package org.circle8.entity;
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 
@@ -7,4 +9,8 @@ import lombok.Builder;
 @AllArgsConstructor
 public class Plan {
 	public long id;
+	public String nombre;
+	public BigDecimal precio;
+	public Integer mesesRenovacion;
+	public Integer cantUsuarios;
 }
