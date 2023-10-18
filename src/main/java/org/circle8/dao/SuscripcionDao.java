@@ -1,36 +1,25 @@
 package org.circle8.dao;
 
-import com.google.inject.Inject;
-
-import lombok.val;
-
-import org.circle8.entity.Ciudadano;
-import org.circle8.entity.Recorrido;
-import org.circle8.entity.Residuo;
-import org.circle8.entity.Retiro;
-import org.circle8.entity.Suscripcion;
-import org.circle8.entity.TipoResiduo;
-import org.circle8.entity.Transporte;
-import org.circle8.exception.PersistenceException;
-import org.circle8.expand.RecorridoExpand;
-import org.circle8.expand.SuscripcionExpand;
-import org.circle8.expand.TransporteExpand;
-import org.circle8.filter.RecorridoFilter;
-import org.circle8.filter.SuscripcionFilter;
-import org.circle8.filter.TransporteFilter;
-import org.circle8.utils.Dates;
-
-import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
+import javax.sql.DataSource;
+
+import org.circle8.entity.Plan;
+import org.circle8.entity.Suscripcion;
+import org.circle8.exception.PersistenceException;
+import org.circle8.expand.SuscripcionExpand;
+import org.circle8.filter.SuscripcionFilter;
+
+import com.google.inject.Inject;
+
+import lombok.val;
 
 public class SuscripcionDao extends Dao {
 	private static final String INSERT = """
@@ -47,11 +36,11 @@ public class SuscripcionDao extends Dao {
 			""";
 	
 	private static final String SELECT_SIMPLE = """
-			sus.R"ID", sus."UltimaRenovacion", sus."ProximaRenovacion", sus."PlanId"
+			sus."ID", sus."UltimaRenovacion", sus."ProximaRenovacion", sus."PlanId"
 			""";
 	
 	private static final String SELECT_PLAN = """
-			, p."ID", p."Nombre", p."Precio", p."MesesRenovacion", p."CantUsuarios"
+			, p."ID" AS IDplan, p."Nombre", p."Precio", p."MesesRenovacion", p."CantUsuarios"
 			""";
 	
 	private static final String JOIN_PLAN = """
@@ -103,22 +92,25 @@ public class SuscripcionDao extends Dao {
 	
 	private PreparedStatement createSelect(Transaction t, SuscripcionFilter f, SuscripcionExpand x)
 			throws SQLException, PersistenceException {
-		val select = new StringBuilder(SELECT_SIMPLE);
-		val join = new StringBuilder("");
+		var select = SELECT_SIMPLE;
+		var join = "";
 		if (x.plan) {
-			select.append(SELECT_PLAN);
-			join.append(JOIN_PLAN);
+			select += SELECT_PLAN;
+			join += JOIN_PLAN;
 		}
 
 		List<Object> parameters = new ArrayList<>();
-		val where = new StringBuilder();
-		appendCondition(f.id, WHERE_ID, where, parameters);
-		appendCondition(f.planId, WHERE_PLAN_ID, where, parameters);
-		appendInequality(f.proximaRenovacion, "AND sus.\"ProximaRenovacion\" %s\n", where, parameters);
-		appendInequality(f.ultimaRenovacion, "AND sus.\"UltimaRenovacion\" %s\n", where, parameters);
+		var b = new StringBuilder(String.format(SELECT_FMT, select, join));
+		appendCondition(f.id, WHERE_ID, b, parameters);
+		appendCondition(f.planId, WHERE_PLAN_ID, b, parameters);
+		appendInequality(f.proximaRenovacion, "AND sus.\"ProximaRenovacion\" %s\n", b, parameters);
+		appendInequality(f.ultimaRenovacion, "AND sus.\"UltimaRenovacion\" %s\n", b, parameters);
 
-		val sql = String.format(SELECT_FMT, select, join, where);
-		return t.prepareStatement(sql, parameters);
+		var p = t.prepareStatement(b.toString());
+		for (int i = 0; i < parameters.size(); i++)
+			p.setObject(i + 1, parameters.get(i));
+
+		return p;
 	}
 	
 	private Suscripcion buildSuscripcion(ResultSet rs, SuscripcionExpand x) throws SQLException {
@@ -127,6 +119,15 @@ public class SuscripcionDao extends Dao {
 			s.ultimaRenovacion = rs.getDate("UltimaRenovacion").toLocalDate();
 		if(rs.getTimestamp("ProximaRenovacion") != null)
 			s.proximaRenovacion = rs.getDate("UltimaRenovacion").toLocalDate();
+		if(x.plan) {
+			s.plan = Plan.builder()
+					.id(rs.getLong("IDplan"))
+					.nombre(rs.getString("Nombre"))
+					.precio(rs.getBigDecimal("Precio"))
+					.mesesRenovacion(rs.getInt("MesesRenovacion"))
+					.cantidadUsuarios(rs.getInt("CantUsuarios"))
+					.build();
+		}
 
 		return s;
 	}

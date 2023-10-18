@@ -6,6 +6,7 @@ import com.google.inject.Singleton;
 import lombok.val;
 import org.circle8.dto.TipoUsuario;
 import org.circle8.entity.RecicladorUrbano;
+import org.circle8.entity.Suscripcion;
 import org.circle8.entity.User;
 import org.circle8.exception.DuplicatedEntry;
 import org.circle8.exception.NotFoundException;
@@ -177,6 +178,9 @@ public class UserDao extends Dao {
 		u.nombre = rs.getString("NombreApellido");
 		u.tipo = TipoUsuario.valueOf(rs.getString("TipoUsuario"));
 		u.email = rs.getString("Email");
+		u.suscripcion = Suscripcion.builder()
+				.id(rs.getLong("SuscripcionId"))
+				.build();
 
 		switch ( u.tipo ) {
 			case CIUDADANO -> u.ciudadanoId = rs.getLong("CiudadanoId");

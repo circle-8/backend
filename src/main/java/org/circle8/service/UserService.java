@@ -15,6 +15,8 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.expand.SuscripcionExpand;
+import org.circle8.filter.SuscripcionFilter;
 import org.circle8.filter.UserFilter;
 
 import java.util.List;
@@ -84,16 +86,20 @@ public class UserService {
 			
 			if(TipoUsuario.RECICLADOR_URBANO.equals(user.tipo)) {
 				val org = organizacion.get(user.organizacionId);
-				val userOrg = dao.get(null, org.id);
-//				val sus = suscripcion.
-				val f = UserFilter.builder()
-						.organizacionId(user.organizacionId)
-						.tipoUsuario(user.tipo)
-						.build();
-				val recicladores = dao.list(f);
-				if(!recicladores.isEmpty() 
-						&& recicladores.size() >= user.suscripcion.plan.cantidadUsuarios)
-					throw new ServiceException("Ha ocurrido un error al guardar el usuario");
+				val userOrg = dao.get(null, org.usuarioId);
+				if(userOrg.isPresent()) {
+					val sf = SuscripcionFilter.byId(userOrg.get().suscripcion.id);
+					val sus = suscripcion.get(sf, SuscripcionExpand.builder().plan(true).build());
+					val rf = UserFilter.builder()
+							.organizacionId(user.organizacionId)
+							.tipoUsuario(user.tipo)
+							.build();
+					val recicladores = dao.list(rf);
+					if(!recicladores.isEmpty() 
+							&& recicladores.size() >= sus.plan.cantidadUsuarios)
+						throw new ServiceException("Ha superado el limite de "+sus.plan.cantidadUsuarios+" recicladores");
+				}else	
+					throw new ServiceException("Ha ocurrido un error al validar el limite de recicladores");
 			}
 
 			user = dao.save(t, user);
