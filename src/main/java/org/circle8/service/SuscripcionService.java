@@ -16,8 +16,6 @@ import java.time.LocalDate;
 
 @Singleton
 public class SuscripcionService {
-	private static final Long FREE_TRIAL_ID = 1L;
-
 	private final SuscripcionDao dao;
 
 	@Inject public SuscripcionService(SuscripcionDao dao) { this.dao = dao; }
@@ -27,7 +25,7 @@ public class SuscripcionService {
 			val s = Suscripcion.builder()
 				.ultimaRenovacion(LocalDate.now())
 				.proximaRenovacion(LocalDate.now()) // dado que es FREE, da igual
-				.plan(new Plan(FREE_TRIAL_ID))
+				.plan(Plan.FREE_TRIAL)
 				.build();
 			return switch ( u.tipo ) {
 				case ORGANIZACION -> dao.save(t, s);

@@ -81,6 +81,20 @@ public class UserService {
 
 		try ( var t = dao.open() ) {
 			user.suscripcion = suscripcion.subscribe(t, user);
+			
+			if(TipoUsuario.RECICLADOR_URBANO.equals(user.tipo)) {
+				val org = organizacion.get(user.organizacionId);
+				val userOrg = dao.get(null, org.id);
+//				val sus = suscripcion.
+				val f = UserFilter.builder()
+						.organizacionId(user.organizacionId)
+						.tipoUsuario(user.tipo)
+						.build();
+				val recicladores = dao.list(f);
+				if(!recicladores.isEmpty() 
+						&& recicladores.size() >= user.suscripcion.plan.cantidadUsuarios)
+					throw new ServiceException("Ha ocurrido un error al guardar el usuario");
+			}
 
 			user = dao.save(t, user);
 			dto.id = user.id;
