@@ -97,7 +97,7 @@ public class UserService {
 					val recicladores = dao.list(rf);
 					if(!recicladores.isEmpty() 
 							&& recicladores.size() >= sus.plan.cantidadUsuarios)
-						throw new ServiceException("Ha superado el limite de "+sus.plan.cantidadUsuarios+" recicladores");
+						throw new ServiceException("Ha alcanzado el limite de "+sus.plan.cantidadUsuarios+" recicladores");
 				}else	
 					throw new ServiceException("Ha ocurrido un error al validar el limite de recicladores");
 			}

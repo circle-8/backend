@@ -1,9 +1,12 @@
+INSERT INTO public."Plan"("Nombre", "Precio", "MesesRenovacion", "CantUsuarios") VALUES ('Free', 0, 0, 3);
+INSERT INTO public."Suscripcion"("UltimaRenovacion", "ProximaRenovacion", "PlanId") VALUES ('2023-09-21', '2023-09-21', 1);
+
 INSERT INTO public."Usuario"("NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email")
 VALUES (
            'Usuario Existente',
            'existing',
            '$2a$10$vQ35vpn5y4RPXXNm4blxWer6NVn0Pl3GHmSn5XRr2VdGITgpn1j0G', -- 1234
-           NULL,
+           '1',
            'CIUDADANO',
            'existing@email.com'
        ),
@@ -41,7 +44,7 @@ VALUES (
            'Organizacion 1',
            'organizacion1',
            '$2a$10$vQ35vpn5y4RPXXNm4blxWer6NVn0Pl3GHmSn5XRr2VdGITgpn1j0G', -- 1234
-           NULL,
+           '1',
            'ORGANIZACION',
            'organizacion1@email.com'
        );
@@ -66,8 +69,6 @@ VALUES
     ('2023-08-01', NULL, NULL, 1, 1, -34.665860, -58.591205, -34.658771, -58.577580),
     ('2023-07-03', '2023-07-03 10:00:00-00', '2023-07-03 11:00:00-00', 1, 3, -34.658771, -58.577580, -34.665860, -58.591205)
 ;
-
-INSERT INTO public."Plan"("Nombre", "Precio", "MesesRenovacion", "CantUsuarios") VALUES ('Free', 0, 0, 0);
 
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Plástico');
 INSERT INTO public."TipoResiduo" ("Nombre") VALUES ('Papel');

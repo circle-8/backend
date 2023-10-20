@@ -1,12 +1,5 @@
 package org.circle8.integration.user;
 
-import io.restassured.RestAssured;
-import org.circle8.ApiTestExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import javax.sql.DataSource;
-
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.equalTo;
@@ -15,6 +8,14 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import javax.sql.DataSource;
+
+import org.circle8.ApiTestExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import io.restassured.RestAssured;
 
 @ExtendWith(ApiTestExtension.class)
 class SignUpTest {
@@ -88,11 +89,11 @@ class SignUpTest {
 			ps.setString(2, "nuevoReciclador@email.com");
 			assertTrue(ps.executeQuery().next());
 		}
-	}
-
-	@Test
-	void testNewRecicladorWithExtraInfo() throws Exception {
-		var request = """
+		
+		
+		/*testNewRecicladorWithExtraInfo*/		
+		
+		var requestExtraInfo = """
    {
      "username": "nuevo-usuario-reciclador-extra-info",
      "password": "1234",
@@ -107,7 +108,7 @@ class SignUpTest {
    }""";
 
 		RestAssured.given()
-			.body(request)
+			.body(requestExtraInfo)
 			.post("/user")
 			.then()
 			.statusCode(200)
@@ -123,12 +124,21 @@ class SignUpTest {
 			.body("suscripcion", is(not(empty())))
 		;
 
-		var checkUserSQL = "SELECT \"Username\" FROM public.\"Usuario\" WHERE \"Username\" = ? AND \"Email\" = ?";
-		try ( var conn = ds.getConnection(); var ps = conn.prepareStatement(checkUserSQL) ) {
+		var checkUserSQL2 = "SELECT \"Username\" FROM public.\"Usuario\" WHERE \"Username\" = ? AND \"Email\" = ?";
+		try ( var conn = ds.getConnection(); var ps = conn.prepareStatement(checkUserSQL2) ) {
 			ps.setString(1, "nuevo-usuario-reciclador-extra-info");
 			ps.setString(2, "nuevoRecicladorExtraInfo@email.com");
 			assertTrue(ps.executeQuery().next());
 		}
+		
+		/*testNewRecicladorSuperaLimite*/
+		RestAssured.given()
+		.body(request)
+		.post("/user")
+		.then()
+		.statusCode(400)
+		.body("message", stringContainsInOrder("alcanzado el limite", "recicladores"))
+		;		
 	}
 
 	@Test
