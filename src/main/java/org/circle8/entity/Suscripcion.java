@@ -13,5 +13,5 @@ public class Suscripcion {
 	public LocalDate proximaRenovacion;
 	public Plan plan;
 
-	public Suscripcion(int id) { this.id = id; }
+	public Suscripcion(long id) { this.id = id; }
 }

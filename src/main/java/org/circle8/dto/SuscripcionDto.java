@@ -15,6 +15,9 @@ public class SuscripcionDto {
 		if ( entity == null ) return null;
 		var s = new SuscripcionDto();
 		s.id = entity.id;
+		s.ultimaRenovacion = entity.ultimaRenovacion;
+		s.proximaRenovacion = entity.proximaRenovacion;
+		s.plan = entity.plan != null ? PlanDto.from(entity.plan) : null;
 		return s;
 	}
 

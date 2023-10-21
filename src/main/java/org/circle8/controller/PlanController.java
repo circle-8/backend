@@ -17,7 +17,7 @@ public class PlanController {
 		.nombre("plan prueba")
 		.precio(BigDecimal.TEN)
 		.mesesRenovacion(3)
-		.usuariosSz(1)
+		.cantidadUsuarios(1)
 		.build();
 
 	/**
