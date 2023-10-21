@@ -1,6 +1,7 @@
 package org.circle8.service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.circle8.dao.SuscripcionDao;
 import org.circle8.dao.Transaction;
@@ -44,6 +45,14 @@ public class SuscripcionService {
 			};
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al crear la suscripcion al FREE TRIAL", e);
+		}
+	}
+	
+	public List<SuscripcionDto> list(SuscripcionFilter f) throws ServiceException {
+		try {			
+			return this.dao.list(f).stream().map(SuscripcionDto::from).toList();
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al obtener las suscripciones", e);
 		}
 	}
 	

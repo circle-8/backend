@@ -1,15 +1,16 @@
 package org.circle8.controller;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import org.circle8.controller.response.ApiResponse;
 import org.circle8.controller.response.ErrorCode;
 import org.circle8.controller.response.ErrorResponse;
 import org.circle8.controller.response.ListResponse;
 import org.circle8.controller.response.SuscripcionResponse;
+import org.circle8.dto.SuscripcionDto;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
+import org.circle8.filter.SuscripcionFilter;
 import org.circle8.service.SuscripcionService;
 
 import com.google.inject.Inject;
@@ -17,6 +18,7 @@ import com.google.inject.Singleton;
 
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
@@ -38,13 +40,18 @@ public class SuscripcionController {
 	/**
 	 * GET /suscripciones
 	 */
-	public ApiResponse list(Context ctx) {
-		final var l = List.of(
-			mock,
-			mock.toBuilder().id(2).build()
-		);
-
-		return new ListResponse<>(0, 1, 2, null, null, l);
+	public ApiResponse list(Context ctx) {		
+		val filter = new SuscripcionFilter(ctx.queryParamMap());
+		
+		try {
+			val suscripciones = service.list(filter);
+			return new ListResponse<>(suscripciones.stream().map(SuscripcionDto::toResponse).toList());
+		} catch (ServiceError e) {
+			log.error("[Request: filter={}] error listing recorridos", filter, e);
+			return new ErrorResponse(e);
+		} catch ( ServiceException e ) {
+			return new ErrorResponse(e);
+		}
 	}
 	
 	/**

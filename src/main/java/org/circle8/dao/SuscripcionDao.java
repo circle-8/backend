@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +20,7 @@ import org.circle8.filter.SuscripcionFilter;
 
 import com.google.inject.Inject;
 
+import lombok.SneakyThrows;
 import lombok.val;
 
 public class SuscripcionDao extends Dao {
@@ -74,6 +77,23 @@ public class SuscripcionDao extends Dao {
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error inserting suscripcion", e);
 		}
+	}	
+	
+	public List<Suscripcion> list(SuscripcionFilter f) throws PersistenceException {
+		try ( val t = open(true) ) {
+			return list(t, f);
+		}
+	}
+	
+	public List<Suscripcion> list(Transaction t, SuscripcionFilter f) throws PersistenceException {
+		try (
+			val select = createSelect(t, f);
+			val rs = select.executeQuery()
+		) {
+			return new ArrayList<>(buildSuscripciones(rs));
+		} catch ( SQLException e ) {
+			throw new PersistenceException("error listing recorrido", e);
+		}
 	}
 
 	public Optional<Suscripcion> get(Transaction t, SuscripcionFilter f) throws PersistenceException {
@@ -82,7 +102,7 @@ public class SuscripcionDao extends Dao {
 				if ( !rs.next() )
 					return Optional.empty();
 
-				return Optional.of(buildSuscripcion(rs));
+				return Optional.of(buildSuscripcion(rs,rs.getLong("ID")));
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting suscripcion", e);
@@ -108,8 +128,9 @@ public class SuscripcionDao extends Dao {
 		return p;
 	}
 	
-	private Suscripcion buildSuscripcion(ResultSet rs) throws SQLException {
-		val s = new Suscripcion(rs.getLong("ID"));
+	@SneakyThrows
+	private Suscripcion buildSuscripcion(ResultSet rs, long id) {
+		val s = new Suscripcion(id);
 		if(rs.getDate("UltimaRenovacion") != null)
 			s.ultimaRenovacion = rs.getDate("UltimaRenovacion").toLocalDate();
 		if(rs.getTimestamp("ProximaRenovacion") != null)
@@ -123,6 +144,15 @@ public class SuscripcionDao extends Dao {
 				.build();
 
 		return s;
+	}
+	
+	private Collection<Suscripcion> buildSuscripciones(ResultSet rs) throws SQLException{
+		var suscripciones = new HashMap<Long, Suscripcion>();
+		while ( rs.next() ) {
+			val id = rs.getLong("ID");
+			suscripciones.computeIfAbsent(id, newId -> buildSuscripcion(rs, newId));
+		}
+		return suscripciones.values();
 	}
 	
 }
