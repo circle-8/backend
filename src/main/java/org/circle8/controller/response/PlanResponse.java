@@ -14,5 +14,5 @@ public class PlanResponse implements ApiResponse {
 	public String nombre;
 	public BigDecimal precio;
 	public int mesesRenovacion;
-	public int usuariosSz;
+	public int cantidadUsuarios;
 }

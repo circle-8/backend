@@ -26,12 +26,20 @@ public class PlanDto {
 	public PlanResponse toResponse() {
 		return PlanResponse.builder()
 			.id(id)
+			.nombre(nombre)
+			.precio(precio)
+			.mesesRenovacion(mesesRenovacion)
+			.cantidadUsuarios(cantidadUsuarios)
 			.build();
 	}
 
     public Plan toEntity() {
 		return Plan.builder()
 			.id(id)
+			.nombre(nombre)
+			.precio(precio)
+			.mesesRenovacion(mesesRenovacion)
+			.cantidadUsuarios(cantidadUsuarios)
 			.build();
     }
 }
