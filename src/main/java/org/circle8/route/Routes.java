@@ -190,9 +190,9 @@ public class Routes {
 			.post("/plan", result(planController::post))
 			// SUSCRIPCION
 			.get("/suscripciones", result(suscripcionController::list))
-			.get("/user/{id_user}/suscripcion", result(suscripcionController::get))
-			.post("/user/{id_user}/suscripcion", result(suscripcionController::post))
-			.delete("/user/{id_user}/suscripcion", result(suscripcionController::delete))
+			.get("/user/{user_id}/suscripcion", result(suscripcionController::get))
+			.post("/user/{user_id}/suscripcion", result(suscripcionController::post))
+			.delete("/user/{user_id}/suscripcion", result(suscripcionController::delete))
 			// TIPOS RESIDUO
 			.get("/tipos_residuo", result(tipoResiduoController::list))
 			.get("/tipo_residuo/{id}", result(tipoResiduoController::get))

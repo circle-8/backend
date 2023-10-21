@@ -1,4 +1,4 @@
-INSERT INTO public."Plan"("Nombre", "Precio", "MesesRenovacion", "CantUsuarios") VALUES ('Free', 0, 0, 3);
+INSERT INTO public."Plan"("Nombre", "Precio", "MesesRenovacion", "CantUsuarios") VALUES ('Free', 0, 12, 3);
 INSERT INTO public."Suscripcion"("UltimaRenovacion", "ProximaRenovacion", "PlanId") VALUES ('2023-09-21', '2023-09-21', 1);
 
 INSERT INTO public."Usuario"("NombreApellido", "Username", "Password", "SuscripcionId", "TipoUsuario", "Email")

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.circle8.dao.SuscripcionDao;
 import org.circle8.dao.Transaction;
+import org.circle8.dao.UserDao;
 import org.circle8.dto.SuscripcionDto;
 import org.circle8.entity.Plan;
 import org.circle8.entity.Suscripcion;
@@ -12,7 +13,6 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
-import org.circle8.expand.SuscripcionExpand;
 import org.circle8.filter.SuscripcionFilter;
 
 import com.google.inject.Inject;
@@ -23,8 +23,13 @@ import lombok.val;
 @Singleton
 public class SuscripcionService {
 	private final SuscripcionDao dao;
+	private final UserDao userDao;
 
-	@Inject public SuscripcionService(SuscripcionDao dao) { this.dao = dao; }
+	@Inject
+	public SuscripcionService(SuscripcionDao dao, UserDao userDao) {
+		this.dao = dao;
+		this.userDao = userDao;
+	}
 
 	Suscripcion subscribe(Transaction t, User u) throws ServiceException {
 		try {
@@ -42,17 +47,29 @@ public class SuscripcionService {
 		}
 	}
 	
-	public SuscripcionDto get(SuscripcionFilter f, SuscripcionExpand x) throws ServiceException {
+	public SuscripcionDto get(long userId) throws ServiceException {
 		try ( val t = dao.open(true) ) {
-			return SuscripcionDto.from(get(t, f, x));
+			var user = userDao.get(t, null, userId)
+					.orElseThrow(() -> new NotFoundException("No existe el usuario con id " + userId));
+			
+			return SuscripcionDto.from(get(t, SuscripcionFilter.byId(user.suscripcion.id)));
+		} catch ( PersistenceException e ) {
+			throw new ServiceError("Ha ocurrido un error al buscar la solicitud", e);
+		}
+	}	
+	
+	
+	public SuscripcionDto get(SuscripcionFilter f) throws ServiceException {
+		try ( val t = dao.open(true) ) {
+			return SuscripcionDto.from(get(t, f));
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al buscar la solicitud", e);
 		}
 	}
 	
-	private Suscripcion get(Transaction t, SuscripcionFilter f, SuscripcionExpand x) throws ServiceException {
+	private Suscripcion get(Transaction t, SuscripcionFilter f) throws ServiceException {
 		try {
-			return this.dao.get(t, f, x)
+			return this.dao.get(t, f)
 				.orElseThrow(() -> new NotFoundException("No existe la suscripcion"));
 		} catch ( PersistenceException e ) {
 			throw new ServiceError("Ha ocurrido un error al buscar la suscripcion", e);

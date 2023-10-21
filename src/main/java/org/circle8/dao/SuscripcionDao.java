@@ -14,7 +14,6 @@ import javax.sql.DataSource;
 import org.circle8.entity.Plan;
 import org.circle8.entity.Suscripcion;
 import org.circle8.exception.PersistenceException;
-import org.circle8.expand.SuscripcionExpand;
 import org.circle8.filter.SuscripcionFilter;
 
 import com.google.inject.Inject;
@@ -77,27 +76,23 @@ public class SuscripcionDao extends Dao {
 		}
 	}
 
-	public Optional<Suscripcion> get(Transaction t, SuscripcionFilter f, SuscripcionExpand x) throws PersistenceException {
-		try ( val select = createSelect(t, f, x) ) {
+	public Optional<Suscripcion> get(Transaction t, SuscripcionFilter f) throws PersistenceException {
+		try ( val select = createSelect(t, f) ) {
 			try ( var rs = select.executeQuery() ) {
 				if ( !rs.next() )
 					return Optional.empty();
 
-				return Optional.of(buildSuscripcion(rs, x));
+				return Optional.of(buildSuscripcion(rs));
 			}
 		} catch ( SQLException e ) {
 			throw new PersistenceException("error getting suscripcion", e);
 		}
 	}
 	
-	private PreparedStatement createSelect(Transaction t, SuscripcionFilter f, SuscripcionExpand x)
+	private PreparedStatement createSelect(Transaction t, SuscripcionFilter f)
 			throws SQLException, PersistenceException {
-		var select = SELECT_SIMPLE;
-		var join = "";
-		if (x.plan) {
-			select += SELECT_PLAN;
-			join += JOIN_PLAN;
-		}
+		var select = SELECT_SIMPLE + SELECT_PLAN;
+		var join = JOIN_PLAN;
 
 		List<Object> parameters = new ArrayList<>();
 		var b = new StringBuilder(String.format(SELECT_FMT, select, join));
@@ -113,21 +108,19 @@ public class SuscripcionDao extends Dao {
 		return p;
 	}
 	
-	private Suscripcion buildSuscripcion(ResultSet rs, SuscripcionExpand x) throws SQLException {
+	private Suscripcion buildSuscripcion(ResultSet rs) throws SQLException {
 		val s = new Suscripcion(rs.getLong("ID"));
 		if(rs.getDate("UltimaRenovacion") != null)
 			s.ultimaRenovacion = rs.getDate("UltimaRenovacion").toLocalDate();
 		if(rs.getTimestamp("ProximaRenovacion") != null)
 			s.proximaRenovacion = rs.getDate("UltimaRenovacion").toLocalDate();
-		if(x.plan) {
-			s.plan = Plan.builder()
-					.id(rs.getLong("IDplan"))
-					.nombre(rs.getString("Nombre"))
-					.precio(rs.getBigDecimal("Precio"))
-					.mesesRenovacion(rs.getInt("MesesRenovacion"))
-					.cantidadUsuarios(rs.getInt("CantUsuarios"))
-					.build();
-		}
+		s.plan = Plan.builder()
+				.id(rs.getLong("IDplan"))
+				.nombre(rs.getString("Nombre"))
+				.precio(rs.getBigDecimal("Precio"))
+				.mesesRenovacion(rs.getInt("MesesRenovacion"))
+				.cantidadUsuarios(rs.getInt("CantUsuarios"))
+				.build();
 
 		return s;
 	}

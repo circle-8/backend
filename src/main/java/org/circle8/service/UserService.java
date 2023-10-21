@@ -1,9 +1,7 @@
 package org.circle8.service;
 
-import com.google.common.base.Strings;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import lombok.val;
+import java.util.List;
+
 import org.circle8.dao.Transaction;
 import org.circle8.dao.UserDao;
 import org.circle8.dto.TipoUsuario;
@@ -15,11 +13,14 @@ import org.circle8.exception.NotFoundException;
 import org.circle8.exception.PersistenceException;
 import org.circle8.exception.ServiceError;
 import org.circle8.exception.ServiceException;
-import org.circle8.expand.SuscripcionExpand;
 import org.circle8.filter.SuscripcionFilter;
 import org.circle8.filter.UserFilter;
 
-import java.util.List;
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import lombok.val;
 
 @Singleton
 public class UserService {
@@ -89,7 +90,7 @@ public class UserService {
 				val userOrg = dao.get(null, org.usuarioId);
 				if(userOrg.isPresent()) {
 					val sf = SuscripcionFilter.byId(userOrg.get().suscripcion.id);
-					val sus = suscripcion.get(sf, SuscripcionExpand.builder().plan(true).build());
+					val sus = suscripcion.get(sf);
 					val rf = UserFilter.builder()
 							.organizacionId(user.organizacionId)
 							.tipoUsuario(user.tipo)
