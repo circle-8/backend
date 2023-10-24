@@ -38,6 +38,9 @@ public class TransporteDao extends Dao {
 			    %s
 			 WHERE 1 = 1
 			""";
+	private static final String ORDER_SELECT = """
+		ORDER BY t."FechaFin" DESC NULLS FIRST, t."FechaInicio" DESC
+		""";
 
 	private static final String SELECT_SIMPLE = """
 			t."ID", t."Precio", t."FechaAcordada", t."FechaInicio", t."FechaFin", t."PagoConfirmado", t."EntregaConfirmada", t."TransportistaId", t."PrecioSugerido"
@@ -139,7 +142,7 @@ public class TransporteDao extends Dao {
 	private static final String SET_TRANSPORTISTA = """
 			"TransportistaId"=?
 			""";
-	
+
 	private static final String DELETE = """
 			DELETE FROM "Transporte"
 			WHERE "ID"=?;
@@ -216,7 +219,7 @@ public class TransporteDao extends Dao {
 			throw new PersistenceException("error updating transporte", e);
 		}
 	}
-	
+
 	public void delete(Transaction t, Long id) throws NotFoundException, PersistenceException {
 		try (var delete = t.prepareStatement(DELETE) ) {
 			delete.setLong(1, id);
@@ -264,6 +267,8 @@ public class TransporteDao extends Dao {
 
 		if(f.soloSinTransportista != null && f.soloSinTransportista)
 			b.append(WHERE_TRANSPORTISTA_NULL);
+
+		b.append(ORDER_SELECT);
 
 		var p = t.prepareStatement(b.toString());
 		for (int i = 0; i < parameters.size(); i++)
