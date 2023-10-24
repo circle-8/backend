@@ -212,7 +212,9 @@ public class ChatService {
 			));
 		}
 
-		return l;
+		return l.stream()
+			.filter(c -> c.externalId != user.id)
+			.toList();
 	}
 
 	@NotNull

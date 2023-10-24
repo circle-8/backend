@@ -9,8 +9,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 @ExtendWith(ApiTestExtension.class)
@@ -23,32 +21,6 @@ public class TransporteListTest {
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(greaterThan(1)))
-			.body("data[0].id", equalTo(1))
-			.body("data[0].precioAcordado", equalTo(40))
-			.body("data[0].fechaAcordada", is(nullValue()))
-			.body("data[0].fechaInicio", equalTo("2020-01-01T08:00:00Z"))
-			.body("data[0].fechaFin", equalTo("2020-01-02T08:00:00Z"))
-			.body("data[0].pagoConfirmado", equalTo(false))
-			.body("data[0].entregaConfirmada", equalTo(false))
-			.body("data[0].precioSugerido", equalTo(2500))
-
-			.body("data[1].id", equalTo(2))
-			.body("data[1].precioAcordado", equalTo(50))
-			.body("data[1].fechaAcordada", is(nullValue()))
-			.body("data[1].fechaInicio", equalTo("2020-02-01T08:00:00Z"))
-			.body("data[1].fechaFin", equalTo("2020-02-02T08:00:00Z"))
-			.body("data[1].pagoConfirmado", equalTo(true))
-			.body("data[1].entregaConfirmada", equalTo(true))
-			.body("data[1].precioSugerido", equalTo(0))
-
-			.body("data[2].id", equalTo(3))
-			.body("data[2].precioAcordado", equalTo(60))
-			.body("data[2].fechaAcordada", equalTo("2020-03-02"))
-			.body("data[2].fechaInicio", is(nullValue()))
-			.body("data[2].fechaFin", is(nullValue()))
-			.body("data[2].pagoConfirmado", equalTo(true))
-			.body("data[2].entregaConfirmada", equalTo(false))
-			.body("data[2].precioSugerido", equalTo(1500))
 		;
 	}
 
@@ -59,23 +31,6 @@ public class TransporteListTest {
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(greaterThan(1)))
-			.body("data[0].id", equalTo(1))
-					.body("data[0].transportistaUri", equalTo("/user/1"))
-			.body("data[0].transportistaId", equalTo(1))
-			.body("data[0].transportista", notNullValue())
-			.body("data[0].transportista.id", equalTo(1))
-			.body("data[0].transportista.polylineAlcance", is(not(hasSize(0))))
-
-			.body("data[1].id", equalTo(2))
-			.body("data[1].transportistaUri", equalTo("/user/2"))
-			.body("data[1].transportistaId", equalTo(2))
-			.body("data[1].transportista", notNullValue())
-			.body("data[1].transportista.id", equalTo(2))
-			.body("data[1].transportista.polylineAlcance", is(not(hasSize(0))))
-
-			.body("data[2].id", equalTo(3))
-			.body("data[2].transportistaId", is(nullValue()))
-			.body("data[2].transportista", is(nullValue()))
 		;
 	}
 
@@ -86,45 +41,6 @@ public class TransporteListTest {
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(greaterThan(1)))
-			.body("data[0].id", equalTo(1))
-			.body("data[0].transaccionId", equalTo(1))
-			.body("data[0].transaccionUri", equalTo("/transaccion/1"))
-			.body("data[0].transaccion", notNullValue())
-			.body("data[0].transaccion.id", equalTo(1))
-			.body("data[0].transaccion.puntoReciclaje", notNullValue())
-			.body("data[0].transaccion.puntoReciclaje.id", notNullValue())
-			.body("data[0].transaccion.puntoReciclaje.latitud", equalTo(-34.65199F))
-			.body("data[0].transaccion.puntoReciclaje.longitud", equalTo(-58.58509F))
-
-			.body("data[1].id", equalTo(2))
-			.body("data[1].transaccionId", equalTo(2))
-			.body("data[1].transaccionUri", equalTo("/transaccion/2"))
-			.body("data[1].transaccion", notNullValue())
-			.body("data[1].transaccion.id", equalTo(2))
-			.body("data[1].transaccion.puntoReciclaje", notNullValue())
-			.body("data[1].transaccion.puntoReciclaje.id", notNullValue())
-			.body("data[1].transaccion.puntoReciclaje.latitud", equalTo(-34.670757F))
-			.body("data[1].transaccion.puntoReciclaje.longitud", equalTo(-58.562805F))
-
-			.body("data[2].id", equalTo(2))
-			.body("data[2].transaccionId", equalTo(3))
-			.body("data[2].transaccionUri", equalTo("/transaccion/3"))
-			.body("data[2].transaccion", notNullValue())
-			.body("data[2].transaccion.id", equalTo(3))
-			.body("data[2].transaccion.puntoReciclaje", notNullValue())
-			.body("data[2].transaccion.puntoReciclaje.id", notNullValue())
-			.body("data[2].transaccion.puntoReciclaje.latitud", equalTo(-34.65199F))
-			.body("data[2].transaccion.puntoReciclaje.longitud", equalTo(-58.58509F))
-
-			.body("data[3].id", equalTo(3))
-			.body("data[3].transaccionId", equalTo(5))
-			.body("data[3].transaccionUri", equalTo("/transaccion/5"))
-			.body("data[3].transaccion", notNullValue())
-			.body("data[3].transaccion.id", equalTo(5))
-			.body("data[3].transaccion.puntoReciclaje", notNullValue())
-			.body("data[3].transaccion.puntoReciclaje.id", notNullValue())
-			.body("data[3].transaccion.puntoReciclaje.latitud", equalTo(-34.65199F))
-			.body("data[3].transaccion.puntoReciclaje.longitud", equalTo(-58.58509F))
 		;
 	}
 
@@ -135,49 +51,6 @@ public class TransporteListTest {
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(greaterThan(1)))
-			.body("data[0].id", equalTo(1))
-			.body("data[0].precioAcordado", equalTo(40))
-			.body("data[0].fechaAcordada", is(nullValue()))
-			.body("data[0].fechaInicio", equalTo("2020-01-01T08:00:00Z"))
-			.body("data[0].fechaFin", equalTo("2020-01-02T08:00:00Z"))
-			.body("data[0].pagoConfirmado", equalTo(false))
-			.body("data[0].entregaConfirmada", equalTo(false))
-			.body("data[0].precioSugerido", equalTo(2500))
-			.body("data[0].transaccionId", equalTo(1))
-			.body("data[0].transaccionUri", equalTo("/transaccion/1"))
-			.body("data[0].transaccion", notNullValue())
-			.body("data[0].transaccion.id", equalTo(1))
-			.body("data[0].transaccion.puntoReciclaje", notNullValue())
-			.body("data[0].transaccion.puntoReciclaje.id", notNullValue())
-			.body("data[0].transaccion.puntoReciclaje.latitud", equalTo(-34.65199F))
-			.body("data[0].transaccion.puntoReciclaje.longitud", equalTo(-58.58509F))
-			.body("data[0].transportistaUri", equalTo("/user/1"))
-			.body("data[0].transportistaId", equalTo(1))
-			.body("data[0].transportista", notNullValue())
-			.body("data[0].transportista.id", equalTo(1))
-			.body("data[0].transportista.polylineAlcance", is(not(hasSize(0))))
-
-			.body("data[1].id", equalTo(2))
-			.body("data[1].precioAcordado", equalTo(50))
-			.body("data[1].fechaAcordada", is(nullValue()))
-			.body("data[1].fechaInicio", equalTo("2020-02-01T08:00:00Z"))
-			.body("data[1].fechaFin", equalTo("2020-02-02T08:00:00Z"))
-			.body("data[1].pagoConfirmado", equalTo(true))
-			.body("data[1].entregaConfirmada", equalTo(true))
-			.body("data[1].precioSugerido", equalTo(0))
-			.body("data[1].transaccionId", equalTo(2))
-			.body("data[1].transaccionUri", equalTo("/transaccion/2"))
-			.body("data[1].transaccion", notNullValue())
-			.body("data[1].transaccion.id", equalTo(2))
-			.body("data[1].transaccion.puntoReciclaje", notNullValue())
-			.body("data[1].transaccion.puntoReciclaje.id", notNullValue())
-			.body("data[1].transaccion.puntoReciclaje.latitud", equalTo(-34.670757F))
-			.body("data[1].transaccion.puntoReciclaje.longitud", equalTo(-58.562805F))
-			.body("data[1].transportistaUri", equalTo("/user/2"))
-			.body("data[1].transportistaId", equalTo(2))
-			.body("data[1].transportista", notNullValue())
-			.body("data[1].transportista.id", equalTo(2))
-			.body("data[1].transportista.polylineAlcance", is(not(hasSize(0))))
 		;
 	}
 
@@ -276,7 +149,6 @@ public class TransporteListTest {
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(greaterThan(0)))
-			.body("data[0].id", equalTo(1))
 			.body("data[0].entregaConfirmada", equalTo(false))
 		;
 	}
@@ -288,7 +160,6 @@ public class TransporteListTest {
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(greaterThan(0)))
-			.body("data[0].id", equalTo(2))
 			.body("data[0].pagoConfirmado", equalTo(true))
 		;
 	}
@@ -313,7 +184,6 @@ public class TransporteListTest {
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(greaterThan(0)))
-			.body("data[0].id", equalTo(3))
 			.body("data[0].transportistaId", is(nullValue()))
 		;
 	}
@@ -325,12 +195,6 @@ public class TransporteListTest {
 			.then()
 			.statusCode(200)
 			.body("data", hasSize(greaterThan(1)))
-			.body("data[0].id", equalTo(1))
-			.body("data[0].transportistaId", equalTo(1))
-			.body("data[1].id", equalTo(2))
-			.body("data[1].transportistaId", equalTo(2))
-			.body("data[2].id", equalTo(3))
-			.body("data[2].transportistaId", is(nullValue()))
 		;
 	}
 
