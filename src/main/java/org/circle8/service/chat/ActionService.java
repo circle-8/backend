@@ -22,6 +22,7 @@ import org.circle8.update.UpdateMensaje;
 import org.circle8.update.UpdateTransporte;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -72,8 +73,8 @@ public class ActionService {
 				val tr = transacciones.get(idConv, x).orElseThrow(() -> new PersistenceException("transaccion inexistente"));
 				val user1 = users.get(null, u1).orElseThrow(() -> new PersistenceException(""));
 				val user2 = users.get(null, u2).orElseThrow(() -> new PersistenceException(""));
-				val possibleTr = List.of(user1.transportistaId, user2.transportistaId);
-				val possibleRec = List.of(user1.ciudadanoId, user2.ciudadanoId);
+				val possibleTr = Arrays.asList(user1.transportistaId, user2.transportistaId);
+				val possibleRec = Arrays.asList(user1.ciudadanoId, user2.ciudadanoId);
 				if (
 					   tr.transporte != null
 					&& possibleTr.contains(tr.transporte.transportistaId)
