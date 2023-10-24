@@ -267,8 +267,9 @@ public class PuntoReciclajeDao extends Dao {
 
 		if (f.hasReciclador()) {
 			b.append("AND pr.\"CiudadanoId\" = ?\n");
-			parameters.add(f.reciclador_id);
+			parameters.add(f.recicladorId);
 		}
+		appendCondition(f.notRecicladorId, "AND pr.\"CiudadanoId\" <> ?\n", b, parameters);
 
 		if (f.hasArea()) {
 			b.append(WHERE_AREA);

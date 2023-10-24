@@ -10,7 +10,8 @@ public class PuntoReciclajeFilter {
 
 	public List<Dia> dias;
 	public List<Integer> tiposResiduos;
-	public Long reciclador_id;
+	public Long recicladorId;
+	public Long notRecicladorId;
 	public Double latitud;
 	public Double longitud;
 	public Double radio;
@@ -21,7 +22,7 @@ public class PuntoReciclajeFilter {
 	}
 
 	public boolean hasReciclador() {
-		return reciclador_id != null;
+		return recicladorId != null;
 	}
 
 	public boolean hasTipo() {

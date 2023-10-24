@@ -173,7 +173,8 @@ public class PuntoReciclajeController {
 		val filter = PuntoReciclajeFilter.builder()
 			.dias(req.dias.stream().map(Dia::get).toList())
 			.tiposResiduos(req.tiposResiduo)
-			.reciclador_id(req.recicladorId)
+			.recicladorId(req.recicladorId)
+			.notRecicladorId(req.notRecicladorId)
 			.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
 			.isPuntoVerde(false)
 			.build();

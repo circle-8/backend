@@ -15,6 +15,7 @@ public class PuntosResiduosRequest implements IRequest {
 	public Double longitud;
 	public Double radio;
 	public Long ciudadanoId;
+	public Long notCiudadanoId;
 
 	public List<String> tipoResiduo;
 
@@ -25,6 +26,7 @@ public class PuntosResiduosRequest implements IRequest {
 		this.longitud = Parser.parseDouble(validation, queryParams, "longitud");
 		this.radio = Parser.parseDouble(validation, queryParams, "radio");
 		this.ciudadanoId = Parser.parseLong(validation, queryParams, "ciudadano_id");
+		this.notCiudadanoId = Parser.parseLong(validation, queryParams, "not_ciudadano_id");
 
 		this.tipoResiduo = queryParams.getOrDefault("tipos_residuo", List.of());
 		this.expands = queryParams.getOrDefault("expand", List.of());

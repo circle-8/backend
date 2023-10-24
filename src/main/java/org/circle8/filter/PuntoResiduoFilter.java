@@ -10,6 +10,7 @@ public class PuntoResiduoFilter {
 	public Double longitud;
 	public Double radio;
 	public Long ciudadanoId;
+	public Long notCiudadanoId;
 	public List<String> tipoResiduos;
 
 	public boolean hasArea() {

@@ -14,6 +14,7 @@ public class PuntoReciclajeRequest implements IRequest {
 	public List<Integer> dias;
 	public List<Integer> tiposResiduo;
 	public Long recicladorId;
+	public Long notRecicladorId;
 	public Double latitud;
 	public Double longitud;
 	public Double radio;
@@ -39,6 +40,7 @@ public class PuntoReciclajeRequest implements IRequest {
 		}
 
 		this.recicladorId = parseLong(queryParams, "reciclador_id");
+		this.notRecicladorId = parseLong(queryParams, "not_reciclador_id");
 		this.latitud = parseDouble(queryParams, "latitud");
 		this.longitud = parseDouble(queryParams, "longitud");
 		this.radio = parseDouble(queryParams, "radio");

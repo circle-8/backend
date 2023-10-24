@@ -63,6 +63,7 @@ public class PuntoResiduoController {
 
 		val filter = PuntoResiduoFilter.builder()
 			.ciudadanoId(req.ciudadanoId)
+			.notCiudadanoId(req.notCiudadanoId)
 			.latitud(req.latitud).longitud(req.longitud).radio(req.radio)
 			.tipoResiduos(req.tipoResiduo)
 			.build();

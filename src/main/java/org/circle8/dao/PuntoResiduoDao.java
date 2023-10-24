@@ -66,6 +66,9 @@ public class PuntoResiduoDao extends Dao {
 	private static final String WHERE_CIUDADANO = """
 		AND pr."CiudadanoId" = ?
 		""";
+	private static final String WHERE_NOT_CIUDADANO = """
+		AND pr."CiudadanoId" <> ?
+		""";
 
 	private static final String WHERE_AREA = """
 		AND pr."Latitud" BETWEEN ? AND ?
@@ -147,10 +150,8 @@ public class PuntoResiduoDao extends Dao {
 			parameters.add(f.longitud + f.radio);
 		}
 
-		if ( f.ciudadanoId != null ) {
-			conditions.append(WHERE_CIUDADANO);
-			parameters.add(f.ciudadanoId);
-		}
+		appendCondition(f.ciudadanoId, WHERE_CIUDADANO, conditions, parameters);
+		appendCondition(f.notCiudadanoId, WHERE_NOT_CIUDADANO, conditions, parameters);
 
 		if ( f.hasTipo() ) {
 			appendListCondition(f.tipoResiduos, WHERE_TIPO, conditions, parameters);
